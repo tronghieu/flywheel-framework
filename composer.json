@@ -24,5 +24,10 @@
         "psr-0": {"Flywheel": "/"},
         "files": ["Flywheel/Common.php"]
     },
-    "minimum-stability": "dev"
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    },
+    "minimum-stability": "stable"
 }
