@@ -1,4 +1,4 @@
 flywheel-framework
 ==================
 
-Fywheel Framework
+Simple PHP Framework
