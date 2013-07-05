@@ -7,20 +7,20 @@ use Flywheel\Config\ConfigHandler;
 use Flywheel\Util\Folder;
 
 class Uploader {
-    private $_filterType;
-    private $_requiredCheckMimeType = true;
-    private $_allowedMineType = array();
-    private $_error = array();
-    private $_maxSize = 2; //2MB
-    private $_dir;
-    private $_data = array();
-    private $_encryptFileName = false;
-    private $_overwrite = false;
-    private $_ansiName = true;
-    private $_removeSpaceName = true;
-    private $_field;
-    private $_newName;
-    private	$_fileMod = 0755;
+    protected $_filterType;
+    protected $_requiredCheckMimeType = true;
+    protected $_allowedMineType = array();
+    protected $_error = array();
+    protected $_maxSize = 2; //2MB
+    protected $_dir;
+    protected $_data = array();
+    protected $_encryptFileName = false;
+    protected $_overwrite = false;
+    protected $_ansiName = true;
+    protected $_removeSpaceName = true;
+    protected $_field;
+    protected $_newName;
+    protected $_fileMod = 0755;
 
     /**
      * Constructor
@@ -364,7 +364,7 @@ class Uploader {
      *
      * @return string filename included extension
      */
-    private function _makeFileName() {
+    protected function _makeFileName() {
         if (true == $this->_encryptFileName) {
             return (uniqid() .$this->_data['file_extension']);
         }
