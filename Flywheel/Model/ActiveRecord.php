@@ -811,7 +811,7 @@ abstract class ActiveRecord extends Object {
         static::create();
         return self::getReadConnection()->createQuery()
             ->select(static::getColumnsList(static::getTableAlias()))
-            ->from(static::getTableName(), static::getTableAlias())
+            ->from(self::quote(static::getTableName()), static::getTableAlias())
             ->execute()
             ->fetchAll(\PDO::FETCH_CLASS, static::getPhpName(), array(null, false));
     }
@@ -820,7 +820,7 @@ abstract class ActiveRecord extends Object {
         static::create();
         $q = self::getReadConnection()->createQuery()
             ->select(static::getColumnsList(static::getTableAlias()))
-            ->from(static::getTableName(), static::getTableAlias())
+            ->from(self::quote(static::getTableName()), static::getTableAlias())
             ->where(static::buildFindByWhere($by));
         if ($first)
             $q->setMaxResults(1);
