@@ -58,4 +58,9 @@ class Pagination extends Widget {
         $params['page'] = $page;
         return $this->router->createUrl($this->route[0], $params);
     }
+
+    public function end() {
+        $this->getRender()->assign('pagination', $this);
+        parent::end();
+    }
 }
