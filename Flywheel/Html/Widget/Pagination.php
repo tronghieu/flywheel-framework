@@ -63,6 +63,6 @@ class Pagination extends Widget {
 
     public function end() {
         $this->getRender()->assign('pagination', $this);
-        parent::end();
+        return parent::end();
     }
 }
