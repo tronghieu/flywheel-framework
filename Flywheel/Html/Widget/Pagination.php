@@ -23,7 +23,9 @@ class Pagination extends Widget {
      */
     public $router;
 
-    protected function _init() {
+    protected function _init() {}
+
+    public function begin() {
         if (null == $this->viewFile) {
             $this->viewFile = 'pagination';
         }
