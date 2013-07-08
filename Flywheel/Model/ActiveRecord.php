@@ -589,7 +589,7 @@ abstract class ActiveRecord extends Object {
         $c = $data;
         foreach ($c as $n => $v) {
             if (!($v instanceof Expression)) {
-                if (null == $v && (!isset(static::$_validate[$n]) || !isset(static::$_validate[$n]['require']))) {
+                if ((null === $v || '' === $v) && (!isset(static::$_validate[$n]) || !isset(static::$_validate[$n]['require']))) {
                     unset($data[$n]); // no thing
                 } else {
                     $databind[] = self::getReadConnection()->getAdapter()->getPDOParam(static::$_schema[$n]['db_type']);
