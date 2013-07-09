@@ -348,6 +348,9 @@ abstract class WebController extends BaseController
             return null;
         }
 
+        // assign current controller
+        Factory::getView()->assign('controller', $this);
+
         switch ($this->_renderMode) {
             case 'PARTIAL':
             case 'TEXT':
@@ -368,7 +371,7 @@ abstract class WebController extends BaseController
 
         //@TODO same as view
         $view = Factory::getView();
-        $view->assign('controller', $buffer);
+        $view->assign('buffer', $buffer);
 
         if ($this->_layout == null) {
             $config = ConfigHandler::get('template');
