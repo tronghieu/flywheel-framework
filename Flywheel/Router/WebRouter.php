@@ -137,7 +137,7 @@ class WebRouter extends BaseRouter
             return $this->createUrlDefault('', $params, $ampersand);
         }
 
-        for ($i = sizeof($this->_collectors); $i > 0; --$i) {
+        for ($i = sizeof($this->_collectors)-1; $i >= 0; --$i) {
             if (($url = $this->_collectors[$i]->createUrl($this, $route, $params, $ampersand)) !== false) {
                 if ($this->_collectors[$i]->hasHostInfo) {
                     return ('' == $url)? '/' .$anchor : $url.$anchor;
