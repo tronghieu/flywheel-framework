@@ -939,8 +939,9 @@ abstract class ActiveRecord extends Object {
     public function __set($name, $value) {
         if (isset(static::$_schema[$name])) {
             $v = $this->fixData($value, static::$_schema[$name]);
+            $ov = (isset($this->_data[$name])? $this->_data[$name]: null);
             $this->_data[$name] = $v;
-            if (null != $v)
+            if ($ov !== $v)
                 $this->_modifiedCols[$name] = true;
         } else {
             $this->$name = $value;
