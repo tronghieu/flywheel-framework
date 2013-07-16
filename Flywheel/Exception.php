@@ -45,7 +45,7 @@ class Exception extends \Exception
         static::printStackTrace($e);
     }
 
-    public static function printStackTrace(Exception $e) {
+    public static function printStackTrace(\Exception $e) {
         while (ob_get_level()) {
             if (!ob_end_clean()) {
                 break;
