@@ -2,8 +2,10 @@
 
 namespace Flywheel\Html\Widget;
 
+use Flywheel\Controller\WebController;
 use Flywheel\Controller\Widget;
 use Flywheel\Factory;
+use Flywheel\Html\DataGrid\Base;
 
 class Menu extends Widget {
     public $items = array();
@@ -23,6 +25,11 @@ class Menu extends Widget {
     protected function _makeUrl($url) {
         if (0 === stripos($url[0], 'http') || '#' == $url[0]) {
             return $url[0];
+        }
+
+        if (($coll = \Flywheel\Base::getApp()->getController())
+            && $coll instanceof WebController) {
+            return $coll->createUrl($url[0],array_splice($url,1));
         }
 
         return Factory::getRouter()->createUrl($url[0],array_splice($url,1));
