@@ -21,7 +21,7 @@ class Menu extends Widget {
     }
 
     protected function _makeUrl($url) {
-        if (0 === stripos($url[0], 'http')) {
+        if (0 === stripos($url[0], 'http') || '#' == $url[0]) {
             return $url[0];
         }
 
