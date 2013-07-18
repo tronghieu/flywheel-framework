@@ -81,8 +81,12 @@ class Html extends BaseDoc {
 	 * @var boolean
 	 */
 	public $userGA = true;
-	
-	private $_baseUrl;
+    protected $_jsVar = array(
+        'TOP' => array(),
+        'BOTTOM' => array()
+    );
+
+    private $_baseUrl;
 	
 	private $_domain;
 	
@@ -271,6 +275,11 @@ class Html extends BaseDoc {
             $this->_javascript[$position][$file] = $option;
         }
 	}
+
+    public function addJsVar($name, $value, $position = 'TOP') {
+        $position = strtoupper($position);
+        $this->_jsVar[$position][$name] = $value;
+    }
 	
 	/**
 	 * Add single js file 
@@ -336,11 +345,20 @@ class Html extends BaseDoc {
      * @return string
      */
 	public function js($pos = 'BOTTOM') {
+
         $jsv = ConfigHandler::get('js_version');
         if (null == $jsv) {
             $jsv = '1';
         }
 		$pos = strtoupper($pos);
+
+        if (!empty($this->_jsVar[$pos])) {
+            foreach ($this->_jsVar[$pos] as $name => $value) {
+                $code = "var {$name} = ".json_encode($value) .';';
+                $this->addJsCode($code, $pos, 'standard');
+            }
+        }
+
 		$jsCode = '';
 		if (isset($this->_jsText[$pos])) {
 			foreach ($this->_jsText[$pos] as $lib=>$code) {
