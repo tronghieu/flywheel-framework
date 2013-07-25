@@ -528,7 +528,7 @@ class NestedSet extends ModelBehavior {
 
         $query->andWhere($owner->quote($this->left_attr) .' > ' .$parent->{$this->left_attr} .'
                     AND ' .$owner->quote($this->right_attr) .' < ' .$parent->{$this->right_attr})
-                ->andWhere($owner->quote($this->level_attr) .' = ' .($parent->getLevelValue() + 1))
+                ->andWhere($owner->quote($this->level_attr) .' = ' .($parent->getLevel() + 1))
                 ->addOrderBy($this->level_attr);
 
         if (!$includeCurrent) {
