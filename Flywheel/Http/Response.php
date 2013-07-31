@@ -70,6 +70,10 @@ abstract class Response {
 
     public function init() {}
 
+    public function clearHeaders() {
+        $this->_headers = array();
+    }
+
     /**
      * Sets response status code.
      *
