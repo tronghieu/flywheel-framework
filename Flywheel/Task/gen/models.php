@@ -479,7 +479,7 @@ class BuildModels {
 
     private function _writeClassComment($className) {
         return ' * ' .$className .PHP_EOL
-            .' *  This class has been auto-generated at ' .date('d/m/Y H:i:s', time()) .PHP_EOL
+            //.' *  This class has been auto-generated at ' .date('d/m/Y H:i:s', time()) .PHP_EOL
             .' * @version		$Id$' .PHP_EOL
             .' * @package		Model' .PHP_EOL;
     }
