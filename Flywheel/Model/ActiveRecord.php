@@ -153,6 +153,7 @@ abstract class ActiveRecord extends Object {
     }
 
     public static function getDbConnectName() {
+        self::create();
         return static::$_dbConnectName;
     }
 
