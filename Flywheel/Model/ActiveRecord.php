@@ -934,6 +934,21 @@ abstract class ActiveRecord extends Object {
             }
         }
 
+        if(substr($lcMethod, 0, 10) == 'retrieveby') {
+            $by = substr($method, 10, strlen($method));
+            $method = 'retrieveBy';
+
+            if (isset($by)) {
+                if (!isset($params[0])) {
+                    return false;
+                    //@FIXED not need throw exception
+                    //throw new Exception('You must specify the value to ' . $method);
+                }
+
+                return static::retrieveBy($by, $params);
+            }
+        }
+
 //        return parent::$method($params);
     }
 
