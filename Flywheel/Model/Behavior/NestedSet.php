@@ -114,8 +114,8 @@ class NestedSet extends ModelBehavior {
         if ($owner->isNew() && $owner->isRoot()) {
             // check if no other root exist in, the tree
             $query = $owner->read()
-                        ->count()
-                        ->where($owner->quote($this->left_attr) .'=1');
+                ->count()
+                ->where($owner->quote($this->left_attr) .'=1');
             if ($this->scope_attr) {
                 $query->andWhere($owner->quote($this->scope_attr) .' = ' .$this->getScopeValue(true));
             }
@@ -339,9 +339,9 @@ class NestedSet extends ModelBehavior {
         }
 
         $query->select('COUNT(*) AS result')
-                ->andWhere($owner->quote($this->left_attr) .' > ' .$owner->{$this->left_attr} .'
+            ->andWhere($owner->quote($this->left_attr) .' > ' .$owner->{$this->left_attr} .'
                     AND ' .$owner->quote($this->right_attr) .' < ' .$owner->{$this->right_attr})
-                ->andWhere($owner->quote($this->level_attr) .' = ' .($this->getLeftValue() + 1));
+            ->andWhere($owner->quote($this->level_attr) .' = ' .($this->getLeftValue() + 1));
 
         if ($this->scope_attr) {
             $query->andWhere($owner->quote($this->scope_attr) .'=' .$this->getScopeValue(true));
@@ -382,10 +382,10 @@ class NestedSet extends ModelBehavior {
             $owner = $this->getOwner();
 
             $query = $owner->read()
-                    ->andWhere($owner->quote($this->left_attr) .' < ' .$owner->{$this->left_attr} .'
+                ->andWhere($owner->quote($this->left_attr) .' < ' .$owner->{$this->left_attr} .'
                         AND ' .$owner->quote($this->right_attr) .' > ' .$owner->{$this->right_attr})
-                    ->orderBy($this->right_attr)
-                    ->setFirstResult(1);
+                ->orderBy($owner->quote($this->right_attr))
+                ->setFirstResult(1);
 
             if ($this->scope_attr) {
                 $query->andWhere($owner->quote($this->scope_attr) .'=' .$this->getScopeValue(true));
@@ -528,8 +528,8 @@ class NestedSet extends ModelBehavior {
 
         $query->andWhere($owner->quote($this->left_attr) .' > ' .$parent->{$this->left_attr} .'
                     AND ' .$owner->quote($this->right_attr) .' < ' .$parent->{$this->right_attr})
-                ->andWhere($owner->quote($this->level_attr) .' = ' .($parent->getLevel() + 1))
-                ->addOrderBy($this->level_attr);
+            ->andWhere($owner->quote($this->level_attr) .' = ' .($parent->getLevel() + 1))
+            ->addOrderBy($this->level_attr);
 
         if (!$includeCurrent) {
             $query->andWhere($owner->quote($owner->getPrimaryKeyField()) .'!=' .$owner->getPkValue());
@@ -816,8 +816,8 @@ class NestedSet extends ModelBehavior {
         try {
             // delete descendant nodes (will empty the instance pool)
             $query = $owner->write()
-                    ->delete($owner->getTableName())
-                    ->where($owner->quote($this->left_attr) .' > ' .$owner->{$this->left_attr} .'
+                ->delete($owner->getTableName())
+                ->where($owner->quote($this->left_attr) .' > ' .$owner->{$this->left_attr} .'
                         AND ' .$owner->quote($this->right_attr) .' < ' .$owner->{$this->right_attr});
 
             if ($this->scope_attr) {
@@ -919,10 +919,10 @@ class NestedSet extends ModelBehavior {
 
         // Shift left column values
         $updateQuery = $owner->write()
-                        ->update($owner->getTableName())
-                        ->set($owner->quote($this->left_attr), $owner->quote($this->left_attr) .' + ?')
-                        ->setParameter(1, $delta, \PDO::PARAM_INT)
-                        ->where($owner->quote($this->left_attr) .'>=' .$first);
+            ->update($owner->getTableName())
+            ->set($owner->quote($this->left_attr), $owner->quote($this->left_attr) .' + ?')
+            ->setParameter(1, $delta, \PDO::PARAM_INT)
+            ->where($owner->quote($this->left_attr) .'>=' .$first);
         if (null !== $last) {
             $updateQuery->andWhere($owner->quote($this->left_attr) .'<=' .$last);
         }
@@ -950,11 +950,11 @@ class NestedSet extends ModelBehavior {
         /** @var \Flywheel\Model\ActiveRecord $owner */
         $owner = $this->getOwner();
         $updateQuery = $owner->write()
-                        ->update($owner->getTableName())
-                        ->set($owner->quote($this->level_attr), $owner->quote($this->level_attr) .' + ?')
-                        ->setParameter(1, $delta, \PDO::PARAM_INT)
-                        ->where($owner->quote($this->left_attr) .'>=' .$first)
-                        ->andWhere($owner->quote($this->right_attr) .'<=' .$last);
+            ->update($owner->getTableName())
+            ->set($owner->quote($this->level_attr), $owner->quote($this->level_attr) .' + ?')
+            ->setParameter(1, $delta, \PDO::PARAM_INT)
+            ->where($owner->quote($this->left_attr) .'>=' .$first)
+            ->andWhere($owner->quote($this->right_attr) .'<=' .$last);
 
         if ($this->scope_attr) {
             $updateQuery->andWhere($owner->quote($this->scope_attr) .' = ' .$this->getScopeValue(true));
@@ -967,11 +967,11 @@ class NestedSet extends ModelBehavior {
         $owner = $this->getOwner();
 
         $updateQuery = $owner->write()
-                        ->update($owner->getTableName())
-                        ->set($owner->quote($this->scope_attr), '?')
-                        ->setParameter(1, $scope)
-                        ->where($owner->quote($this->left_attr) .'<=0')
-                        ->execute();
+            ->update($owner->getTableName())
+            ->set($owner->quote($this->scope_attr), '?')
+            ->setParameter(1, $scope)
+            ->where($owner->quote($this->left_attr) .'<=0')
+            ->execute();
     }
 
     public function findRoot($scope = null) {
@@ -991,9 +991,9 @@ class NestedSet extends ModelBehavior {
         $owner = $this->getOwner();
 
         return $owner->read()
-                    ->where($owner->quote($this->left_attr) .'=1')
-                    ->execute()
-                    ->fetchAll(\PDO::FETCH_CLASS, get_class($owner), array());
+            ->where($owner->quote($this->left_attr) .'=1')
+            ->execute()
+            ->fetchAll(\PDO::FETCH_CLASS, get_class($owner), array());
     }
 
     public function isNodeValid() {
