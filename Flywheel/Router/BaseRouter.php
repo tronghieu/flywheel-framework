@@ -3,8 +3,7 @@ namespace Flywheel\Router;
 use Flywheel\Config\ConfigHandler as ConfigHandler;
 use Flywheel\Object;
 
-abstract class BaseRouter extends Object
-{
+abstract class BaseRouter extends Object {
     public static $methods = array('GET', 'POST', 'PUT', 'DELETE', 'HEAD');
 
     public $config;
@@ -20,7 +19,12 @@ abstract class BaseRouter extends Object
     protected $_controllerPath;
     protected $_controller;
 
-    public function __construct() {
+    public function __construct() {}
+
+    /**
+     * init load config and parse URL
+     */
+    public function init($config = null) {
         $this->_url = $this->getPathInfo();
         $this->_domain = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on')? 'https://':'http://') .@$_SERVER['HTTP_HOST'];
         $this->_baseUrl = $this->_domain .str_replace('index.php', '', $_SERVER['SCRIPT_NAME']);
@@ -42,28 +46,38 @@ abstract class BaseRouter extends Object
         $this->parseUrl($this->_url);
     }
 
-    public function getBaseUrl()
-    {
+    public function getBaseUrl() {
         return $this->_baseUrl;
     }
 
-    public function getDomain()
-    {
+    public function getDomain() {
         return $this->_domain;
     }
 
-    public function getUrl()
-    {
+    /**
+     * get request url
+     *
+     * @return string
+     */
+    public function getUrl() {
         return $this->_url;
     }
 
-    public function getUri()
-    {
+    /**
+     * get request uri included domain
+     *
+     * @return string
+     */
+    public function getUri() {
         return $this->_uri;
     }
 
-    public function getFrontControllerPath()
-    {
+    /**
+     * get path to front controller which removed script file
+     *
+     * @return string
+     */
+    public function getFrontControllerPath() {
         return $this->_frontControllerPath;
     }
 
@@ -76,8 +90,7 @@ abstract class BaseRouter extends Object
      * @param string $key this is used internally.
      * @return string the created path info
      */
-    public function createPathInfo($params,$equal,$ampersand, $key=null)
-    {
+    public function createPathInfo($params,$equal,$ampersand, $key=null) {
         $pairs = array();
         foreach($params as $k => $v)
         {
@@ -96,8 +109,7 @@ abstract class BaseRouter extends Object
      * Parses a path info into URL segments and saves them to $_GET and $_REQUEST.
      * @param string $pathInfo path info
      */
-    public function parsePathInfo($pathInfo)
-    {
+    public function parsePathInfo($pathInfo) {
         if($pathInfo==='')
             return;
         $segs=explode('/',$pathInfo.'/');
@@ -144,7 +156,13 @@ abstract class BaseRouter extends Object
         return $pathInfo;
     }
 
+    /**
+     * parse Url
+     * @param $url
+     * @return mixed
+     */
     abstract public function parseUrl($url);
+
     /**
      * Removes the URL suffix from path info.
      * @param string $pathInfo path info part in the URL
@@ -159,12 +177,18 @@ abstract class BaseRouter extends Object
             return $pathInfo;
     }
 
+    /**
+     * @return array
+     */
     public function getParams() {
         return $this->_params;
     }
 
-    public function getParamIndex($index)
-    {
+    /**
+     * @param $index
+     * @return null
+     */
+    public function getParamIndex($index) {
         return (isset($this->_params[$index]))? $this->_params[$index] : null;
     }
 }

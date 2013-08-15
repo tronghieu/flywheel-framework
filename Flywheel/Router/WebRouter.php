@@ -5,8 +5,7 @@ use Flywheel\Base;
 use Flywheel\Exception\Routing;
 use Flywheel\Util\Inflection;
 
-class WebRouter extends BaseRouter
-{
+class WebRouter extends BaseRouter {
     /**
      * @var Collection[]
      */
@@ -20,24 +19,46 @@ class WebRouter extends BaseRouter
     public $params = array();
 
     public function __construct() {
-        $routes = ConfigHandler::load('app.config.routing', 'routing', true);
-//        print_r($routes);exit;
-        unset($routes['__urlSuffix__']);
-        unset($routes['__remap__']);
-//        unset($routes['/']);
-
-        if($routes and !empty($routes)){
-            foreach ($routes as $pattern => $config){
-                $this->_collectors[] = new Collection($config, $pattern);
-            }
-        }
         parent::__construct();
     }
 
+    public function init($config = null) {
+        if (null == $config)
+        {
+            $routes = ConfigHandler::load('app.config.routing', 'routing', true);
+        } else {
+            $routes = $config;
+        }
+
+        unset($routes['__urlSuffix__']);
+        unset($routes['__remap__']);
+
+        if($routes and !empty($routes)){
+            foreach ($routes as $pattern => $config){
+                $this->addCollection(new Collection($config, $pattern));
+            }
+        }
+
+        parent::init($config);
+    }
+
+    /**
+     * add router's collection
+     *
+     * @param Collection $collection
+     */
+    public function addCollection(Collection $collection) {
+        $this->_collectors[] = $collection;
+    }
+
+    /**
+     * get Route config
+     *
+     * @return mixed
+     */
     public function getRoute() {
         return $this->_route;
     }
-
 
     public function getPathInfo() {
         $pathInfo = parent::getPathInfo();
@@ -180,6 +201,8 @@ class WebRouter extends BaseRouter
 
     /**
      * @param $url
+     *
+     * @return mixed|void
      * @throws Routing
      */
     public function parseUrl($url) {

@@ -13,23 +13,39 @@ class ApiRouter extends BaseRouter
     protected $_path;
     protected $_routes = array();
 
-    public function getFormat()
-    {
+    /**
+     * get api response format (json|xml|text)
+     *
+     * @return string
+     */
+    public function getFormat() {
         return $this->_format;
     }
 
-    public function getMethod()
-    {
+    /**
+     * get API method
+     *
+     * @return mixed
+     */
+    public function getMethod() {
         return $this->_method;
     }
 
-    public function getApi()
-    {
+    /**
+     * get Api controller
+     *
+     * @return mixed
+     */
+    public function getApi() {
         return $this->_api;
     }
 
-    public function getPath()
-    {
+    /**
+     * get full api path
+     *
+     * @return mixed
+     */
+    public function getPath() {
         return $this->_path;
     }
 

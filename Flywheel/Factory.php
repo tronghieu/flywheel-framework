@@ -31,14 +31,26 @@ class Factory
 
     /**
      * get response
+     * @param null $name
      * @return \Flywheel\Router\BaseRouter
      */
-    public static function getRouter() {
-
-        if (isset(self::$_registry['router'])) {
-            return self::$_registry['router'];
+    public static function getRouter($name = null) {
+        if (!isset(self::$_registry['router'])) {
+            self::$_registry['router'] = array();
         }
-        //echo Base::getApp()->getType();exit;
+
+        if (null == $name) {
+            if (Base::getApp()) {
+                $name = hash('crc32b', Base::getAppPath());
+            } else {
+                $name = 'FOREVER_AUTUMN';
+            }
+        }
+
+        if (isset(self::$_registry['router'][$name])) {
+            return self::$_registry['router'][$name];
+        }
+
         switch(Base::getApp()->getType()) {
             case BaseApp::TYPE_API:
                 $class = self::$_classesList['ApiRouter'];
@@ -48,9 +60,12 @@ class Factory
                 break;
         }
 
-        self::$_registry['router'] = new $class();
+        $router = new $class();
+        $router->init();
 
-        return self::$_registry['router'];
+        self::$_registry['router'][$name] = $router;
+
+        return self::$_registry['router'][$name];
     }
 
     /**
