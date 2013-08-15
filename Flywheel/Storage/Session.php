@@ -12,7 +12,9 @@ namespace Flywheel\Storage;
 use Flywheel\Factory;
 
 class Session {
-	/**
+
+    protected $_state;
+    /**
 	 * Session started
 	 * @var $_started boolean
 	 */
@@ -85,7 +87,9 @@ class Session {
 			return false;
 		}
 		session_cache_limiter('none');
-		$this->_started = session_start();		
+		$this->_started = session_start();
+
+        $this->_state = 'active';
 
 		// Send modified header for IE 6.0 Security Policy
 		header('P3P: CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
@@ -102,6 +106,13 @@ class Session {
         $this->_afterStart();
 		return $this->_started;
 	}
+
+    /**
+     * @return mixed
+     */
+    public function getState() {
+        return $this->_state;
+    }
 
     protected function _afterStart() {
         //Delete 'old' flash data
@@ -120,6 +131,11 @@ class Session {
 	 * @return mixed value of session data	 
 	 */
 	public function get($name, $default = null) {
+        if ($this->_state !== 'active' && $this->_state !== 'expired') {
+            // @TODO :: generated error here
+            return null;
+        }
+
 		$deep 	= explode('\\', $name);
 		$data	= isset($_SESSION)?$_SESSION:array();
 		$size	= sizeof($deep);
@@ -139,9 +155,13 @@ class Session {
 	 * Has
 	 * 
 	 * @param string $name session param name
-     * @return bool
+     * @return bool|null
      */
 	public function has($name) {
+        if ($this->_state !== 'active') {
+            // @TODO :: generated error here
+            return null;
+        }
 		return isset($_SESSION[$name]);
 	}
 	
@@ -150,8 +170,14 @@ class Session {
 	 * 
 	 * @param string $name session param name
 	 * @param mixed $data
-	 */
+     * @return null
+     */
 	public function set($name, $data) {
+        if ($this->_state !== 'active') {
+            // @TODO :: generated error here
+            return null;
+        }
+
 		$_SESSION[$name] = $data;
 	}
 	
@@ -161,7 +187,11 @@ class Session {
 	 * @param string $name
 	 * @return void
 	 */
-	public function remove($name) {		
+	public function remove($name) {
+        if ($this->_state !== 'active') {
+            // @TODO :: generated error here
+            return null;
+        }
 		unset($_SESSION[$name]);
 	}
 	
@@ -198,37 +228,32 @@ class Session {
 	
 	/**
 	 * validate session
-	 * 	check validate client address,
-	 * 	check validate client browser
-	 * 
-	 * @throws \Flywheel\Session\Exception
 	 */
 	protected function _validate() {
-        return;
+        $ip = $this->get('session.client.address');
+
+        if ($ip === null) {
+            $this->set('session.client.address', $_SERVER['REMOTE_ADDR']);
+        } elseif ($_SERVER['REMOTE_ADDR'] !== $ip) {
+            $this->_state = 'error';
+            return false;
+        }
+
         // Record proxy forwarded for in the session in case we need it later
         if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
             $this->set('session.client.forwarded', $_SERVER['HTTP_X_FORWARDED_FOR']);
         }
 
-        // Check for clients browser
-        if (in_array('fix_browser', $this->_security) && isset($_SERVER['HTTP_USER_AGENT']))
-        {
-            $browser = $this->get('session.client.browser');
+        return true;
+	}
 
-            if ($browser === null)
-            {
-                $this->set('session.client.browser', $_SERVER['HTTP_USER_AGENT']);
-            }
+    public function id() {
+        if ('active' !== $this->_state) {
+            return null;
         }
 
-		//validate client address
-		$ip = $this->get('session.client.address');
-		if (null === $ip) {
-			$this->set('session.client.address', $_SERVER['REMOTE_ADDR']);
-		} else if( $_SERVER['REMOTE_ADDR'] != $ip ) {
-			throw new Exception('Session: Invalid session address');
-		}
-	}
+        return session_id();
+    }
 	
 	/**
 	* Create a token-string
