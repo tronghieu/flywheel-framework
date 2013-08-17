@@ -706,6 +706,9 @@ class NestedSet extends ModelBehavior {
             'arguments' => array($left, $scope)
         );
 
+        $this->getOwner()->save();
+        $node->reload();
+
         return $this->getOwner();
     }
 
@@ -728,6 +731,9 @@ class NestedSet extends ModelBehavior {
             'arguments' => array($left, $scope)
         );
 
+        $this->getOwner()->save();
+        $node->reload();
+
         return $this->getOwner();
     }
 
@@ -741,7 +747,9 @@ class NestedSet extends ModelBehavior {
             throw new Exception('Cannot move a node as child of one of its subtree nodes.');
         }
 
+        $this->getOwner()->beforeSave();
         $this->_moveSubtreeTo($node->getLeftValue() + 1, $node->getLevelValue() - $this->getLevelValue() + 1, $node->getScopeValue());
+        $this->getOwner()->afterSave();
         $this->getOwner()->reload();
         $node->reload();
 
@@ -756,7 +764,9 @@ class NestedSet extends ModelBehavior {
             throw new Exception('Cannot move a node as child of one of its subtree nodes.');
         }
 
+        $this->getOwner()->beforeSave();
         $this->_moveSubtreeTo($node->getRightValue(), $node->getLevelValue() - $this->getLevelValue() + 1, $node->getScopeValue());
+        $this->getOwner()->afterSave();
         $this->getOwner()->reload();
         $node->reload();
 
@@ -774,7 +784,9 @@ class NestedSet extends ModelBehavior {
             throw new Exception('Cannot move a node as sibling of one of its subtree nodes.');
         }
 
+        $this->beforeSave();
         $this->_moveSubtreeTo($node->getLeftValue(), $node->getLevelValue() - $this->getLevelValue(), $node->getScopeValue());
+        $this->getOwner()->afterSave();
         $this->getOwner()->reload();
         $node->reload();
 
@@ -814,6 +826,7 @@ class NestedSet extends ModelBehavior {
 
         $owner->beginTransaction();
         try {
+            $owner->beforeSave();
             // delete descendant nodes (will empty the instance pool)
             $query = $owner->write()
                 ->delete($owner->getTableName())
@@ -832,6 +845,7 @@ class NestedSet extends ModelBehavior {
             // fix the right value for the current node, which is now a leaf
             $this->setRightValue($left + 1);
 
+            $owner->afterSave();
             $owner->commit();
             $owner->reload();
         } catch (Exception $e) {
