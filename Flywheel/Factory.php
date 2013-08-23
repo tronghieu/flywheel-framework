@@ -41,8 +41,10 @@ class Factory
 
         if (null == $name) {
             if (Base::getApp()) {
-                $name = hash('crc32b', Base::getAppPath());
-            } else {
+                $name = ConfigHandler::get('app_name');
+            }
+
+            if (!$name) {
                 $name = 'FOREVER_AUTUMN';
             }
         }
