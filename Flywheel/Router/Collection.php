@@ -124,7 +124,8 @@ class Collection
                 if($params[$key] == $value) {
                     unset($params[$key]);
                 } else if(preg_match('/\A'.$value.'\z/u', $params[$key])) {
-                    $tr['{' .$key .'}']=urlencode($params[$key]);
+//                    $tr['{' .$key .'}']=urlencode($params[$key]);
+                    $tr['{' .$key .'}'] = $params[$key];
                     unset($params[$key]);
                 } else {
                     return false;
@@ -149,7 +150,8 @@ class Collection
 
 
         foreach($this->params as $key => $value) {
-            $tr['{' .$key .'}']=urlencode($params[$key]);
+//            $tr['{' .$key .'}']=urlencode($params[$key]);
+            $tr['{' .$key .'}'] = $params[$key];
             unset($params[$key]);
         }
 
