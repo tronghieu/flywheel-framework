@@ -18,7 +18,7 @@ class ConfigHandler
 
         if (isset(self::$_loaded[$alias])) {
 
-            return self::get($namespace);
+            return self::$_data[$namespace];
         }
 
         if(($path=Loader::getPathOfAlias($alias))!==false)
