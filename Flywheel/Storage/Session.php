@@ -102,7 +102,7 @@ class Session {
 		
 		$this->_setCounter();
 		$this->_setTimers();
-		$this->_validate();
+//		$this->_validate();
         $this->_afterStart();
 		return $this->_started;
 	}
