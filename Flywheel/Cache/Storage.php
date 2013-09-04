@@ -36,7 +36,7 @@ class Storage {
 
         if (!isset(self::$_instances[$key])) {
             $options = $config[$key];
-            $class = "\\Flywheel\Cache\\" .$options['storage'];
+            $class = "\\Flywheel\Cache\\Storage\\" .$options['storage'];
             self::$_instances[$key] = new $class($key, $options);
         }
 
