@@ -243,7 +243,7 @@ abstract class WebController extends BaseController
      */
     protected function renderPartial($vars = null) {
         $this->_renderMode = 'PARTIAL';
-        $view = Factory::getView();
+        $view = $this->view();
         $viewFile = $this->getTemplatePath() .'/controllers/' .$this->_view;
         if (!$this->_isCustomView && !$view->checkViewFileExist($viewFile)) {
             $this->setView('default');
@@ -251,7 +251,7 @@ abstract class WebController extends BaseController
         }
 
         // assign current controller
-        Factory::getView()->assign('controller', $this);
+        $view->assign('controller', $this);
         return $view->render($viewFile, $vars);
     }
 
@@ -369,7 +369,7 @@ abstract class WebController extends BaseController
         $document = $this->document();
 
         //@TODO same as view
-        $view = Factory::getView();
+        $view = $this->view();
         $view->assign('buffer', $buffer);
 
         if ($this->_layout == null) {
