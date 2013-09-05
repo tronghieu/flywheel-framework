@@ -156,6 +156,8 @@ abstract class WebController extends BaseController
 
         $this->_afterRender();
         $this->afterExecute();
+        // assign current controller
+        $this->view()->assign('controller', $this);
         $this->getEventDispatcher()->dispatch('onAfterControllerExecute', new Event($this));
     }
 
@@ -249,9 +251,6 @@ abstract class WebController extends BaseController
             $this->setView('default');
             $viewFile = $this->getTemplatePath() .'/controllers/' .$this->_view;
         }
-
-        // assign current controller
-        $view->assign('controller', $this);
         return $view->render($viewFile, $vars);
     }
 
