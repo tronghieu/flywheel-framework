@@ -2,8 +2,9 @@
 namespace Flywheel\Cache;
 
 use Flywheel\Config\ConfigHandler;
+use Flywheel\Object;
 
-class Storage {
+class Storage extends Object {
     protected $_lifetime = 900;//
     protected $_hash;
     protected $_group;
@@ -26,7 +27,7 @@ class Storage {
     }
 
     /**
-     * return Storage
+     * return IStorage
      */
     public static function factory($key = null) {
         $config = ConfigHandler::load('global.config.cache', 'cache', true);
