@@ -152,6 +152,7 @@ abstract class WebController extends BaseController
         $this->beforeExecute();
         $this->filter();
         $this->_beforeRender();
+        $this->view()->assign('controller', $this);
         $this->_buffer = $this->$action();
 
         $this->_afterRender();
