@@ -140,7 +140,7 @@ class Profiler extends Object {
 
         $log = "\n\nPROFILE INFO:" .date('Y-M-d H:i');
         $log .= "\nServer Address:{$_SERVER['SERVER_ADDR']}" ;
-		$log .= sprintf("\nTotal Memory Usage: %0.3f", (memory_get_usage(true) / ini_get('memory_limit')) * 100);
+		$log .= sprintf("\nTotal Memory Usage: %0.3f (%.3f%)", (memory_get_usage(true) / 1048576), ((memory_get_usage(true) / (float) ini_get('memory_limit')) * 100));
         $log .= sprintf("\nTotal execute time: %.3f seconds" ,self::getInstance()->_pevTime);
 
         $log .= "\nSERVER ENVIRONMENT:\n";
@@ -184,7 +184,7 @@ class Profiler extends Object {
 
         //file include
         $files = get_included_files();
-        $log .= "\nIncluded files:";
+        $log .= "\nIncluded files:\n";
         $log .= implode("\n", $files);
 
         @file_put_contents($path.'/'.$filename, $log, FILE_APPEND);
