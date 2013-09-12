@@ -1,7 +1,9 @@
 <?php
 namespace Flywheel\Db;
-class Manager
-{
+use Flywheel\Event\Event;
+use Flywheel\Object;
+
+class Manager extends Object{
     const __MASTER__ = 'master',
             __SLAVE__ = 'slave';
 
@@ -59,6 +61,7 @@ class Manager
             self::$connectionMap[$name] = array();
         if (!isset(self::$connectionMap[$name]['master'])) {
             $conn = self::initConnection($name, self::$configuration[$name]);
+            self::getEventDispatcher()->dispatch('afterCreateMasterConnection', new Event($conn, array('connection_name' => $name)));
             self::$connectionMap[$name]['master'] = $conn;
         }
 
@@ -108,6 +111,7 @@ class Manager
     public static function getSlaveConnection($name, $slaveName, $setCurrent = true) {
         if (!isset(self::$connectionMap[$name]['slave'][$slaveName])) {
             $conn = self::initConnection($name, self::$configuration[$name]['slaves'][$slaveName]);
+            self::getEventDispatcher()->dispatch('afterCreateSlaveConnection', new Event($conn, array('connection_name' => $name)));
             if ($setCurrent)
                 self::$connectionMap[$name]['slave']['__current__'] = $conn;
         }
