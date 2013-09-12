@@ -22,6 +22,8 @@ class Profiler extends Object {
     private $_pevTime = 0.0;
 
     private $_pevMem = 0.0;
+
+    private $_sqlLog = array();
 	
 	private function __construct() {
         if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
@@ -113,15 +115,32 @@ class Profiler extends Object {
 		$mem = sprintf('%0.3f', memory_get_usage() / 1048576 );
 		return $mem;
 	}
-	
-	/**
-	 * Get Buffer
-	 *
-	 * @return array
-	 */
-	public function getBuffer() {
-		return $this->_buffer;
-	}
+
+    /**
+     * Get Buffer
+     *
+     * @return array
+     */
+    public function getBuffer() {
+        return $this->_buffer;
+    }
+
+    public static function logSqlQueries($query, $begin, $end, $params = array()) {
+        if (!ConfigHandler::get('debug')) {
+            return ;
+        }
+
+        self::getInstance()->logQueries($query, $begin, $end, $params);
+    }
+
+    public function logQueries($query, $begin, $end, $params = array()) {
+        $this->_sqlLog[] = array(
+            'query' => $query,
+            'begin' => $begin,
+            'end' => $end,
+            'params' => $params
+        );
+    }
 
     public function writePlainText($path = null) {
         if (!ConfigHandler::get('debug')) {
@@ -140,7 +159,10 @@ class Profiler extends Object {
 
         $log = "\n\nPROFILE INFO:" .date('Y-m-d H:i');
         $log .= "\nServer Address: {$_SERVER['SERVER_ADDR']}" ;
-		$log .= sprintf("\nTotal Memory Usage: %0.3f (%.3f%)", (memory_get_usage(true) / 1048576), ((memory_get_usage(true) / (float) ini_get('memory_limit')) * 100));
+        $maxMemAllow = (float) ini_get('memory_limit');
+
+        $log .= "Max memory allow: " . (float) ini_get('memory_limit') ." MB";
+		$log .= "\nTotal Memory Usage: " .(memory_get_usage(true) / 1048576) ."MB (" . (memory_get_usage(true) / ($maxMemAllow*1048576) * 100) ."%)";
         $log .= sprintf("\nTotal execute time: %.3f seconds" ,self::getInstance()->_pevTime);
 
         $log .= "\nSERVER ENVIRONMENT:\n";
@@ -174,7 +196,7 @@ class Profiler extends Object {
         //serialize to string
         foreach ($buffers as $buffer) {
             $mark = sprintf(
-                "%s\n%s %.3f seconds (+%.3f); %0.2f MB (%s%0.3f). Peak:%.3f MB\n",
+                "%s\n%.3f seconds (+%.3f); %0.2f MB (%s%0.3f). Peak:%.3f MB\n",
                 $buffer['label'],
                 $buffer['time'],
                 $buffer['next_time'],
@@ -185,6 +207,31 @@ class Profiler extends Object {
             );
             $log .= $mark;
         }
+
+        $log .= "\nSQL QUERIES:\n";
+        $totalQueries = 0;
+        $totalExecuteTime = 0;
+        $totalMemories = 0;
+        foreach($this->_sqlLog as $sql) {
+            if ($sql['begin'] && $sql['end']) {
+                $time = $sql['end']['microtime'] - $sql['begin']['microtime'];
+                $memory = ($sql['end']['memory_get_usage'] - $sql['begin']['memory_get_usage'] / 1048576);
+                $totalExecuteTime+= $time;
+                $totalMemories +=  $memory;
+            } else {
+                $time = 0;
+                $memory = 0;
+            }
+
+            if (isset($sql['query'])) {
+                $totalQueries++;
+            }
+            $log .= $totalQueries .'. ' .$sql['query']
+                . "\nExec time: " .(($time < 0.001)? '~0.001' : round($time, 3)) .' seconds.'
+                . " Memory: " .(($memory < 0)? '-' : '+') .$memory ."MB.\n";
+        }
+
+        $log .= $totalQueries .' queries, take ' .round($totalExecuteTime, 3) .' seconds and ' .$totalMemories ."MB.\n";
 
         //file include
         $files = get_included_files();
