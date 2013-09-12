@@ -1,5 +1,8 @@
 <?php
 namespace Flywheel\Db;
+use Flywheel\Config\ConfigHandler;
+use Flywheel\Debug\Profiler;
+
 class Connection extends \PDO {
     /**
      * attr to be use to set whether to cache prepare statements.
@@ -86,6 +89,7 @@ class Connection extends \PDO {
         $return = true;
         if (!$this->nestedTransactionCount) {
             $return = parent::beginTransaction();
+            $this->log('Begin transaction', null, __METHOD__);
             $this->isUncommitable = false;
         }
 
@@ -103,6 +107,7 @@ class Connection extends \PDO {
                     throw new Exception('Cannot commit because a nested transaction was rolled back');
                 } else {
                     $return = parent::commit();
+                    $this->log('Commit transaction', null, __METHOD__);
                 }
             }
 
@@ -118,6 +123,7 @@ class Connection extends \PDO {
         if (0 < $opCount) {
             if (1 === $opCount) {
                 $return = parent::rollBack();
+                $this->log('Rollback transaction', null, __METHOD__);
             } else {
                 $this->isUncommitable = true;
             }
@@ -141,6 +147,7 @@ class Connection extends \PDO {
             // If we're in a transaction, always roll it back
             // regardless of nesting level.
             $return = parent::rollBack();
+            $this->log('Rollback transaction', null, __METHOD__);
 
             // reset nested transaction count to 0 so that we don't
             // try to commit (or rollback) the transaction outside this scope.
@@ -208,6 +215,8 @@ class Connection extends \PDO {
      * @return \PDOStatement
      */
     public function prepare($sql, $driver_options = array()) {
+        $debug = $this->getDebugSnapshot();
+
         if ($this->cachePreparedStatements) {
             $k = md5($sql);
             if (!isset($this->preparedStatements[$k])) {
@@ -219,6 +228,8 @@ class Connection extends \PDO {
         } else {
             $return = parent::prepare($sql, $driver_options);
         }
+
+        $this->log('Prepare: ' .$sql, null, __METHOD__, $debug);
 
         return $return;
     }
@@ -259,6 +270,7 @@ class Connection extends \PDO {
     public function executeQuery($query, array $params = array(), $types = array())
     {
         try {
+            $begin = $this->getDebugSnapshot();
             if ($params) {
                 $stmt = $this->prepare($query);
                 if ($types) {
@@ -267,9 +279,13 @@ class Connection extends \PDO {
                 } else {
                     $stmt->execute($params);
                 }
+
             } else {
                 $stmt = $this->query($query);
+
             }
+            $end = $this->getDebugSnapshot();
+            Profiler::logSqlQueries($query, $begin, $end, $params);
         } catch (\Exception $ex) {
             throw new Exception("An exception occurred while executing '{$query}'"
                 .(($params)? ' with params ' .json_encode($params): ''), 500, $ex);
@@ -280,6 +296,7 @@ class Connection extends \PDO {
 
     public function executeUpdate($query, array $params = array(), array $types = array()) {
         try {
+            $begin = $this->getDebugSnapshot();
             if ($params) {
                 $stmt = $this->prepare($query);
                 if ($types) {
@@ -292,6 +309,8 @@ class Connection extends \PDO {
             } else {
                 $result = $this->exec($query);
             }
+            $end = $this->getDebugSnapshot();
+            Profiler::logSqlQueries($query, $begin, $end, $params);
         } catch (\Exception $ex) {
             throw new Exception("An exception occurred while executing '{$query}'"
                 .(($params)? ' with params ' .json_encode($params): ''), 500,  $ex);
@@ -305,6 +324,7 @@ class Connection extends \PDO {
      *
      * @param $table
      * @param array $data An associative array containing column-value pairs.
+     * @param array $types
      * @param array $types Types of the inserted data.
      * @internal param string $tableName The name of the table to insert data into.
      * @return integer The number of affected rows.
@@ -464,6 +484,45 @@ class Connection extends \PDO {
                     $stmt->bindValue($name, $value);
                 }
             }
+        }
+    }
+
+    /**
+     * Returns a snapshot of the current values of some functions useful in debugging.
+     *
+     * @return array
+     *
+     * @throws Exception
+     */
+    public function getDebugSnapshot() {
+        if (!ConfigHandler::get('debug')) {
+            return null;
+        }
+
+        return array(
+            'microtime'             => microtime(true),
+            'memory_get_usage'      => memory_get_usage(),
+            'memory_get_peak_usage' => memory_get_peak_usage(),
+        );
+    }
+
+    /**
+     * Logs the method call or SQL using the Propel::log() method or a registered logger class.
+     *
+     * @param string  $msg           Message to log.
+     * @param integer $level         Log level to use; will use self::setLogLevel() specified level by default.
+     * @param string  $methodName    Name of the method whose execution is being logged.
+     * @param array   $debugSnapshot Previous return value from self::getDebugSnapshot().
+     */
+    public function log($msg, $level = null, $methodName = null, array $debugSnapshot = null) {
+        // If logging has been specifically disabled, this method won't do anything
+        if (!ConfigHandler::get('debug')) {
+            return;
+        }
+
+        // We won't log empty messages
+        if (!$msg) {
+            return;
         }
     }
 }
