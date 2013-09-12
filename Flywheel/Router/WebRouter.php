@@ -2,6 +2,7 @@
 namespace Flywheel\Router;
 use Flywheel\Config\ConfigHandler as ConfigHandler;
 use Flywheel\Base;
+use Flywheel\Event\Event;
 use Flywheel\Exception\Routing;
 use Flywheel\Util\Inflection;
 
@@ -206,7 +207,7 @@ class WebRouter extends BaseRouter {
      * @throws Routing
      */
     public function parseUrl($url) {
-
+        $this->dispatch('onBeginWebRouterParsingUrl', new Event($this));
         $config = ConfigHandler::get('routing', false);
         $rawUrl = $url;
 
@@ -244,5 +245,7 @@ class WebRouter extends BaseRouter {
         if (null == $this->_action) {
             $this->_action = 'default';
         }
+
+        $this->dispatch('onAfterWebRouterParsingUrl', new Event($this));
     }
 }
