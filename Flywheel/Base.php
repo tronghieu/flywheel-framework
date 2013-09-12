@@ -2,6 +2,8 @@
 
 namespace Flywheel;
 use Flywheel\Application\BaseApp;
+use Flywheel\Config\ConfigHandler;
+use Flywheel\Event\Event;
 
 class Base
 {
@@ -54,7 +56,7 @@ class Base
     private static function _createApplication($class, $config, $env, $debug, $type) {
 
         self::$_env = $env;
-        \Flywheel\Config\ConfigHandler::set('debug', $debug);
+        ConfigHandler::set('debug', $debug);
         self::$_app = new $class($config, $type);
         return self::$_app;
     }
@@ -69,7 +71,7 @@ class Base
     }
 
     public static function end($mess = null) {
-        self::getApp()->getEventDispatcher()->dispatch('onEndRequest', new \Flywheel\Event\Event(self::getApp()));
+        self::getApp()->getEventDispatcher()->dispatch('onEndRequest', new Event(self::getApp()));
         exit($mess);
     }
 
