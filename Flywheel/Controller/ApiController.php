@@ -12,8 +12,8 @@ class ApiController extends BaseController
     public function beforeExecute() {}
 
     final public function execute($regMethod, $method = null) {
-        $this->getEventDispatcher()->dispatch('onBeginControllerExecute', new Event($this));
         $apiMethod = strtolower($regMethod) .$method;
+        $this->getEventDispatcher()->dispatch('onBeginControllerExecute', new Event($this, array('action' => $apiMethod)));
         if (!method_exists($this, $apiMethod))
             throw new \Flywheel\Exception\Api('Api '.Factory::getRouter()->getApi() ."/{$method} not found", 404);
 
@@ -21,7 +21,7 @@ class ApiController extends BaseController
         $buffer = $this->$apiMethod();
         $this->afterExecute();
 
-        $this->getEventDispatcher()->dispatch('onAfterControllerExecute', new Event($this));
+        $this->getEventDispatcher()->dispatch('onAfterControllerExecute', new Event($this, array('action' => $apiMethod)));
         return $buffer;
     }
 
