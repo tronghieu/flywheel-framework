@@ -9,9 +9,11 @@
  *
  */
 namespace Flywheel\Storage;
+use Flywheel\Event\Event;
 use Flywheel\Factory;
+use Flywheel\Object;
 
-class Session {
+class Session extends Object {
 
     protected $_state;
     /**
@@ -77,6 +79,12 @@ class Session {
 			ini_set('session.cookie_secure', true);        		
         }
 		ini_set('session.use_only_cookies',	1);
+
+        if (isset($handlerClass)) {
+            $this->dispatch('onAfterInitSessionConfig', new Event($this, array('handler' => $handlerClass)));
+        } else {
+            $this->dispatch('onAfterInitSessionConfig', new Event($this, array('handler' => 'default')));
+        }
 	}
 	
 	/**
@@ -120,6 +128,8 @@ class Session {
 
         //mark all new flash data as old (data)
         $this->_flashDataMark();
+
+        $this->dispatch('afterStartSession', new Event($this));
     }
 	
 	/**
@@ -405,7 +415,8 @@ class Session {
 				unset($_SESSION['__flash/new__'][$_SESSION['__flash/old__'][$i]]);
 			}
 		}
-		session_write_close();		
+		session_write_close();
+        $this->dispatch('onSessionWriteAndClose', new Event($this));
 	}
 	
 	public function __destruct() {
