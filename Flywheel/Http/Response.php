@@ -1,8 +1,10 @@
 <?php
 namespace Flywheel\Http;
 use Flywheel\Config\ConfigHandler;
+use Flywheel\Event\Event;
+use Flywheel\Object;
 
-abstract class Response {
+abstract class Response extends Object {
     protected $_body = '';
     protected $_options = array();
 
@@ -222,7 +224,9 @@ abstract class Response {
         }
 
         $this->sendHttpHeaders();
+        $this->dispatch('onAfterSendHttpHeader', new Event($this));
         $this->sendContent();
+        $this->dispatch('onAfterSendContent', new Event($this));
     }
 
     /**
