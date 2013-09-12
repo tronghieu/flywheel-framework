@@ -10,39 +10,72 @@
  *
  */
 namespace Flywheel\Debug;
-class Debug_Profiler {
+use Flywheel\Config\ConfigHandler;
+use Flywheel\Object;
+
+class Profiler extends Object {
 	private $_start;
 	
 	private $_buffer = array();
+
+    private $_pevTime = 0.0;
+
+    private $_pevMem = 0.0;
 	
 	private function __construct() {
-		$this->_start = $_SERVER['REQUEST_TIME'];
+        if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
+            $this->_start = $_SERVER['REQUEST_TIME_FLOAT'];
+        } else {
+            $this->_start = $_SERVER['REQUEST_TIME'];
+        }
 	}
+
+    public static function init() {
+        self::getInstance();
+    }
 	
 	/**
 	 * Get Instance
 	 * 
 	 * @static 
-	 * @return Ming_Debug_Profiler
+	 * @return Profiler
 	 */
 	public static function getInstance() {
 		static $instance;
 		if ($instance == null) {
-			$instance = new Ming_Debug_Profiler();
+			$instance = new self();
 		}
 		
 		return $instance;
 	}
 	
 	public static function mark($label, $package) {
-		$profiler = self::getInstance();
-		$mark = 'Package: <strong>' . $package . '</strong>. ';
-		$mark .= $label .'. <strong>&raquo;</strong> ';
-		$mark .= sprintf('Time %.5f', $profiler->_getMicrotime() - $profiler->_start) . ' seconds';
-		$mark .= ', '.sprintf('%0.3f', memory_get_usage() / 1048576 ).' MB.';           
-		$profiler->_buffer[] = $mark;
-		return $mark;		
+        if (ConfigHandler::get('debug')) {
+            return self::getInstance()->_mark($label, $package);
+        }
+        return null;
 	}
+
+    private function _mark($label, $package) {
+        $current = microtime(true) - $this->_start;
+        $currentMem = memory_get_usage() / 1048576;
+        $mark = array(
+            'label' => "{$label}:{$package}",
+            'microtime' => microtime(true),
+            'time' => microtime(true) - $this->_start,
+            'next_time' => $current- $this->_pevTime,
+            'memory' => $currentMem,
+            'next_memory' => $currentMem - $this->_pevMem,
+            'memory_get_usage'      => memory_get_usage(),
+            'memory_get_peak_usage' => memory_get_peak_usage(),
+        );
+        $this->_pevTime = $current;
+        $this->_pevMem = $currentMem;
+
+        $this->_buffer[] = $mark;
+
+        return $mark;
+    }
 	
 	/**
 	 * Get Memory Usage
@@ -62,47 +95,69 @@ class Debug_Profiler {
 	public function getBuffer() {
 		return $this->_buffer;
 	}
-	
-	public static function pageSpeedTracking() {		
-		try {
-			$profiler = self::getInstance();
-			$time = $profiler->_getMicrotime() - $profiler->_start;
-			$request = $_SERVER['REQUEST_URI'];
-			$tracker = Ming_Redis_Client::getInstance('system');			
-			$key = 'pst_' .md5($request);
-			$trackItem = $tracker->get($key);
-			
-			#track total time process
-			if (null == $trackItem) {
-				$trackItem = array(
-					'request' => $request,
-					'from_time' => date('d/m/Y H:i:s', time()),
-					'count'	=> 0,
-					'total_time' => 0
-				);
-			}
-			++$trackItem['count'];
-			$trackItem['total_time'] += $time;
-			$trackItem['avg'] = $trackItem['total_time']/$trackItem['count'];
-			$trackItem['last_time'] = date('d/m/Y H:i:s', time());
-			
-			#track each server
-			if (!isset($trackItem[$_SERVER['SERVER_ADDR']])) {
-				$trackItem[$_SERVER['SERVER_ADDR']] = array(
-					'count'	=> 0,
-					'total_time' => 0
-				);
-			}
-			
-			++$trackItem[$_SERVER['SERVER_ADDR']]['count'];
-			$trackItem[$_SERVER['SERVER_ADDR']]['total_time'] += $time;
-			$trackItem[$_SERVER['SERVER_ADDR']]['avg'] = $trackItem[$_SERVER['SERVER_ADDR']]['total_time']/$trackItem[$_SERVER['SERVER_ADDR']]['count'];
-			
-			//store tracking result
-			$tracker->set($key, $trackItem);
-			$tracker->expire($key, 2592000); //30 days
-		} catch (Exception $e) {}
-	}
+
+    public function writePlainText($path = null) {
+        if (null == $path) {
+            $path = RUNTIME_PATH .'/log';
+        }
+        @mkdir($path, 777);
+        if(!($id = session_id())) {
+            session_start();
+            $id = session_id();
+        }
+        $filename = date('Y-M-d').'.' .$id .'.profile';
+
+        $log = "\n\nPROFILE INFO:" .date('Y-M-d H:i');
+        $log .= "\nServer Address:{$_SERVER['SERVER_ADDR']}" ;
+		$log .= sprintf("\nTotal Memory Usage: %0.3f", (memory_get_usage(true) / ini_get('memory_limit')) * 100);
+        $log .= sprintf("\nTotal execute time: %.3f seconds" ,self::getInstance()->_pevTime);
+
+        $log .= "\nSERVER ENVIRONMENT:\n";
+        foreach($_SERVER as $server => $value) {
+            $log .= sprintf("%s: %s\n", $server, $value);
+        }
+
+        if (isset($argv)) {
+            $log .= "argv:" .var_export($argv, true);
+        }
+
+        if (isset($argc)) {
+            $log .= "argc:" .var_export($argc, true);
+        }
+
+        if (isset($_COOKIE)) {
+            $log .= "\nCOOKIES:" .var_export($_COOKIE);
+        }
+
+        if (isset($_SESSION)) {
+            $log .= "\nSESSION:" .var_export($_SESSION);
+        }
+
+        //Activities
+        $log .= "\nACTIVITIES:\n";
+        $buffers = $this->getBuffer();
+        //serialize to string
+        foreach ($buffers as $buffer) {
+            $mark = sprintf(
+                "%s\n%s %.3f seconds (+%.3f); %0.2f MB (%s%0.3f). Peak:%0.2f MB\n",
+                $buffer['label'],
+                $buffer['time'],
+                $buffer['next_time'],
+                $buffer['memory'],
+                ($buffer['next_memory'] > 0) ? '+' : '-',
+                $buffer['next_memory'],
+                $buffer['memory_get_peak_usage'] / 1048576
+            );
+            $log .= $mark;
+        }
+
+        //file include
+        $files = get_included_files();
+        $log .= "\nIncluded files:";
+        $log .= implode("\n", $files);
+
+        @file_put_contents($path.'/'.$filename, $log, FILE_APPEND);
+    }
 	
 	/**
 	 * Debug
@@ -235,15 +290,4 @@ class Debug_Profiler {
 //		file_put_contents(_LOG_PATH_.'log'. time().'.txt', $debug);		
 		return $debug;
 	}
-	
-	/**
-	 * Get the current time.
-         *
-         * @access public
-         * @return float The current time
-         */
-	private function _getMicrotime() {
-		list( $usec, $sec ) = explode( ' ', microtime() );
-		return ((float)$usec + (float)$sec);
-	}	
 }
