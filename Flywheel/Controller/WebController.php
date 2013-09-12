@@ -136,7 +136,7 @@ abstract class WebController extends BaseController
      * @return string component process result
      */
     final public function execute($action) {
-        $this->getEventDispatcher()->dispatch('onBeginControllerExecute', new Event($this));
+        $this->getEventDispatcher()->dispatch('onBeginControllerExecute', new Event($this, array('action' => $action)));
         /* @var \Flywheel\Router\WebRouter $router */
         $router = Factory::getRouter();
         $this->_action = $action;
@@ -159,7 +159,7 @@ abstract class WebController extends BaseController
         $this->afterExecute();
         // assign current controller
         $this->view()->assign('controller', $this);
-        $this->getEventDispatcher()->dispatch('onAfterControllerExecute', new Event($this));
+        $this->getEventDispatcher()->dispatch('onAfterControllerExecute', new Event($this, array('action' => $action)));
     }
 
     public function afterExecute() {}
