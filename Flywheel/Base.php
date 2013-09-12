@@ -3,10 +3,10 @@
 namespace Flywheel;
 use Flywheel\Application\BaseApp;
 use Flywheel\Config\ConfigHandler;
+use Flywheel\Debug\Debugger;
 use Flywheel\Event\Event;
 
-class Base
-{
+class Base {
     const ENV_DEV = 1, ENV_TEST = 2, ENV_PRO = 3;
     private static $_app;
     private static $_env;
@@ -54,9 +54,11 @@ class Base
     }
 
     private static function _createApplication($class, $config, $env, $debug, $type) {
-
         self::$_env = $env;
         ConfigHandler::set('debug', $debug);
+        if ($debug) {
+            Debugger::enable();
+        }
         self::$_app = new $class($config, $type);
         return self::$_app;
     }

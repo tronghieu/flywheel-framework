@@ -124,6 +124,10 @@ class Profiler extends Object {
 	}
 
     public function writePlainText($path = null) {
+        if (!ConfigHandler::get('debug')) {
+            return ;
+        }
+
         if (null == $path) {
             $path = RUNTIME_PATH .'/log';
         }
