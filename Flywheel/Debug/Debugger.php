@@ -2,6 +2,10 @@
 namespace Flywheel\Debug;
 
 
-class Debugger {
-    public static function enable() {}
+use Flywheel\Object;
+
+class Debugger extends Object {
+    public static function enable() {
+        Profiler::init();
+    }
 }
