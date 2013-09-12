@@ -136,10 +136,10 @@ class Profiler extends Object {
             session_start();
             $id = session_id();
         }
-        $filename = date('Y-M-d').'.' .$id .'.profile';
+        $filename = date('Y-m-d').'.' .$id .'.profile';
 
-        $log = "\n\nPROFILE INFO:" .date('Y-M-d H:i');
-        $log .= "\nServer Address:{$_SERVER['SERVER_ADDR']}" ;
+        $log = "\n\nPROFILE INFO:" .date('Y-m-d H:i');
+        $log .= "\nServer Address: {$_SERVER['SERVER_ADDR']}" ;
 		$log .= sprintf("\nTotal Memory Usage: %0.3f (%.3f%)", (memory_get_usage(true) / 1048576), ((memory_get_usage(true) / (float) ini_get('memory_limit')) * 100));
         $log .= sprintf("\nTotal execute time: %.3f seconds" ,self::getInstance()->_pevTime);
 
@@ -157,11 +157,15 @@ class Profiler extends Object {
         }
 
         if (isset($_COOKIE)) {
-            $log .= "\nCOOKIES:" .var_export($_COOKIE);
+            $log .= "\nCOOKIES: " .var_export($_COOKIE);
         }
 
         if (isset($_SESSION)) {
-            $log .= "\nSESSION:" .var_export($_SESSION);
+            $log .= "\nSESSION: " .var_export($_SESSION);
+        }
+
+        if (isset($_REQUEST)) {
+            $log .= "\nREQUEST: " .var_export($_REQUEST);
         }
 
         //Activities
