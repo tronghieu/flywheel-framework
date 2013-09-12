@@ -87,7 +87,7 @@ class Profiler extends Object {
         $current = microtime(true) - $this->_start;
         $currentMem = memory_get_usage() / 1048576;
         $mark = array(
-            'label' => "{$label}:{$package}",
+            'label' => "{$label}: {$package}",
             'microtime' => microtime(true),
             'time' => microtime(true) - $this->_start,
             'next_time' => $current- $this->_pevTime,
@@ -170,12 +170,12 @@ class Profiler extends Object {
         //serialize to string
         foreach ($buffers as $buffer) {
             $mark = sprintf(
-                "%s\n%s %.3f seconds (+%.3f); %0.2f MB (%s%0.3f). Peak:%0.2f MB\n",
+                "%s\n%s %.3f seconds (+%.3f); %0.2f MB (%s%0.3f). Peak:%.3f MB\n",
                 $buffer['label'],
                 $buffer['time'],
                 $buffer['next_time'],
                 $buffer['memory'],
-                ($buffer['next_memory'] > 0) ? '+' : '-',
+                (($buffer['next_memory'] > 0) ? '+' : '-' . $buffer['next_memory']),
                 $buffer['next_memory'],
                 $buffer['memory_get_peak_usage'] / 1048576
             );
