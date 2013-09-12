@@ -1,6 +1,7 @@
 <?php
 namespace Flywheel\Application;
 use Flywheel\Base;
+use Flywheel\Debug\Profiler;
 use Flywheel\Event\Event;
 use Flywheel\Exception;
 use Flywheel\Factory;
@@ -141,5 +142,7 @@ class ConsoleApp extends BaseApp
 
         $this->getEventDispatcher()->dispatch('onEndRequest', new Event($this));
         $this->afterRun();
+
+        Profiler::getInstance()->writePlainText();
     }
 }

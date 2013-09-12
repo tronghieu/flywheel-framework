@@ -1,6 +1,7 @@
 <?php
 namespace Flywheel\Application;
 use Flywheel\Base;
+use Flywheel\Debug\Profiler;
 use Flywheel\Event\Event;
 use Flywheel\Factory;
 use Flywheel\Config\ConfigHandler as ConfigHandler;
@@ -89,5 +90,7 @@ class ApiApp extends BaseApp
         $response->send();
         $this->getEventDispatcher()->dispatch('onEndRequest', new Event($this));
         $this->afterRun();
+
+        Profiler::getInstance()->writePlainText();
     }
 }

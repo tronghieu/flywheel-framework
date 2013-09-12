@@ -1,5 +1,6 @@
 <?php
 namespace Flywheel\Application;
+use Flywheel\Debug\Profiler;
 use Flywheel\Exception;
 use Flywheel\Factory;
 use Flywheel\Base;
@@ -50,6 +51,8 @@ class WebApp extends BaseApp
 
         $this->getEventDispatcher()->dispatch('onEndRequest', new Event($this));
         $this->afterRun();
+
+        Profiler::getInstance()->writePlainText();
     }
 
     /**
