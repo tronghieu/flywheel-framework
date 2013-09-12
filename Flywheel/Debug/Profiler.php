@@ -11,6 +11,7 @@
  */
 namespace Flywheel\Debug;
 use Flywheel\Config\ConfigHandler;
+use Flywheel\Event\Event;
 use Flywheel\Object;
 
 class Profiler extends Object {
@@ -32,6 +33,32 @@ class Profiler extends Object {
 
     public static function init() {
         self::getInstance();
+        self::getEventDispatcher()->addListener('onBeginRequest', array('\Flywheel\Debug\Profiler', 'handleSystemEvent'));
+        self::getEventDispatcher()->addListener('onBeginWebRouterParsingUrl', array('\Flywheel\Debug\Profiler', 'handleSystemEvent'));
+        self::getEventDispatcher()->addListener('onAfterWebRouterParsingUrl', array('\Flywheel\Debug\Profiler', 'handleSystemEvent'));
+        self::getEventDispatcher()->addListener('onAfterInitSessionConfig', array('\Flywheel\Debug\Profiler', 'handleSystemEvent'));
+        self::getEventDispatcher()->addListener('onBeginControllerExecute', array('\Flywheel\Debug\Profiler', 'handleSystemEvent'));
+        self::getEventDispatcher()->addListener('onBeforeControllerRender', array('\Flywheel\Debug\Profiler', 'handleSystemEvent'));
+        self::getEventDispatcher()->addListener('onAfterControllerRender', array('\Flywheel\Debug\Profiler', 'handleSystemEvent'));
+        self::getEventDispatcher()->addListener('onAfterControllerExecute', array('\Flywheel\Debug\Profiler', 'handleSystemEvent'));
+        self::getEventDispatcher()->addListener('afterCreateMasterConnection', array('\Flywheel\Debug\Profiler', 'handleSystemEvent'));
+        self::getEventDispatcher()->addListener('afterCreateSlaveConnection', array('\Flywheel\Debug\Profiler', 'handleSystemEvent'));
+        self::getEventDispatcher()->addListener('onAfterSendHttpHeader', array('\Flywheel\Debug\Profiler', 'handleSystemEvent'));
+        self::getEventDispatcher()->addListener('onAfterSendContent', array('\Flywheel\Debug\Profiler', 'handleSystemEvent'));
+        self::getEventDispatcher()->addListener('onEndRequest', array('\Flywheel\Debug\Profiler', 'handleSystemEvent'));
+    }
+
+    public static function handleSystemEvent(Event $event) {
+        $package = (isset($event->sender) && is_object($event->sender))?  get_class($event->sender): null;
+        $label = $event->getName();
+        if ($event->getName() == 'onBeginControllerExecute' || $event->getName() == 'onAfterControllerExecute') {
+            $package .= '.' .$event->params['action'];
+        } else if ($event->getName() == 'onAfterInitSessionConfig') {
+            $label .= '. Handler:' .$event->params['handler'];
+        } else if ($event->getName() == 'afterCreateSlaveConnection' || $event->getName() == 'afterCreateMasterConnection') {
+            $label .= '. Connection name: ' .$event->params['connection_name'];
+        }
+        return self::mark($label, $package);
     }
 	
 	/**
@@ -49,7 +76,7 @@ class Profiler extends Object {
 		return $instance;
 	}
 	
-	public static function mark($label, $package) {
+	public static function mark($label, $package = null) {
         if (ConfigHandler::get('debug')) {
             return self::getInstance()->_mark($label, $package);
         }
