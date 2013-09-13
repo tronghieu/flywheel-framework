@@ -227,7 +227,7 @@ class Profiler extends Object {
             }
             $log .= $totalQueries .'. ' .$sql['query'];
             if (!empty($sql['params'])) {
-                $log .= "\n\t" .json_encode($sql['params']);
+                $log .= "\n\tParameters:" .json_encode($sql['params']);
             }
 
             $log .= "\n\tExec time: " .(($time < 0.001)? '~0.001' : round($time, 3)) .' seconds.'
