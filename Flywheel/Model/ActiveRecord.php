@@ -885,7 +885,7 @@ abstract class ActiveRecord extends Object {
 
         $obj = self::findBy($by, $param, true);
         if ($obj) {
-            self::addInstanceToPool($obj, static::getPrimaryKeyField());
+            static::addInstanceToPool($obj, static::getPrimaryKeyField());
             return $obj;
         }
 
