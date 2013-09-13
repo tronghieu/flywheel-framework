@@ -225,8 +225,12 @@ class Profiler extends Object {
             if (isset($sql['query'])) {
                 $totalQueries++;
             }
-            $log .= $totalQueries .'. ' .$sql['query']
-                . "\nExec time: " .(($time < 0.001)? '~0.001' : round($time, 3)) .' seconds.'
+            $log .= $totalQueries .'. ' .$sql['query'];
+            if (!empty($sql['params'])) {
+                $log .= "\n\t" .json_encode($sql['params']);
+            }
+
+            $log .= "\n\tExec time: " .(($time < 0.001)? '~0.001' : round($time, 3)) .' seconds.'
                 . " Memory: " .(($memory < 0)? '-' : '+') .$memory ."MB.\n";
         }
 
