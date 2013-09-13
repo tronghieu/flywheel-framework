@@ -178,15 +178,15 @@ class Profiler extends Object {
         }
 
         if (isset($_COOKIE)) {
-            $log .= "\nCOOKIES: " .var_export($_COOKIE);
+            $log .= "\nCOOKIES: " .var_export($_COOKIE, true);
         }
 
         if (isset($_SESSION)) {
-            $log .= "\nSESSION: " .var_export($_SESSION);
+            $log .= "\nSESSION: " .var_export($_SESSION, true);
         }
 
         if (isset($_REQUEST)) {
-            $log .= "\nREQUEST: " .var_export($_REQUEST);
+            $log .= "\nREQUEST: " .var_export($_REQUEST, true);
         }
 
         //Activities
