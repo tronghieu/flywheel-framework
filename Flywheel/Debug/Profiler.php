@@ -142,6 +142,91 @@ class Profiler extends Object {
         );
     }
 
+    public function getProfileData() {
+        if (!ConfigHandler::get('debug')) {
+            return ;
+        }
+        $data = array();
+
+        $data[] = "TIME: " .date('Y-m-d H:i:s');
+        $data[] = "SERVER ADDRESS: " .$_SERVER['SERVER_ADDR'];
+
+        $maxMemAllow = (float) ini_get('memory_limit');
+        $data[] = "Max memory allow: " .$maxMemAllow ." MB";
+        $data[] = "Memory Usage: " .(memory_get_usage(true) / 1048576) ."MB (" . (memory_get_usage(true) / ($maxMemAllow*1048576) * 100) ."%)";
+        $data[] = sprintf("\nTotal execute time: %.3f seconds" ,self::getInstance()->_pevTime);
+
+        if (isset($argv)) {
+            $data[] = "argv:" .var_export($argv, true);
+        }
+
+        if (isset($argc)) {
+            $data[] = "argc:" .var_export($argc, true);
+        }
+
+        if (isset($_COOKIE)) {
+            $data[] = "\nCOOKIES: " .var_export($_COOKIE, true);
+        }
+
+        if (isset($_SESSION)) {
+            $data[] = "\nSESSION: " .var_export($_SESSION, true);
+        }
+
+        if (isset($_REQUEST)) {
+            $data[] = "\nREQUEST: " .var_export($_REQUEST, true);
+        }
+
+        $data[] = "ACTIVITIES";
+
+        $buffers = $this->getBuffer();
+        //serialize to string
+        foreach ($buffers as $buffer) {
+            $mark = sprintf(
+                "%s\n%.3f seconds (+%.3f); %0.2f MB (%s%0.3f). Peak:%.3f MB\n",
+                $buffer['label'],
+                $buffer['time'],
+                $buffer['next_time'],
+                $buffer['memory'],
+                (($buffer['next_memory'] > 0) ? '+' : '-' . $buffer['next_memory']),
+                $buffer['next_memory'],
+                $buffer['memory_get_peak_usage'] / 1048576
+            );
+            $data[] = $mark;
+        }
+
+        $data[] = "SQL QUERIES";
+
+        $totalQueries = 0;
+        $totalExecuteTime = 0;
+        $totalMemories = 0;
+        foreach($this->_sqlLog as $sql) {
+            if ($sql['begin'] && $sql['end']) {
+                $time = $sql['end']['microtime'] - $sql['begin']['microtime'];
+                $memory = ($sql['end']['memory_get_usage'] - $sql['begin']['memory_get_usage']) / 1048576;
+                $totalExecuteTime += $time;
+                $totalMemories +=  $memory;
+            } else {
+                $time = 0;
+                $memory = 0;
+            }
+
+            if (isset($sql['query'])) {
+                $totalQueries++;
+            }
+            $data[] = $totalQueries .'. ' .$sql['query'];
+            if (!empty($sql['params'])) {
+                $data[] = "\n\tParameters:" .json_encode($sql['params']);
+            }
+
+            $data[] = "\n\tExec time: " .(($time < 0.001)? '~0.001' : round($time, 3)) .' seconds.'
+                . " Memory: " .(($memory < 0)? '-' : '+') .$memory ."MB.\n";
+        }
+
+        $data[] = $totalQueries .' queries, take ' .round($totalExecuteTime, 3) .' seconds and ' .$totalMemories ."MB.\n";
+        $data[] = sizeof(get_included_files()) ." files included";
+        return $data;
+    }
+
     public function writePlainText($path = null) {
         if (!ConfigHandler::get('debug')) {
             return ;
@@ -156,90 +241,8 @@ class Profiler extends Object {
         }
         $filename = date('Y-m-d').'.' .$id .'.profile';
 
-        $log = "\n\nPROFILE INFO:" .date('Y-m-d H:i');
-        $log .= "\nServer Address: {$_SERVER['SERVER_ADDR']}" ;
-        $maxMemAllow = (float) ini_get('memory_limit');
-
-        $log .= "Max memory allow: " . (float) ini_get('memory_limit') ." MB";
-		$log .= "\nTotal Memory Usage: " .(memory_get_usage(true) / 1048576) ."MB (" . (memory_get_usage(true) / ($maxMemAllow*1048576) * 100) ."%)";
-        $log .= sprintf("\nTotal execute time: %.3f seconds" ,self::getInstance()->_pevTime);
-
-        $log .= "\nSERVER ENVIRONMENT:\n";
-        foreach($_SERVER as $server => $value) {
-            $log .= sprintf("%s: %s\n", $server, $value);
-        }
-
-        if (isset($argv)) {
-            $log .= "argv:" .var_export($argv, true);
-        }
-
-        if (isset($argc)) {
-            $log .= "argc:" .var_export($argc, true);
-        }
-
-        if (isset($_COOKIE)) {
-            $log .= "\nCOOKIES: " .var_export($_COOKIE, true);
-        }
-
-        if (isset($_SESSION)) {
-            $log .= "\nSESSION: " .var_export($_SESSION, true);
-        }
-
-        if (isset($_REQUEST)) {
-            $log .= "\nREQUEST: " .var_export($_REQUEST, true);
-        }
-
-        //Activities
-        $log .= "\nACTIVITIES:\n";
-        $buffers = $this->getBuffer();
-        //serialize to string
-        foreach ($buffers as $buffer) {
-            $mark = sprintf(
-                "%s\n%.3f seconds (+%.3f); %0.2f MB (%s%0.3f). Peak:%.3f MB\n",
-                $buffer['label'],
-                $buffer['time'],
-                $buffer['next_time'],
-                $buffer['memory'],
-                (($buffer['next_memory'] > 0) ? '+' : '-' . $buffer['next_memory']),
-                $buffer['next_memory'],
-                $buffer['memory_get_peak_usage'] / 1048576
-            );
-            $log .= $mark;
-        }
-
-        $log .= "\nSQL QUERIES:\n";
-        $totalQueries = 0;
-        $totalExecuteTime = 0;
-        $totalMemories = 0;
-        foreach($this->_sqlLog as $sql) {
-            if ($sql['begin'] && $sql['end']) {
-                $time = $sql['end']['microtime'] - $sql['begin']['microtime'];
-                $memory = ($sql['end']['memory_get_usage'] - $sql['begin']['memory_get_usage'] / 1048576);
-                $totalExecuteTime+= $time;
-                $totalMemories +=  $memory;
-            } else {
-                $time = 0;
-                $memory = 0;
-            }
-
-            if (isset($sql['query'])) {
-                $totalQueries++;
-            }
-            $log .= $totalQueries .'. ' .$sql['query'];
-            if (!empty($sql['params'])) {
-                $log .= "\n\tParameters:" .json_encode($sql['params']);
-            }
-
-            $log .= "\n\tExec time: " .(($time < 0.001)? '~0.001' : round($time, 3)) .' seconds.'
-                . " Memory: " .(($memory < 0)? '-' : '+') .$memory ."MB.\n";
-        }
-
-        $log .= $totalQueries .' queries, take ' .round($totalExecuteTime, 3) .' seconds and ' .$totalMemories ."MB.\n";
-
-        //file include
-        $files = get_included_files();
-        $log .= "\nIncluded files:\n";
-        $log .= implode("\n", $files);
+        $log = "\n\n**************************";
+        $log .= implode("\n", $this->getProfileData());
 
         @file_put_contents($path.'/'.$filename, $log, FILE_APPEND);
     }
