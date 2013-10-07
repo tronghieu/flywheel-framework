@@ -90,7 +90,5 @@ class ApiApp extends BaseApp
         $response->send();
         $this->getEventDispatcher()->dispatch('onEndRequest', new Event($this));
         $this->afterRun();
-
-        Profiler::getInstance()->writePlainText();
     }
 }
