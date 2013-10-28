@@ -57,6 +57,78 @@ abstract class BaseApp extends Object
         $this->configuration($config);
         $this->_init();
         $this->afterInit();
+
+        set_error_handler(array($this,'_handleError'),error_reporting());
+    }
+
+    public function getClientIp() {
+        $ipAddress = '';
+        if (getenv('HTTP_CLIENT_IP'))
+            $ipAddress = getenv('HTTP_CLIENT_IP');
+        else if(getenv('HTTP_X_FORWARDED_FOR'))
+            $ipAddress = getenv('HTTP_X_FORWARDED_FOR');
+    else if(getenv('HTTP_X_FORWARDED'))
+            $ipAddress = getenv('HTTP_X_FORWARDED');
+        else if(getenv('HTTP_FORWARDED_FOR'))
+            $ipAddress = getenv('HTTP_FORWARDED_FOR');
+        else if(getenv('HTTP_FORWARDED'))
+            $ipAddress = getenv('HTTP_FORWARDED');
+        else if(getenv('REMOTE_ADDR'))
+            $ipAddress = getenv('REMOTE_ADDR');
+        else
+            $ipAddress = 'UNKNOWN';
+
+        return $ipAddress;
+    }
+
+    private function _handleError($code, $message, $file, $line) {
+        if($code & error_reporting()) {
+            // disable error capturing to avoid recursive errors
+            restore_error_handler();
+
+            $label = null;
+            $time = date("D d/M/Y H:i:s");
+            $client = $this->getClientIp();
+            switch($code) {
+                case E_USER_ERROR:
+                    $label = 'ERROR';
+                    break;
+                case E_USER_WARNING:
+                    $label = 'WARNING';
+                    break;
+                case E_USER_NOTICE:
+                    $label = 'NOTICE';
+                    break;
+                default:
+                    $label = 'UNKNOWN';
+            }
+
+            $log="[{$time}] [client {$client}]\n{$label}: {$message} in {$file} at {$line}\nStack trace:\n";
+
+            $trace = array();
+            $traceData = debug_backtrace();
+            $count = count($traceData);
+
+            $limit = ($count >= 8)? $count : 8;
+
+            for ($i = 0; $i < $limit; ++$i) {
+
+                if(!isset($traceData[$i]['file'])) {
+                    $traceData[$i]['file']='unknown';
+                }
+                if(!isset($traceData[$i]['line'])) {
+                    $traceData[$i]['line']=0;
+                }
+                if(!isset($traceData[$i]['function'])) {
+                    $traceData[$i]['function']='unknown';
+                }
+
+                $log.="\t#$i {$traceData[$i]['file']}({$traceData[$i]['line']}): ";
+                if(isset($t['object']) && is_object($t['object']))
+                    $log.=get_class($t['object']).'->';
+                $log.="{$traceData[$i]['function']}()\n";
+            }
+        }
     }
 
     private function _import($aliases) {

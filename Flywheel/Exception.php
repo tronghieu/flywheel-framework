@@ -71,7 +71,7 @@ class Exception extends \Exception
      * @param int $limit
      * @return string
      */
-    public static function outputStackTrace(\Exception $exception, $format = 'html', $limit = 8) {
+    public static function outputStackTrace(\Exception $exception, $format = 'html', $limit = 6) {
         $traceData = $exception->getTrace();
         array_unshift($traceData, array(
             'function' => '',
@@ -110,7 +110,7 @@ class Exception extends \Exception
                 ((null === $line)? 'n/a' : $line),
                 'trace_' . $i, 'trace_' . $i,
                 $i == 0 ? 'block' : 'none',
-                self::_fileExcerpt($file, $line));
+                self::_fileExcerpt($file, $line, $format));
         }
         $message = null === $exception->getMessage() ? 'n/a' : $exception->getMessage();
         $name    = get_class($exception);
@@ -202,11 +202,16 @@ class Exception extends \Exception
      * Returns an excerpt of a code file around the given line number.
      *
      * @param string $file  A file path
-     * @param int    $line  The selected line number
+     * @param int $line  The selected line number
      *
+     * @param $format
      * @return string An HTML string
      */
-    static protected function _fileExcerpt($file, $line) {
+    static protected function _fileExcerpt($file, $line, $format) {
+        if ($format == 'txt') {
+            return '';
+        }
+
         if (is_readable($file)) {
             $content = preg_split( '#<br />#', highlight_file($file, true));
 
