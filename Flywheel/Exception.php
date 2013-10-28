@@ -60,7 +60,7 @@ class Exception extends \Exception
         if (Base::ENV_DEV == Base::getEnv()) {
             echo $exceptionInfo;
         } else {
-            error_log(self::outputStackTrace($e, 'txt'));
+            error_log("\n" .self::outputStackTrace($e, 'txt'));
         }
     }
 
