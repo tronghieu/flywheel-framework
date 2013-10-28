@@ -128,6 +128,8 @@ abstract class BaseApp extends Object
                     $log.=get_class($t['object']).'->';
                 $log.="{$traceData[$i]['function']}()\n";
             }
+
+            error_log($log);
         }
     }
 
