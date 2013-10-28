@@ -60,7 +60,7 @@ class Exception extends \Exception
         if (Base::ENV_DEV == Base::getEnv()) {
             echo $exceptionInfo;
         } else {
-            error_log($e->getMessage() ." at {$e->getFile()}:{$e->getLine()}\n{$e->getTraceAsString()}");
+            error_log(self::outputStackTrace($e, 'txt'));
         }
     }
 
@@ -68,9 +68,10 @@ class Exception extends \Exception
      * output stack trace
      * @param \Exception $exception
      * @param string $format
+     * @param int $limit
      * @return string
      */
-    public static function outputStackTrace(\Exception $exception, $format = 'html') {
+    public static function outputStackTrace(\Exception $exception, $format = 'html', $limit = 8) {
         $traceData = $exception->getTrace();
         array_unshift($traceData, array(
             'function' => '',
@@ -90,7 +91,10 @@ class Exception extends \Exception
             $lineFormat = 'at %s%s%s(%s) in %s line %s';
         }
 
-        for($i = 0, $count = count($traceData ); $i < $count; $i++) {
+        $count = count($traceData);
+        $limit = ($count <= $limit)? $count: $limit;
+
+        for($i = $count-1; $i >= $limit; $i--) {
             $line = isset($traceData[$i]['line'])?
                 $traceData[$i]['line'] : null;
             $file = isset($traceData[$i]['file'])?
