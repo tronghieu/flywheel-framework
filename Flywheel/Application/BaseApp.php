@@ -81,7 +81,7 @@ abstract class BaseApp extends Object
         return $ipAddress;
     }
 
-    private function _handleError($code, $message, $file, $limit) {
+    private function _handleError($code, $message, $file, $limit = 6) {
         if($code & error_reporting()) {
             // disable error capturing to avoid recursive errors
             restore_error_handler();
