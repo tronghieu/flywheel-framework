@@ -81,7 +81,7 @@ abstract class BaseApp extends Object
         return $ipAddress;
     }
 
-    private function _handleError($code, $message, $file, $limit = 6) {
+    private function _handleError($code, $message, $file, $line) {
         if($code & error_reporting()) {
             // disable error capturing to avoid recursive errors
             restore_error_handler();
@@ -103,11 +103,10 @@ abstract class BaseApp extends Object
                     $label = 'UNKNOWN';
             }
 
-            $log="[{$time}] [client {$client}]\n{$label}: {$message} in {$file} at {$limit}\nStack trace:\n";
+            $log="[{$time}] [client {$client}]\n{$label}: {$message} in {$file} at {$line}\nStack trace:\n";
 
             $trace = array();
-            $traceData = array_slice(debug_backtrace(),0 , $limit);
-            var_dump($traceData);
+            $traceData = array_slice(debug_backtrace(),0 , 6);
             $count = count($traceData);
 
             for ($i = 0; $i < $count; ++$i) {
