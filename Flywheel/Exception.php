@@ -38,10 +38,6 @@ class Exception extends \Exception
     }
 
     public static function printExceptionInfo(\Exception $e) {
-        /*if (false === ($e instanceof Ming_Exception)) {
-            $e = new Ming_Exception($e);
-        }*/
-
         static::printStackTrace($e);
     }
 
@@ -84,46 +80,90 @@ class Exception extends \Exception
             $format = 'txt';
         }
 
-        $traces = array ();
         if ($format == 'html') {
-            $lineFormat = 'at <strong>%s%s%s</strong>(%s)<br />in <em>%s</em> line %s <a href="#" onclick="toggle(\'%s\'); return false;">...</a><br /><ul class="code" id="%s" style="display: %s">%s</ul>';
-        } else {
-            $lineFormat = 'at %s%s%s(%s) in %s line %s';
+            echo
+            '<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+            <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.min.js">
+                function toggle(id) {
+                    $("#" +id).toggle();
+                };
+            </script>
+            ';
         }
 
-        $count = count($traceData);
-        $limit = ($count <= $limit)? $count: $limit;
+        $traces = array ();
+        if ($format == 'html') {
+            $lineFormat = '<p>at <strong>%s%s%s</strong>(%s)<br />in <em>%s</em> line %s <a href="#" onclick="toggle(\'%s\'); return false;">...</a><br /><ul class="code" id="%s" style="display: %s">%s</ul></p>';
+        } else {
+            $lineFormat = "%d\tat %s%s%s(%s) in %s line %s";
+        }
 
-        for($i = $count-1; $i >= $limit; $i--) {
+        $traceData = array_slice($traceData, 0, $limit);
+
+        $count = count($traceData);
+        $client = self::getClientIp();
+
+        for($i = 0; $i < $count; ++$i) {
             $line = isset($traceData[$i]['line'])?
                 $traceData[$i]['line'] : null;
             $file = isset($traceData[$i]['file'])?
                 $traceData[$i]['file'] : null;
             $args = isset($traceData[$i]['args'])?
                 $traceData[$i]['args'] : array();
-            $traces[] = sprintf($lineFormat,
-                (isset($traceData[$i]['class'])? $traceData[$i]['class'] : ''),
-                (isset($traceData[$i]['type'] )? $traceData[$i]['type'] : ''),
-                $traceData[$i]['function'],
-                self::_formatArgs($args, false, $format),
-                self::_formatFile($file, $line, $format, null === $file ? 'n/a' : $file),
-                ((null === $line)? 'n/a' : $line),
-                'trace_' . $i, 'trace_' . $i,
-                $i == 0 ? 'block' : 'none',
-                self::_fileExcerpt($file, $line, $format));
+
+            if ($format == 'html') {
+                $traces[] = sprintf($lineFormat,
+                    (isset($traceData[$i]['class'])? $traceData[$i]['class'] : ''),
+                    (isset($traceData[$i]['type'] )? $traceData[$i]['type'] : ''),
+                    $traceData[$i]['function'],
+                    self::_formatArgs($args, false, $format),
+                    self::_formatFile($file, $line, $format, null === $file ? 'n/a' : $file),
+                    ((null === $line)? 'n/a' : $line),
+                    'trace_' . $i, 'trace_' . $i,
+                    $i == 0 ? 'block' : 'none',
+                    self::_fileExcerpt($file, $line, $format));
+            } else {
+                $traces[] = sprintf($i,
+                    $lineFormat,
+                    (isset($traceData[$i]['class'])? $traceData[$i]['class'] : ''),
+                    (isset($traceData[$i]['type'] )? $traceData[$i]['type'] : ''),
+                    $traceData[$i]['function'],
+                    self::_formatArgs($args, false, $format),
+                    self::_formatFile($file, $line, $format, null === $file ? 'n/a' : $file));
+            }
         }
         $message = null === $exception->getMessage() ? 'n/a' : $exception->getMessage();
         $name    = get_class($exception);
 
         if ($format == 'html') {
-            $bufferFormat = '<h3>%s</h3>Message: "%s"<br />%s';
+            $bufferFormat = '[%s] [client %s]<br/><h3>%s</h3>Message: "%s"<br />%s<br/>Referer:%s';
             $traces = implode('', $traces);
         } else {
-            $bufferFormat = "%sMessage: \"%s\". %s";
+            $bufferFormat = "[%s] [client %s] %sMessage: \"%s\". %s\nReferer:%s";
             $traces = implode("\n", $traces);
         }
 
-        return sprintf($bufferFormat, get_class($exception), $message, $traces);
+        return sprintf($bufferFormat, date('Y-m-d H:i:s'), $client, get_class($exception), $message, $traces, @$_SERVER['HTTP_REFERER']);
+    }
+
+    public static function getClientIp() {
+        $ipAddress = '';
+        if (getenv('HTTP_CLIENT_IP'))
+            $ipAddress = getenv('HTTP_CLIENT_IP');
+        else if(getenv('HTTP_X_FORWARDED_FOR'))
+            $ipAddress = getenv('HTTP_X_FORWARDED_FOR');
+        else if(getenv('HTTP_X_FORWARDED'))
+            $ipAddress = getenv('HTTP_X_FORWARDED');
+        else if(getenv('HTTP_FORWARDED_FOR'))
+            $ipAddress = getenv('HTTP_FORWARDED_FOR');
+        else if(getenv('HTTP_FORWARDED'))
+            $ipAddress = getenv('HTTP_FORWARDED');
+        else if(getenv('REMOTE_ADDR'))
+            $ipAddress = getenv('REMOTE_ADDR');
+        else
+            $ipAddress = 'UNKNOWN';
+
+        return $ipAddress;
     }
 
     /**

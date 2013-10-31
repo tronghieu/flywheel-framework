@@ -67,7 +67,7 @@ abstract class BaseApp extends Object
             $ipAddress = getenv('HTTP_CLIENT_IP');
         else if(getenv('HTTP_X_FORWARDED_FOR'))
             $ipAddress = getenv('HTTP_X_FORWARDED_FOR');
-    else if(getenv('HTTP_X_FORWARDED'))
+        else if(getenv('HTTP_X_FORWARDED'))
             $ipAddress = getenv('HTTP_X_FORWARDED');
         else if(getenv('HTTP_FORWARDED_FOR'))
             $ipAddress = getenv('HTTP_FORWARDED_FOR');
@@ -81,7 +81,7 @@ abstract class BaseApp extends Object
         return $ipAddress;
     }
 
-    private function _handleError($code, $message, $file, $line) {
+    private function _handleError($code, $message, $file, $limit) {
         if($code & error_reporting()) {
             // disable error capturing to avoid recursive errors
             restore_error_handler();
@@ -103,15 +103,14 @@ abstract class BaseApp extends Object
                     $label = 'UNKNOWN';
             }
 
-            $log="[{$time}] [client {$client}]\n{$label}: {$message} in {$file} at {$line}\nStack trace:\n";
+            $log="[{$time}] [client {$client}]\n{$label}: {$message} in {$file} at {$limit}\nStack trace:\n";
 
             $trace = array();
-            $traceData = debug_backtrace();
+            $traceData = array_slice(debug_backtrace(),0 , $limit);
+            var_dump($traceData);
             $count = count($traceData);
 
-            $limit = ($count >= 8)? $count : 8;
-
-            for ($i = 0; $i < $limit; ++$i) {
+            for ($i = 0; $i < $count; ++$i) {
 
                 if(!isset($traceData[$i]['file'])) {
                     $traceData[$i]['file']='unknown';
