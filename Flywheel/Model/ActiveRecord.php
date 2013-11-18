@@ -827,7 +827,7 @@ abstract class ActiveRecord extends Object {
     public static function findAll() {
         static::create();
         return self::getReadConnection()->createQuery()
-            ->select(static::getColumnsList(static::getTableAlias()))
+            ->select(static::getTableAlias())
             ->from(self::quote(static::getTableName()), static::getTableAlias())
             ->execute()
             ->fetchAll(\PDO::FETCH_CLASS, static::getPhpName(), array(null, false));
@@ -836,7 +836,7 @@ abstract class ActiveRecord extends Object {
     public static function findBy($by, $param = null, $first = false) {
         static::create();
         $q = self::getReadConnection()->createQuery()
-            ->select(static::getColumnsList(static::getTableAlias()))
+            ->select(static::getTableAlias())
             ->from(self::quote(static::getTableName()), static::getTableAlias())
             ->where(static::buildFindByWhere($by));
         if ($first)
