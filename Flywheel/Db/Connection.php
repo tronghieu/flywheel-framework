@@ -313,7 +313,7 @@ class Connection extends \PDO {
             Profiler::logSqlQueries($query, $begin, $end, $params);
         } catch (\Exception $ex) {
             throw new Exception("An exception occurred while executing '{$query}'"
-                .(($params)? ' with params ' .json_encode($params): ''), 500,  $ex);
+                .(($params)? ' with params ' .json_encode($params, JSON_UNESCAPED_UNICODE): ''), 500,  $ex);
         }
 
         return $result;
