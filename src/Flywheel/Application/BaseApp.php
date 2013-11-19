@@ -92,29 +92,9 @@ abstract class BaseApp extends Object
             // disable error capturing to avoid recursive errors
             restore_error_handler();
 
-            $label = null;
-            $time = date("D d/M/Y H:i:s");
-            $client = $this->getClientIp();
-            switch($code) {
-                case E_USER_ERROR:
-                    $label = 'ERROR';
-                    break;
-                case E_USER_WARNING:
-                    $label = 'WARNING';
-                    break;
-                case E_USER_NOTICE:
-                    $label = 'NOTICE';
-                    break;
-                default:
-                    $label = 'UNKNOWN';
-            }
+            $log = "{$message} in {$file}[{$line}]\r\n\tStack trace:\r\n";
 
-            $log = "{$message} in {$file} at {$line}\nStack trace:\n";
-
-            $trace = debug_backtrace();
-            if (sizeof($trace) > 6) {
-                $trace = array_slice($trace,0 , 6);
-            }
+            $trace = array_slice(debug_backtrace(),1 , 6);
 
             $count = count($trace);
 
@@ -133,13 +113,13 @@ abstract class BaseApp extends Object
                 $log.="\t#$i {$trace[$i]['file']}({$trace[$i]['line']}): ";
                 if(isset($t['object']) && is_object($t['object']))
                     $log.=get_class($t['object']).'->';
-                $log.="{$trace[$i]['function']}()\n";
+                $log.="{$trace[$i]['function']}()\r\n";
             }
 
             if(isset($_SERVER['REQUEST_URI']))
                 $log.='REQUEST_URI='.$_SERVER['REQUEST_URI'];
 
-            $log .= "\n";
+            $log .= "\r\n";
 
             error_log($log);
         }
