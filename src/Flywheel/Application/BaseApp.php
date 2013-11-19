@@ -109,35 +109,37 @@ abstract class BaseApp extends Object
                     $label = 'UNKNOWN';
             }
 
-            $log="[{$time}] [client {$client}]\n{$label}: {$message} in {$file} at {$line}\nStack trace:\n";
+            $log = "{$message} in {$file} at {$line}\nStack trace:\n";
 
             $trace = debug_backtrace();
             if (sizeof($trace) > 6) {
-                $traceData = array_slice($trace,0 , 6);
+                $trace = array_slice($trace,0 , 6);
             }
 
-            $count = count($traceData);
+            $count = count($trace);
 
             for ($i = 0; $i < $count; ++$i) {
 
-                if(!isset($traceData[$i]['file'])) {
-                    $traceData[$i]['file']='unknown';
+                if(!isset($trace[$i]['file'])) {
+                    $trace[$i]['file']='unknown';
                 }
-                if(!isset($traceData[$i]['line'])) {
-                    $traceData[$i]['line']=0;
+                if(!isset($trace[$i]['line'])) {
+                    $trace[$i]['line']=0;
                 }
-                if(!isset($traceData[$i]['function'])) {
-                    $traceData[$i]['function']='unknown';
+                if(!isset($trace[$i]['function'])) {
+                    $trace[$i]['function']='unknown';
                 }
 
-                $log.="\t#$i {$traceData[$i]['file']}({$traceData[$i]['line']}): ";
+                $log.="\t#$i {$trace[$i]['file']}({$trace[$i]['line']}): ";
                 if(isset($t['object']) && is_object($t['object']))
                     $log.=get_class($t['object']).'->';
-                $log.="{$traceData[$i]['function']}()\n";
+                $log.="{$trace[$i]['function']}()\n";
             }
 
             if(isset($_SERVER['REQUEST_URI']))
                 $log.='REQUEST_URI='.$_SERVER['REQUEST_URI'];
+
+            $log .= "\n";
 
             error_log($log);
         }
