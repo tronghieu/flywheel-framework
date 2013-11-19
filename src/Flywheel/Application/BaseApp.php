@@ -62,21 +62,27 @@ abstract class BaseApp extends Object
     }
 
     public function getClientIp() {
-        $ipAddress = '';
-        if (getenv('HTTP_CLIENT_IP'))
+        if (getenv('HTTP_CLIENT_IP')) {
             $ipAddress = getenv('HTTP_CLIENT_IP');
-        else if(getenv('HTTP_X_FORWARDED_FOR'))
+        }
+        else if(getenv('HTTP_X_FORWARDED_FOR')) {
             $ipAddress = getenv('HTTP_X_FORWARDED_FOR');
-        else if(getenv('HTTP_X_FORWARDED'))
+        }
+        else if(getenv('HTTP_X_FORWARDED')) {
             $ipAddress = getenv('HTTP_X_FORWARDED');
-        else if(getenv('HTTP_FORWARDED_FOR'))
+        }
+        else if(getenv('HTTP_FORWARDED_FOR')) {
             $ipAddress = getenv('HTTP_FORWARDED_FOR');
-        else if(getenv('HTTP_FORWARDED'))
+        }
+        else if(getenv('HTTP_FORWARDED')) {
             $ipAddress = getenv('HTTP_FORWARDED');
-        else if(getenv('REMOTE_ADDR'))
+        }
+        else if(getenv('REMOTE_ADDR')) {
             $ipAddress = getenv('REMOTE_ADDR');
-        else
+        }
+        else {
             $ipAddress = 'UNKNOWN';
+        }
 
         return $ipAddress;
     }
@@ -105,8 +111,11 @@ abstract class BaseApp extends Object
 
             $log="[{$time}] [client {$client}]\n{$label}: {$message} in {$file} at {$line}\nStack trace:\n";
 
-            $trace = array();
-            $traceData = array_slice(debug_backtrace(),0 , 6);
+            $trace = debug_backtrace();
+            if (sizeof($trace) > 6) {
+                $traceData = array_slice($trace,0 , 6);
+            }
+
             $count = count($traceData);
 
             for ($i = 0; $i < $count; ++$i) {
@@ -126,6 +135,9 @@ abstract class BaseApp extends Object
                     $log.=get_class($t['object']).'->';
                 $log.="{$traceData[$i]['function']}()\n";
             }
+
+            if(isset($_SERVER['REQUEST_URI']))
+                $log.='REQUEST_URI='.$_SERVER['REQUEST_URI'];
 
             error_log($log);
         }
