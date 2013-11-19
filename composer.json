@@ -22,7 +22,7 @@
     },
     "autoload": {
         "psr-0": {"Flywheel": "src/"},
-        "files": ["Flywheel/Common.php"]
+        "files": ["src/Flywheel/Common.php"]
     },
     "extra": {
         "branch-alias": {
