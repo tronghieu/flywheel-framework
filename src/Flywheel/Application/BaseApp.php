@@ -58,7 +58,7 @@ abstract class BaseApp extends Object
         $this->_init();
         $this->afterInit();
 
-        set_error_handler(array($this,'_handleError'),error_reporting());
+        set_error_handler(array($this,'handleError'),error_reporting());
     }
 
     public function getClientIp() {
@@ -87,7 +87,7 @@ abstract class BaseApp extends Object
         return $ipAddress;
     }
 
-    private function _handleError($code, $message, $file, $line) {
+    public function handleError($code, $message, $file, $line) {
         if($code & error_reporting()) {
             // disable error capturing to avoid recursive errors
             restore_error_handler();
