@@ -92,7 +92,7 @@ abstract class BaseApp extends Object
             // disable error capturing to avoid recursive errors
             restore_error_handler();
 
-            $log = "{$message} in {$file}[{$line}]\r\n\tStack trace:\r\n";
+            $log = $message.' in ' .$file .' line ' .$line .'\r\n\tStack trace:\r\n';
 
             $trace = array_slice(debug_backtrace(),1 , 6);
 
@@ -110,16 +110,16 @@ abstract class BaseApp extends Object
                     $trace[$i]['function']='unknown';
                 }
 
-                $log.="\t#$i {$trace[$i]['file']}({$trace[$i]['line']}): ";
+                $log.='\t# '.$i .$trace[$i]['file'] . '(' .$trace[$i]['line'] .'): ';
                 if(isset($t['object']) && is_object($t['object']))
                     $log.=get_class($t['object']).'->';
-                $log.="{$trace[$i]['function']}()\r\n";
+                $log.= $trace[$i]['function'] .'()\r\n';
             }
 
             if(isset($_SERVER['REQUEST_URI']))
                 $log.='REQUEST_URI='.$_SERVER['REQUEST_URI'];
 
-            $log .= "\r\n";
+            $log .= '\r\n';
 
             error_log($log);
         }
