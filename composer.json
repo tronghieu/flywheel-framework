@@ -2,9 +2,8 @@
     "name": "tronghieu/flywheel-framework",
     "type": "library",
     "description": "The Flywheel PHP framework",
-    "keywords": ["framework"],
+    "keywords": ["framework", "PHP", "MVC"],
     "homepage": "http://luutronghieu.com",
-    "version" : "1.0-alpha",
     "license": "MIT",
     "authors": [
         {
