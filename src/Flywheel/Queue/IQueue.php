@@ -7,6 +7,12 @@ interface IQueue {
 
     public function members();
 
+    public function getIndex($index);
+
+    public function prepend($member);
+
+    public function shift($member);
+
     /**
      * count the number of message in a queue
      * @return integer
