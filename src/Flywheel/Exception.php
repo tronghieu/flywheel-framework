@@ -56,7 +56,10 @@ class Exception extends \Exception
         if (Base::ENV_DEV == Base::getEnv()) {
             echo $exceptionInfo;
         } else {
-            error_log("\n" .self::outputStackTrace($e, 'txt'));
+            /**
+             * removed since version 1.0.2, application custom write log exception.
+             */
+            //error_log("\n" .self::outputStackTrace($e, 'txt'));
         }
     }
 
