@@ -13,6 +13,7 @@
     ],
     "require": {
         "php": ">=5.3.3",
+        "monolog/monolog": "1.7.0",
         "symfony/translation" : "2.*",
         "symfony/config" : "2.*",
         "symfony/filesystem" : "2.*",
