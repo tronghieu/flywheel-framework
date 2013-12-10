@@ -210,6 +210,9 @@ class Factory
     }
 
     /**
+     *
+     * @deprecated since 1.1 to be removed in 1.2. Use \Flywheel\Translation\Translator::factory() instead.
+     *
      * @return null|Translator
      */
     public static function getTranslator() {
