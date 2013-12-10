@@ -211,7 +211,7 @@ class Factory
 
     /**
      *
-     * @deprecated since 1.1 to be removed in 1.2. Use \Flywheel\Translation\Translator::factory() instead.
+     * @deprecated since 1.1 to be removed in 1.2. Use \Flywheel\Translation\Translator::getInstance() instead.
      *
      * @return null|Translator
      */

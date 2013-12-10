@@ -17,7 +17,7 @@ class Translator extends \Symfony\Component\Translation\Translator {
      * factory Translator object
      * @return null|Translator
      */
-    public static function factory() {
+    public static function getInstance() {
         $i18nCfg = ConfigHandler::get('i18n');
         if (!$i18nCfg['enable']) {
             return null;
