@@ -8,6 +8,10 @@ use Flywheel\Queue\Adapter\BaseAdapter;
 class Queue implements IQueue {
     protected static $_instances = array();
 
+    protected static $_adaptersList = array(
+        'redis' => 'Adapter\Redis'
+    );
+
     /**
      * @var Adapter\BaseAdapter
      */
@@ -19,6 +23,14 @@ class Queue implements IQueue {
         $this->_name = $name;
         if ($adapter) {
             $this->setAdapter($adapter);
+        }
+    }
+
+    public static function addAdapters($key, $adapter, $overwrite = true) {
+        if (isset(self::$_adaptersList[$key]) && !$overwrite) {
+            //nothing
+        } else {
+            self::$_adaptersList[$key] = $adapter;
         }
     }
 
@@ -45,7 +57,19 @@ class Queue implements IQueue {
                 throw new Exception("Adapter not found in config");
             }
             $adapter = $config['adapter'];
-            self::$_instances[$name] = new Queue($name, new $adapter($config));
+
+            if (is_string($adapter)) {
+                if (!isset(self::$_adaptersList[$adapter])) {
+                    throw new Exception("Adapter '{$adapter}' has not supported");
+                }
+
+                $adapter = self::$_adaptersList[$adapter];
+                if (is_string($adapter)) {
+                    $adapter = new $adapter($config);
+                }
+            }
+
+            self::$_instances[$name] = new Queue($name, $adapter);
         }
 
         return self::$_instances[$name];
