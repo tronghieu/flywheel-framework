@@ -26,6 +26,12 @@ class Queue implements IQueue {
         }
     }
 
+    /**
+     * Add custom queue adapter
+     * @param string $key
+     * @param string|Adapter\BaseAdapter
+     * @param bool $overwrite
+     */
     public static function addAdapters($key, $adapter, $overwrite = true) {
         if (isset(self::$_adaptersList[$key]) && !$overwrite) {
             //nothing
