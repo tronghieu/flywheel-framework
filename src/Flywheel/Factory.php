@@ -2,6 +2,7 @@
 namespace Flywheel;
 use Flywheel\Application\BaseApp;
 use Flywheel\Config\ConfigHandler;
+use Flywheel\Queue\Queue;
 use Flywheel\Translation\Translator;
 use Flywheel\Util\Inflection;
 use Symfony\Component\Translation\Loader\ArrayLoader;
@@ -187,26 +188,13 @@ class Factory
 
     /**
      * @param $configKey
-     * @return \Flywheel\Queue\BaseQueue;
+     * @return \Flywheel\Queue\Queue
      * @throws Exception
+     *
+     * @deprecated since 1.1 to be removed in 1.2. Use \Flywheel\Queue\Queue::factory() instead.
      */
     public static function getQueue($configKey) {
-        if (!isset(self::$_registry['queue_' .$configKey])) {
-            $config = ConfigHandler::load('global.config.queue', 'queue', true);
-            if (!isset($config[$configKey])) {
-                throw new Exception("Could not found config match with {$configKey}. Check global/config/queue.cfg.php and add it");
-            }
-
-            $adapter = Inflection::camelize($config[$configKey]['adapter']);
-            if (!$adapter) {
-                throw new Exception("Adapter not found in config");
-            }
-            $class = "\\Flywheel\\Queue\\{$adapter}";
-            $class = new $class($config[$configKey]['name'], $config[$configKey]['config']);
-            self::$_registry['queue_' .$configKey] = $class;
-        }
-
-        return self::$_registry['queue_' .$configKey];
+        return \Flywheel\Queue\Queue::factory($configKey);
     }
 
     /**
@@ -216,29 +204,7 @@ class Factory
      * @return null|Translator
      */
     public static function getTranslator() {
-        $i18nCfg = ConfigHandler::get('i18n');
-        if (!$i18nCfg['enable']) {
-            return null;
-        }
-
-        if (!isset(self::$_registry['translator'])) {
-            $translator = new Translator($i18nCfg['default_locale'], new MessageSelector());
-            $translator->setFallbackLocale($i18nCfg['default_fallback']);
-            $translator->addLoader('array', new ArrayLoader());
-
-            //add init resource
-            if (isset($i18nCfg['resource']) && is_array($i18nCfg['resource'])) {
-                foreach($i18nCfg['resource'] as $locale => $files) {
-                    for ($i = 0, $size = sizeof($files); $i < $size; ++$i) {
-                        $translator->addResourceFromFile($files[$i], $locale);
-                    }
-                }
-            }
-
-            self::$_registry['translator'] = $translator;
-        }
-
-        return self::$_registry['translator'];
+        return \Flywheel\Translation\Translator::getInstance();
     }
 
     /**
