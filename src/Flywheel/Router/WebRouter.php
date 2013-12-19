@@ -4,6 +4,7 @@ use Flywheel\Config\ConfigHandler as ConfigHandler;
 use Flywheel\Base;
 use Flywheel\Event\Event;
 use Flywheel\Exception\Routing;
+use Flywheel\Loader;
 use Flywheel\Util\Inflection;
 
 class WebRouter extends BaseRouter {
@@ -24,8 +25,7 @@ class WebRouter extends BaseRouter {
     }
 
     public function init($config = null) {
-        if (null == $config)
-        {
+        if (null == $config) {
             $routes = ConfigHandler::load('app.config.routing', 'routing', true);
         } else {
             $routes = $config;

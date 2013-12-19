@@ -16,7 +16,8 @@ class Storage extends Object {
         $hash = (isset($options['hash']))?
                         $options['hash'] : null;
 
-        $config = ConfigHandler::load('global.config.cache', 'cache', true);
+        $config = ConfigHandler::get('caching');
+
         if (!$hash) {
             $hash = $config['__hash__'];
         }
@@ -29,19 +30,26 @@ class Storage extends Object {
     /**
      * return IStorage
      */
-    public static function factory($key = null) {
-        $config = ConfigHandler::load('global.config.cache', 'cache', true);
-        if (!$key || !isset($config[$key])) {
-            $key = $config['__default__'];
+    public static function factory($config = null) {
+        if (is_string($config)) {
+            $config = ConfigHandler::get('caching');
         }
 
-        if (!isset(self::$_instances[$key])) {
-            $options = $config[$key];
+        if (!$config) {
+            throw new Exception('Config "caching" not found!');
+        }
+
+        if (!isset($config[$config])) {
+            $config = $config['__default__'];
+        }
+
+        if (!isset(self::$_instances[$config])) {
+            $options = $config[$config];
             $class = "\\Flywheel\Cache\\Storage\\" .$options['storage'];
-            self::$_instances[$key] = new $class($key, $options);
+            self::$_instances[$config] = new $class($config, $options);
         }
 
-        return self::$_instances[$key];
+        return self::$_instances[$config];
     }
 
     /**
