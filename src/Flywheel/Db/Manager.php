@@ -1,5 +1,6 @@
 <?php
 namespace Flywheel\Db;
+use Flywheel\Config\ConfigHandler;
 use Flywheel\Event\Event;
 use Flywheel\Object;
 
@@ -21,15 +22,11 @@ class Manager extends Object{
         self::$init = true;
     }
 
+    /**
+     * Init database's configuration
+     */
     public static function initConfig() {
-        self::loadConfig(ROOT_PATH .'/global/config/db.cfg.php');
-    }
-
-    public static function loadConfig($configFile) {
-        $configuration = include($configFile);
-        if (false === $configuration)
-            throw new Exception("Unable to open configuration file: " . var_export($configFile, true));
-        self::$configuration = $configuration;
+        self::$configuration = ConfigHandler::get('database');
     }
 
     /**
