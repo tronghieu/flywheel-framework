@@ -1,0 +1,123 @@
+<?php
+return array(
+    'i18n' => array(
+        'enable' => true,
+        'default_fallback' => array('en'),
+        'default_locale' => 'en-US',
+        'resource' => array(
+            'vi-VN' => array()
+        )
+    ),
+
+    /*
+     * Session
+     */
+    'session' => array(
+        'storage' => '', // \Flywheel\Session\Storage\File | \Flywheel\Session\Storage\Memcached | \Flywheel\Session\Storage\Redis
+        'name'  => '54gdq!#',
+        'lifetime' => 86400,
+        //'cookie_domain' => '',
+        'cookie_exception' => true,
+        'cookie_basename' => 'HQ1310__',
+        'cookie_secret' => 'P8(<G4v,?#y_GP2NWn89uI-/bMa/Y.l.kEiRtr9 .9[^1tiz_Z,-]8itVBnyd}DEV',
+    ),
+
+    /*
+     * Config database connection
+     */
+    'database' => array(
+        'default' => array(
+            'adapter' => 'mysqli', //sqlite, mysql, mssql, oracle or pgsql
+            'dsn' => 'mysql:host=your-db-host;dbname=your-db-name',
+            'db_user' => 'your-db-name',
+            'db_pass' => 'your-db-pasword',
+            'cache_prepare' => true,
+            'slaves' => array(
+                /*'slave1' => array(
+                    'adapter' => 'mysql',
+                    'weight' => 2,
+                    'dsn' => 'mysql:host=your-db-host;dbname=your-db-name',
+                    'db_user' => 'your-db-name',
+                    'db_pass' => 'your-db-pasword',
+                ),
+                'slave2' => array(
+                    'adapter' => 'mysql',
+                    'weight' => 2,
+                    'dsn' => 'mysql:host=your-db-host;dbname=your-db-name',
+                    'db_user' => 'your-db-name',
+                    'db_pass' => 'your-db-pasword',
+                ),*/
+            ),
+        ),
+        '__default__' => 'default'
+    ),
+
+    'redis' => array(
+        '__default__' => 'default',
+        //config key info
+        'default'   => array(
+            'servers' => 'server1_0'),
+        'consumer'  => array(
+            'servers' => 'server1_1'),
+        'nonce'     => array(
+            'servers' => 'server1_2'),
+        'transfer_in_day' => array(
+            'servers' => 'server1_3'),
+        'api_tracking' => array(
+            'servers' => 'server1_9'),
+        'policy_config' => array(
+            'servers' => 'server1_10'),
+        'lock_flag' => array(
+            'servers' => 'server1_14'),
+        //db 15 for queue
+
+        '__server1_0__' => array('host' => $host, 'port' => $port, 'auth' => $auth),
+        '__server1_1__' => array('host' => $host, 'port' => $port, 'auth' => $auth, 'db' => 1),
+        '__server1_2__' => array('host' => $host, 'port' => $port, 'auth' => $auth, 'db' => 2),
+        '__server1_3__' => array('host' => $host, 'port' => $port, 'auth' => $auth, 'db' => 3),
+        '__server1_4__' => array('host' => $host, 'port' => $port, 'auth' => $auth, 'db' => 9),
+        '__server1_10__' => array('host' => $host, 'port' => $port, 'auth' => $auth, 'db' => 10),
+        '__server1_14__' => array('host' => $host, 'port' => $port, 'auth' => $auth, 'db' => 14),
+        '__server1_15__' => array('host' => $host, 'port' => $port, 'auth' => $auth, 'db' => 15),
+    ),
+
+    'queue' => array(
+        'api' => array(
+            'adapter' => 'redis',
+            'name' => 'api_background_queue',
+            'config' => array(
+                'dsn' => "$host:$port/15", //host:port/database
+                'auth' => $auth
+            ),
+        ),
+
+        'dispatch_event' => array(
+            'adapter' => 'redis',
+            'name' => 'dispatch_event_queue',
+            'config' => array(
+                'dsn' => "$host:$port/15",
+                'auth' => $auth
+            ),
+        ),
+
+        //repeat dispatch event repeat after 3 minutes
+        'dispatch_event_3m' => array(
+            'adapter' => 'redis',
+            'name' => 'dispatch_event_3m_queue',
+            'config' => array(
+                'dsn' => "$host:$port/15",
+                'auth' => $auth
+            ),
+        ),
+
+        //repeat dispatch event repeat after 15 minutes
+        'dispatch_event_15m' => array(
+            'adapter' => 'redis',
+            'name' => 'dispatch_event_15m_queue',
+            'config' => array(
+                'dsn' => "$host:$port/15",
+                'auth' => $auth
+            ),
+        )
+    ),
+);
