@@ -69,10 +69,8 @@ class Queue implements IQueue {
                     throw new Exception("Adapter '{$adapter}' has not supported");
                 }
 
-                $adapter = self::$_adaptersList[$adapter];
-                if (is_string($adapter)) {
-                    $adapter = new $adapter($config);
-                }
+                $adapter = isset(self::$_adaptersList[$adapter])?  self::$_adaptersList[$adapter] : $adapter;
+                $adapter = new $adapter($config);
             }
 
             self::$_instances[$name] = new Queue($name, $adapter);
