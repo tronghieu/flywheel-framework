@@ -137,6 +137,10 @@ abstract class BaseApp extends Object
 
     public function preInit() {}
 
+    /**
+     * @param $config
+     * @param null $value
+     */
     public function configuration($config, $value = null) {
         if (is_array($config)) {
             foreach ($config as $name => $value) {
@@ -147,12 +151,18 @@ abstract class BaseApp extends Object
         }
     }
 
+    /**
+     * set application parameter
+     * @param $name
+     * @param $value
+     */
     public function setParameter($name, $value) {
         $setter = 'set' .ucfirst($name);
-        if (method_exists($this, $setter))
+        if (method_exists($this, $setter)) {
             $this->$setter($value);
-        else
+        } else {
             ConfigHandler::set($name, $value);
+        }
     }
 
     /**
@@ -178,8 +188,7 @@ abstract class BaseApp extends Object
 
     protected function _init() {}
 
-    public function afterInit() {
-    }
+    public function afterInit() {}
 
     public function beforeRun() {}
 
