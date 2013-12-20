@@ -45,7 +45,7 @@ class ConsoleApp extends BaseApp
      *
      */
     protected function _init() {
-        define('TASK_DIR', APP_DIR .'/task/');
+        define('TASK_DIR', APP_DIR .'/');
         ini_set('display_errors', ConfigHandler::get('debug')? 'on' : 'off');
         //Error reporting
         if (Base::getEnv() == Base::ENV_DEV) {
@@ -130,9 +130,8 @@ class ConsoleApp extends BaseApp
 
         $class = Inflection::hungaryNotationToCamel($this->_task);
         $taskPath = TASK_DIR .'/' .$class;
-        if (file_exists($file = $taskPath ."/{$class}Task.php")) {
-            require_once $file;
-            $class = $class.'Task';
+        if (file_exists($file = $taskPath ."/{$class}")) {
+//            require_once $file;
             $this->_controller = new $class($this->_task, $taskPath);
             $this->_controller->execute($this->_act);
             $this->_finished = true;
