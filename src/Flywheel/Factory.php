@@ -72,7 +72,7 @@ class Factory
     }
 
     /**
-     * @return \Flywheel\Http\Request
+     * @return \Flywheel\Http\WebRequest | \Flywheel\Http\RESTfulRequest
      */
     public static function getRequest() {
         if (isset(self::$_registry['request'])) {
@@ -97,7 +97,7 @@ class Factory
 
     /**
      * get response
-     * @return \Flywheel\Http\Response
+     * @return \Flywheel\Http\WebResponse | \Flywheel\Http\RESTfulResponse
      */
     public static function getResponse() {
         if (isset(self::$_registry['response'])) {
