@@ -31,6 +31,8 @@ abstract class BaseApp extends Object
 
     protected $_basePath;
 
+    protected $_appNamespace;
+
     public function __construct($config, $type) {
         if (is_string($config)) {
             $config = require $config;
@@ -45,6 +47,13 @@ abstract class BaseApp extends Object
         } else {
             throw new Exception('Application: missing application\'s config "app_path"');
         }
+
+        if (!isset($config['namespace'])) {
+            throw new Exception('Application: missng config "namespace"');
+        }
+
+        Loader::addNamespace($config['namespace'], dirname(Base::getAppPath()));
+        $this->setAppNamespace($config['namespace']);
 
         if (isset($config['import'])) {
             $this->_import($config['import']);
@@ -62,6 +71,21 @@ abstract class BaseApp extends Object
          * @TODO removed since version 1.0.2, application custom error handler
          */
 //        set_error_handler(array($this,'handleError'),error_reporting());
+    }
+
+    /**
+     * @param mixed $appNamespace
+     */
+    public function setAppNamespace($appNamespace){
+        $this->_appNamespace = $appNamespace;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAppNamespace()
+    {
+        return $this->_appNamespace;
     }
 
     public function getClientIp() {

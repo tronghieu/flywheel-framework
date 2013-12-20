@@ -63,12 +63,11 @@ class WebApp extends BaseApp
         /* @var \Flywheel\Router\WebRouter $router */
         $router 		= Factory::getRouter();
         $controllerName	= $router->getCamelControllerName();
-        $className		= $controllerName .'Controller';
+        $className		= $this->getAppNamespace() ."\\Controller\\{$controllerName}";
         $controllerPath	= $router->getControllerPath();
-        if (file_exists(($file = $this->_basePath.DIRECTORY_SEPARATOR
-            .'controllers'.DIRECTORY_SEPARATOR.$controllerPath.$className.'.php'))){
-            require_once $file;
-        } else {
+
+        if (!file_exists(($file = $this->_basePath.DIRECTORY_SEPARATOR
+            .'Controller'.DIRECTORY_SEPARATOR .$controllerPath.$controllerName.'.php'))){
             throw new NotFound404("Application: Controller \"{$controllerName}\"[{$file}] does not existed!");
         }
 
