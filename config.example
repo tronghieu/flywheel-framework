@@ -9,11 +9,29 @@ return array(
         )
     ),
 
+    'caching' => array(
+        '__enable__' => true,
+        '__default__' => 'widget',
+        '__hash__' => '-8/RsLPePPy54BtNGBm*MqX7=vn8>j6QHJGG~49AN',
+        'widget' => array(
+            'storage' => 'Apc',
+            'group' => 'html'
+        ),
+        'page_cache' => array(
+            'storage' => 'Apc',
+            'group' => 'html'
+        ),
+        'item' => array(
+            'storage' => 'Apc',
+            'group' => 'item'
+        ),
+    ),
+
     /*
      * Session
      */
     'session' => array(
-        'storage' => '', // \Flywheel\Session\Storage\File | \Flywheel\Session\Storage\Memcached | \Flywheel\Session\Storage\Redis
+        'storage' => '', // \Flywheel\Session\Storage\File
         'name'  => '54gdq!#',
         'lifetime' => 86400,
         //'cookie_domain' => '',
@@ -54,31 +72,19 @@ return array(
 
     'redis' => array(
         '__default__' => 'default',
+
         //config key info
         'default'   => array(
-            'servers' => 'server1_0'),
-        'consumer'  => array(
-            'servers' => 'server1_1'),
-        'nonce'     => array(
-            'servers' => 'server1_2'),
-        'transfer_in_day' => array(
-            'servers' => 'server1_3'),
-        'api_tracking' => array(
-            'servers' => 'server1_9'),
-        'policy_config' => array(
-            'servers' => 'server1_10'),
-        'lock_flag' => array(
-            'servers' => 'server1_14'),
-        //db 15 for queue
+            'dsn' => '{your-redis-host}:{your-redis-port}/{db-index}',
+            'option' => array(
+                'timeout' => 30, //connection timeout
+                'prefix' => 'custom-key-prefix'
+            ),
+        ),
 
-        '__server1_0__' => array('host' => $host, 'port' => $port, 'auth' => $auth),
-        '__server1_1__' => array('host' => $host, 'port' => $port, 'auth' => $auth, 'db' => 1),
-        '__server1_2__' => array('host' => $host, 'port' => $port, 'auth' => $auth, 'db' => 2),
-        '__server1_3__' => array('host' => $host, 'port' => $port, 'auth' => $auth, 'db' => 3),
-        '__server1_4__' => array('host' => $host, 'port' => $port, 'auth' => $auth, 'db' => 9),
-        '__server1_10__' => array('host' => $host, 'port' => $port, 'auth' => $auth, 'db' => 10),
-        '__server1_14__' => array('host' => $host, 'port' => $port, 'auth' => $auth, 'db' => 14),
-        '__server1_15__' => array('host' => $host, 'port' => $port, 'auth' => $auth, 'db' => 15),
+        'consumer' => array(
+            'dsn' => '{your-redis-host}:{your-redis-port}/{db-index}',
+        ),
     ),
 
     'queue' => array(
@@ -118,6 +124,6 @@ return array(
                 'dsn' => "$host:$port/15",
                 'auth' => $auth
             ),
-        )
+        ),
     ),
 );
