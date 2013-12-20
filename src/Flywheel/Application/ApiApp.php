@@ -67,12 +67,12 @@ class ApiApp extends BaseApp
         $name = $router->getApi();
         $apiMethod = $router->getMethod();
         $apiPath = $router->getPath();
-        $class = $name.'Controller';
+        $class = $name;
         if (!file_exists($file = $apiPath .$class.'.php')) {
             throw new ApiException("Api's method {$class}/{$apiMethod} not found!", 404);
         }
 
-        require_once $file;
+//        require_once $file;
         $this->_controller = new $class($name, $apiPath);
         return $this->_controller->execute($this->_requestMethod, $apiMethod);
     }

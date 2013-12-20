@@ -61,12 +61,12 @@ class ApiRouter extends BaseRouter
             $this->_format = $_cf[1];
             $segment[count($segment) - 1] = $_cf[0];
         }
-        $this->_path = Base::getAppPath() .'/controllers/';
+        $this->_path = Base::getAppPath() .'/Controller/';
         while(!empty($segment)) {
             $seg = array_shift($segment);
             if (is_dir($this->_path.$seg)) {
-                $this->_path .= $seg.DIRECTORY_SEPARATOR;
-            } elseif (is_file($this->_path.($api = Inflection::camelize($seg)).'Controller.php')) {
+                $this->_path .= DIRECTORY_SEPARATOR;
+            } elseif (is_file($this->_path.($api = Inflection::camelize($seg)).'.php')) {
                 $this->_api = $api;
                 break;
             }
