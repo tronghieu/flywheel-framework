@@ -63,8 +63,8 @@ class Session extends Object
     {
         $this->_config = array_merge($this->_config, $config);
         if (isset($this->_config['storage']) && $this->_config['storage']) {
-            $handlerClass = '\\Flywheel\\Session\\Storage\\' . $this->_config['storage'];
-            unset($this->_config['handler']);
+            $handlerClass = $this->_config['storage'];
+            unset($this->_config['storage']);
             $storage = new $handlerClass($this->_config);
 
             session_set_save_handler(
@@ -296,7 +296,7 @@ class Session extends Object
             return null;
         }
 
-        return session_id();
+        return session_id() . '_' . $_SERVER['REMOTE_ADDR'];
     }
 
     /**

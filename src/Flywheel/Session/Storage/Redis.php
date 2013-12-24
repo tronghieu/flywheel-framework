@@ -9,6 +9,7 @@
 
 namespace Flywheel\Session\Storage;
 use Flywheel\Session\Exception;
+use Flywheel\Session\ISessionHandler;
 
 class Redis implements ISessionHandler{
     private $_config;

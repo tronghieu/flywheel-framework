@@ -2,6 +2,7 @@
 
 namespace Flywheel\Session\Storage;
 use Flywheel\Session\Exception;
+use Flywheel\Session\ISessionHandler;
 
 class Memcached implements ISessionHandler {
     private $_config;
