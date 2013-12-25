@@ -2,24 +2,24 @@
 
 /**
  * Asset Management for Flywheel Framework
- *  'assets' => array(
- *         'environment' => 'dev', // dev||product
- * 
- * *       'base_url' => '',
- * *       'cache_dir' => '',
- * *       'cache_path' => '',  
- * *       'cache_url' => '',      
- * *       'js_path' => '',
- * *       'js_dir' => '',
- * *       'js_url' => '', 
- * *       'css_path' => '', 
- * *       'css_dir' => '',
- * *       'css_url' => '',
- * *       'minify_css' => '',
- * *       'minify_js' => '',
- *    
- * 
- * );
+ * $config = array(
+  'envi' => 'prod',
+  'combine' => true,
+  'minify' => true,
+  'base_url' => '',
+  'assets_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets',
+  'assets_dir' => 'assets',
+  'base_path' => 'assets',
+  'cache_dir' => 'cache',
+  'cache_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets\cache', //
+  'cache_url' => 'cache', // base_url/cache_dr
+  'js_dir' => 'js',
+  'js_path' => 'js', //
+  'js_url' => 'js',
+  'css_dir' => 'css',
+  'css_path' => 'css', //
+  'css_url' => 'css',
+  );
  * @author tradade
  */
 
@@ -52,29 +52,11 @@ class Asset {
     private $js_str, $css_str;
 
     function __construct() {
+        $site_config = Flywheel\Config\ConfigHandler::get('assets');
+        if (!$site_config) {
+            throw new Exception('Config "assets" not found');
+        }
 
-//        $site_config = Flywheel\Config\ConfigHandler::get('assets');        
-//        if (!$site_config) {
-//            throw new Exception('Config "assets" not found');
-//        }
-        $config = array(
-            'envi' => 'prod',
-            'combine' => true,
-            'minify' => true,
-            'base_url' => '',
-            'assets_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets',
-            'assets_dir' => 'assets',
-            'base_path' => 'assets',
-            'cache_dir' => 'cache',
-            'cache_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets\cache', //
-            'cache_url' => 'cache', // base_url/cache_dr
-            'js_dir' => 'js',
-            'js_path' => 'js', //
-            'js_url' => 'js',
-            'css_dir' => 'css',
-            'css_path' => 'css', //
-            'css_url' => 'css',
-        );
         $this->_config($config);
     }
 
@@ -191,7 +173,7 @@ class Asset {
                 $cfiles[] = $file;
             }
             $cache_name = $lastmodified . '.' . md5($cache_name) . '.css';
-            $this->_combine('css',$cfiles, $this->cache_path . $cache_name);
+            $this->_combine('css', $cfiles, $this->cache_path . $cache_name);
             echo $this->_print_cache($cache_name, 'css');
         }
     }
@@ -316,7 +298,7 @@ class Asset {
     }
 
     private function _minify($type, $file_path) {
-        
+
         $file_content = $this->_get_file_string($file_path);
         switch ($type) {
             case 'css':
@@ -341,11 +323,11 @@ class Asset {
         }
         switch ($type) {
             case 'css':
-                
+
                 foreach ($files AS $file) {
-                    $file_path = $this->css_path.$file;
+                    $file_path = $this->css_path . $file;
                     if (!file_exists($file_path)) {
-                        throw new Exception('File ' .$file_path. ' does not exist');
+                        throw new Exception('File ' . $file_path . ' does not exist');
                         die;
                     }
                     if ($this->minify) {
@@ -354,16 +336,16 @@ class Asset {
                         $file_content .= $this->_get_file_string('css', $file_path);
                     }
                 }
-                
+
                 break;
             case 'js':
                 $file_path = $this->js_path;
                 foreach ($files AS $file) {
-                    $file_path = $this->js_path.$file;
+                    $file_path = $this->js_path . $file;
                     if ($this->minify) {
-                        $file_content .= $this->_minify('js',$file_path);
+                        $file_content .= $this->_minify('js', $file_path);
                     } else {
-                        $file_content .= $this->_get_file_string('js',$file_path);
+                        $file_content .= $this->_get_file_string('js', $file_path);
                     }
                 }
                 break;
