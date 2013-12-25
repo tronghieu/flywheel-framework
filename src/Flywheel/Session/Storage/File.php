@@ -65,6 +65,7 @@ class File implements ISessionHandler
             }
 
             if (isset($sessionContent)) {
+                // Check life time
                 if ($sessionContent['last_modified'] + (int)@$this->_config['lifetime'] > time()) {
                     return $sessionContent['data'];
                 }
@@ -104,6 +105,7 @@ class File implements ISessionHandler
                 fputs($fp, serialize($content));
                 break;
             default:
+                fputs($fp, json_encode($content));
                 break;
         }
     }
