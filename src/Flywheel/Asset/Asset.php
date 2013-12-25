@@ -1,30 +1,25 @@
 <?php
 
 /**
-  $config = array(
-  'envi' => 'dev',
-  'combine' => true,
-  'minify' => true,
-  'base_url' => '',
-  'assets_path' => 'path/to/asset/folder',
-  'assets_dir' => 'assets',
-  'base_path' => 'assets',
-  'cache_dir' => 'cache',
-  'cache_path' => 'path/to/asset/folder', //
-  'cache_url' => 'cache', // base_url/cache_dr
-  'js_dir' => 'js',
-  'js_path' => 'js', //
-  'js_url' => 'js',
-  'css_dir' => 'css',
-  'css_path' => 'css', //
-  'css_url' => 'css',
-  );
-
-
-  $cache = new \Flywheel\Asset\Asset;
-  $cache->js('file.css','group_name');   //add css file to group 'group_name'
-  $cache->js('file.css','group_name');   //add js file to group 'group_name'
-  $cache->display();  //display assets
+ * Asset Management for Flywheel Framework
+ *  'assets' => array(
+ *      'section' => array(
+ *         'environment' => 'dev', // dev||product * 
+ * *       'base_url' => '',
+ * *       'cache_dir' => '',
+ * *       'cache_path' => '',  
+ * *       'cache_url' => '',      
+ * *       'js_path' => '',
+ * *       'js_dir' => '',
+ * *       'js_url' => '', 
+ * *       'css_path' => '', 
+ * *       'css_dir' => '',
+ * *       'css_url' => '',
+ * *       'minify_css' => '',
+ * *       'minify_js' => '',
+ *    ),
+ * 
+ * );
  * @author tradade
  */
 
@@ -56,12 +51,13 @@ class Asset {
     private $css_array = array('main' => array());
     private $js_str, $css_str;
 
-    function __construct() {
+    function __construct($section = 'default') {
+
         $config = Flywheel\Config\ConfigHandler::get('assets');
         if (!$config) {
             throw new Exception('Config "assets" not found');
-        }
-
+        }   
+        $config = $config[$section];
         $this->_config($config);
     }
 
