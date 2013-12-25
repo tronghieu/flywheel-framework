@@ -4,8 +4,8 @@ class Cli {
     private $_script;
     private $_tasklist = array(
         'gen:models',
-        'compile:web_app',
-        'compile:api_app'
+        'gen:schemas',
+        'gen:apps'
     );
 
     private function _help() {
@@ -16,9 +16,10 @@ usage
 
 task list
   - gen:models          generate models from database, type gen:models help for
+  - gen:schemas         generate struct for tables special, type gen:schemas help for
     usage
-  - compile:web_app     compile core classes to runtime/compile/web.php
-  - compile:api_app     compile core classes to runtime/compile/api.php
+  - gen:schemas         generate struct for tables special, type gen:schemas help for
+  usage
 EOD;
     }
 
@@ -26,6 +27,8 @@ EOD;
         date_default_timezone_set(@date_default_timezone_get());
         $this->_script = $args[0];
         $package = null;
+
+
         $task = isset($args[1])? $args[1] : 'help';
         if ('help' == $task) {
             echo $this->_help(); exit;
