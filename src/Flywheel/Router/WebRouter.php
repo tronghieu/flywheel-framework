@@ -4,7 +4,6 @@ use Flywheel\Config\ConfigHandler as ConfigHandler;
 use Flywheel\Base;
 use Flywheel\Event\Event;
 use Flywheel\Exception\Routing;
-use Flywheel\Loader;
 use Flywheel\Util\Inflection;
 
 class WebRouter extends BaseRouter {
@@ -25,7 +24,8 @@ class WebRouter extends BaseRouter {
     }
 
     public function init($config = null) {
-        if (null == $config) {
+        if (null == $config)
+        {
             $routes = ConfigHandler::load('app.config.routing', 'routing', true);
         } else {
             $routes = $config;
@@ -70,7 +70,7 @@ class WebRouter extends BaseRouter {
     }
 
     /**
-     * Get Controller
+     * Get Controllers
      * 	ten controllers
      *
      * @return string
@@ -85,6 +85,7 @@ class WebRouter extends BaseRouter {
      * @return string
      */
     public function getCamelControllerName() {
+
         return $this->_camelControllerName;
     }
 
@@ -118,12 +119,14 @@ class WebRouter extends BaseRouter {
         for ($i = 0; $i < sizeof($route); ++$i) {
             $_camelName	= Inflection::camelize($route[$i]);
 
+            /**/
             $_path .= $_camelName .DIRECTORY_SEPARATOR;
-            if (false === (file_exists(Base::getAppPath().'/Controller/' .$_path))) {
+
+            if (false === (file_exists(Base::getAppPath().'/Controllers/' .$_camelName.'.php'))) {
                 break;
             } else {
                 $this->_camelControllerName = $_camelName;
-                $this->_controllerPath		= dirname($_path);
+                $this->_controllerPath		= $_path;
                 $this->_controller = $route[$i];
             }
         }
