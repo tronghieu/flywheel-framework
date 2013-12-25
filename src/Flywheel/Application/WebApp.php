@@ -43,7 +43,7 @@ class WebApp extends BaseApp
         $this->getEventDispatcher()->dispatch('onBeginRequest', new Event($this));
 
         //Session start
-		Factory::getSession()->start();
+        Factory::getSession()->start();
         $buffer = $this->_loadController();
         $response = Factory::getResponse();
         $response->setBody($buffer);
@@ -62,19 +62,13 @@ class WebApp extends BaseApp
     protected function _loadController($isRemap = false) {
         /* @var \Flywheel\Router\WebRouter $router */
         $router 		= Factory::getRouter();
-
         $controllerName	= $router->getCamelControllerName();
-
-        //$className		= $controllerName .'Controller';
-        $className		= $controllerName;
-
+        $className		= $this->getAppNamespace() ."\\Controller\\{$controllerName}";
         $controllerPath	= $router->getControllerPath();
 
-        if (file_exists(($file = $this->_basePath.DIRECTORY_SEPARATOR
-            .'Controllers'.DIRECTORY_SEPARATOR.$className.'.php'))){
-            require_once $file;
-        } else {
-            throw new NotFound404("Application: Controllers \"{$controllerName}\"[{$file}] does not existed!");
+        if (!file_exists(($file = $this->_basePath.DIRECTORY_SEPARATOR
+            .'Controller'.DIRECTORY_SEPARATOR .$controllerPath.$controllerName.'.php'))){
+            throw new NotFound404("Application: Controller \"{$controllerName}\"[{$file}] does not existed!");
         }
 
         /* @var \Flywheel\Controller\WebController _controller */
