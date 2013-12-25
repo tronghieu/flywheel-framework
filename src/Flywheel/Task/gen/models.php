@@ -1,11 +1,59 @@
 <?php
 use Flywheel\Db\Connection;
-use Flywheel\Db\Manager;
 use Flywheel\Util\Folder;
 use Flywheel\Util\Inflection;
+use Symfony\Component\Finder;
+use Symfony\Component\Filesystem;
+use Symfony\Component\Yaml;
 
-function get_help() {
-    return <<<EOD
+
+function models_execute() {
+    $params = func_get_arg(0);
+
+    $builder = new BuildModels();
+    if (isset($params['help'])) {
+        die($builder->get_help());
+    }
+
+    if(isset($params['table'])){
+        if(strpos($params['table'],',')!==false){
+            $builder->_specialModels = explode(',',$params['table']);
+        }else{
+            $builder->_specialModels[] = $params['table'];
+        }
+    }
+    $builder->mod = (isset($params['m']))? $params['m'] : 'preserve';
+    $builder->tbPrefix = (isset($params['prefix']))? $params['prefix'] : '';
+    $builder->package = (isset($params['pack']))? $params['pack']: '';
+
+
+    $builder->run();
+}
+
+class BuildModels {
+    public $mod;
+    public $tbPrefix;
+    public $package;
+    public $destinationDir;
+
+    public $_specialModels = array();
+    /**
+     * Connection Object
+     * @var Connection
+     */
+
+    private $pkField;
+
+    /**
+     * Construct BuildModels object
+     * @param Connection $conn
+     */
+    public function __construct() {
+        $this->destinationDir  = ROOT_PATH.'/model/';
+    }
+
+    public function get_help() {
+        return <<<EOD
 
 DESCRIPTION
   Generate object models (OM) from database.
@@ -18,137 +66,37 @@ USAGE
   command gen:models
 
 PARAMETER
-  --cnf:        database config key in "/global/config/db.cfg.php"
-                exp: --cnf=core
   --dir:        path/to/dir OM will be generated
                 <optional> default is "/global/model/"
 EOD;
-}
-
-function models_execute() {
-    $params = func_get_arg(0);
-
-    if (isset($params['help'])) {
-        echo get_help();
-        exit;
-    }
-
-    if (isset($params['config'])) { // using key
-        $conn = Manager::getConnection($params['config']);
-    } else {
-        throw new \Flywheel\Exception('missing "config" config key in user parameter');
-    }
-
-    $builder = new BuildModels($conn);
-    $builder->mod = (isset($params['m']))? $params['m'] : 'preserve';
-    $builder->tbPrefix = (isset($params['prefix']))? $params['prefix'] : '';
-    $builder->package = (isset($params['pack']))? $params['pack']: '';
-    $builder->destinationDir = (isset($params['dir']))? $params['dir'] .DIRECTORY_SEPARATOR: GLOBAL_PATH;
-    if (isset($params['igtbl'])) {
-        $builder->setIgnoreTables($params['igtbl']);
-    }
-
-    if (isset($params['igprefix'])) {
-        $builder->setIgnoreTablePrefixes($params['igprefix']);
-    }
-
-    if (isset($params['allow_tbl'])) {
-        $builder->setAllowTables($params['allow_tbl']);
-    }
-
-    if (isset($params['allow_prefix'])) {
-        $builder->setAllowTablePrefixes($params['allow_prefix']);
-    }
-
-    $builder->run();
-}
-
-class BuildModels {
-    public $mod;
-    public $tbPrefix;
-    public $package;
-    public $destinationDir;
-
-    /**
-     * Connection Object
-     * @var Connection
-     */
-    private $_conn;
-
-    private $pkField;
-
-    /**
-     * ignore table
-     * @var array
-     */
-    private $_igrTbls = array();
-
-    /**
-     * ignore by table prefix
-     * @var array
-     */
-    private $_igrTblPrefix = array();
-
-    private $_allowTbls = array();
-
-    private $_allowTblPrefix = array();
-
-    /**
-     * Construct BuildModels object
-     * @param Connection $conn
-     */
-    public function __construct(Connection $conn) {
-        $this->_conn = $conn;
-    }
-
-    /**
-     * set ignore tables list
-     * @param array $list
-     */
-    public function setIgnoreTables($list) {
-        if (null == $list) {
-            return;
-        }
-        $this->_igrTbls = explode(',', $list);
-    }
-
-    /**
-     * set ignore tables by prefixes
-     * @param string $prefixes
-     */
-    public function setIgnoreTablePrefixes($prefixes) {
-        $prefixes = trim($prefixes);
-
-        if (null == $prefixes) {
-            return;
-        }
-
-        $this->_igrTblPrefix = explode(',', $prefixes);
-    }
-
-    public function setAllowTables($list) {
-        if (null == $list) {
-            return;
-        }
-        $this->_allowTbls = explode(',', $list);
-    }
-
-    function setAllowTablePrefixes($prefixes) {
-        $prefixes = trim($prefixes);
-
-        if (null == $prefixes) {
-            return;
-        }
-
-        $this->_allowTblPrefix = explode(',', $prefixes);
     }
 
     /**
      * Get Tables List
      */
     private function _getTablesList() {
-        $stmt = $this->_conn->query('SHOW TABLES');
-        return $stmt->fetchAll(\PDO::FETCH_COLUMN);
+        $dir = ROOT_PATH.'/model/Structures/';
+
+        $finder = new Finder\Finder();
+        $finder->files()->in($dir);
+        $tables = array();
+
+        foreach ($finder as $file) {
+            $fileName = @$file->getRelativePathname();
+            $tmp = explode('.',$fileName);
+
+            $table = Inflection::camelCaseToHungary($tmp[0]);
+
+            if(!empty($this->_specialModels)){
+                if(true == in_array($table,$this->_specialModels)){
+                    $tables[] = $table;
+                }
+            }else{
+                $tables[] = $table;
+            }
+        }
+
+        return $tables;
     }
 
     /**
@@ -156,45 +104,38 @@ class BuildModels {
      *
      * @param string $table
      */
-    private function _getListTableColumn($table) {
-        $column = array();
-        $stmt = $this->_conn->query('DESCRIBE ' . $this->_conn->getAdapter()->quoteIdentifierTable($table));
-        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        for ($i = 0, $size = sizeof($result); $i < $size; ++$i) {
-            $val = array_change_key_case($result[$i], CASE_LOWER);
-            $decl = $this->getPortableDeclaration($val);
-            $values = isset($decl['values']) ? $decl['values'] : array();
+    public function _getSchemas($table) {
 
-            //$val['default'] = $val['default'] == 'CURRENT_TIMESTAMP' ? null : $val['default'];
+        $fileSystem = new Filesystem\Filesystem();
+        $dir = ROOT_PATH.'/model/Structures/';
+        $file = $dir.$table.'.yml';
 
-            $description = array(
-                'name'          => $val['field'],
-                'type'          => $decl['php_type'],
-                'db_type'        => $decl['type'][0],
-                'alltypes'      => $decl['type'],
-                'ntype'         => $val['type'],
-                'length'        => $decl['length'],
-                'fixed'         => (bool) $decl['fixed'],
-                'unsigned'      => (bool) $decl['unsigned'],
-                'values'        => $values,
-                'primary'       => (strtolower($val['key']) == 'pri'),
-                'unique'        => (strtolower($val['key']) == 'uni'),
-                'default'       => $val['default'],
-                'notnull'       => (bool) ($val['null'] != 'YES'),
-                'auto_increment' => (bool) (strpos($val['extra'], 'auto_increment') !== false),
-                'extra'         => strtolower($val['extra'])
-            );
-
-            if ($description['default'] == 'CURRENT_TIMESTAMP') {
-                $description['default'] = null;
-                $description['notnull'] = false;
-                $description['current_timestamp'] = true;
-            }
-
-            $column[$val['field']] = $description;
+        if(false == $fileSystem->exists($file)){
+            return false;
         }
+        $yaml = new Yaml\Yaml();
+        $values = $yaml->parse(file_get_contents($file));
+        return $values;
+    }
+    /**
+     * Get List Table Column
+     *
+     * @param string $table
+     */
+    public function _getListTableColumn($table) {
+        $values = $this->_getSchemas($table);
+        return $values['colums'];
+    }
 
-        return $column;
+    /**
+     * Get Config
+     *
+     * @param string $table
+     */
+
+    public function _getListTableConfig($table){
+        $values = $this->_getSchemas($table);
+        return $values['infos'];
     }
 
     /**
@@ -269,7 +210,6 @@ class BuildModels {
             case 'tinytext':
             case 'mediumtext':
             case 'longtext':
-            case 'text':
             case 'text':
             case 'varchar':
                 $fixed = false;
@@ -506,19 +446,20 @@ class BuildModels {
 
     }
 
-    private function _writeClassMagicProperties($column, &$infos) {
+    private function _writeClassMagicProperties($column, $infos) {
+
         $properties = array();
         $properties[] = $column;
-        if ($infos['primary'] == true) {
+        if (isset($infos['primary']) && $infos['primary']  == true) {
             $properties[] = 'primary';
             $this->pkField = $column;
         }
-        if ($infos['auto_increment'] == true) {
+        if (isset($infos['auto_increment']) && $infos['auto_increment'] == true) {
             $properties[] = 'auto_increment';
         }
         $properties[] = 'type : ' .$infos['ntype'];
 
-        if ($infos['type'] == 'string') {
+        if (isset($infos['type']) && $infos['type'] == 'string') {
             $properties[] = 'max_length : ' .$infos['length'];
         }
         $properties = ' * @property ' .$infos['type'] .' $' .$column .' ' .implode(' ', $properties) .PHP_EOL;
@@ -527,57 +468,25 @@ class BuildModels {
 
     private function _writeTableDefinition($name, &$columns) {
         return '';
-        $s = "        self::setDbConnectName('{$name}');" .PHP_EOL
-            .'        if (self::$_initFlag) {' .PHP_EOL
-            .'            return ;' .PHP_EOL
-            .'        }' .PHP_EOL
-            ."        self::setTableName('{$name}');" .PHP_EOL
-            ."        self::setPrimaryKeyField('{$this->pkField}');" .PHP_EOL;
-
-        foreach ($columns as $name => $property) {
-            $default = 'null';
-            if (isset($property['default']) && $property['default'] != null) {
-                if ($property['type'] == 'float' || $property['type'] == 'integer' || $property['type'] == 'decimal') {
-                    $default = $property['default'];
-                }
-                else {
-                    $default = '\'' .$property['default'] .'\'';
-                }
-            } else if ($property['notnull'] == true) {
-                if ($property['type'] == 'float' || $property['type'] == 'integer' || $property['type'] == 'decimal') {
-                    $default = '0';
-                }
-                else {
-                    $default = '\'\'';
-                }
-            }
-
-            $option = array();
-            if ($property['notnull'] != true) {
-                $option[] = '\'allow_null\' => true';
-            }
-
-            if (sizeof($option) > 0) {
-                $option = ', array('
-                    .'                '.implode(PHP_EOL, $option) .PHP_EOL
-                    .'            )';
-            } else {
-                $option = '';
-            }
-
-            $s .='        $this->hasColumn(\''.$name.'\', \'' .$property['type'] .'\', ' .$default .$option .');' .PHP_EOL;
-        }
-
-        return $s;
     }
 
-    private function _writeClassInfo($name, &$columns) {
+    private function _writeClassInfo($name, &$columns,$otherConfigs = array()) {
         $schema = '';
+        $_dbConnectName = $name;
+        if(isset($otherConfigs)){
+            if($otherConfigs['_dbConnectName']!=''){
+                $_dbConnectName = $otherConfigs['_dbConnectName'];
+            }
+        }
+
+
         $alias = strtolower($name[0]);
         $validate = '';
-        foreach ($columns as $n => $property) {
-            $schema .= $this->_writeColumnInfo($n, $property);
-            $validate .= $this->_writeColumnValidatingRule($n, $property);
+        if(!empty($columns)){
+            foreach ($columns as $n => $property) {
+                $schema .= $this->_writeColumnInfo($n, $property);
+                $validate .= $this->_writeColumnValidatingRule($n, $property);
+            }
         }
 
 
@@ -585,18 +494,17 @@ class BuildModels {
             .'    protected static $_phpName = \'' .Inflection::hungaryNotationToCamel($name) .'\';' .PHP_EOL
             .'    protected static $_pk = \'' .$this->pkField .'\';'.PHP_EOL
             .'    protected static $_alias = \'' .$alias .'\';' .PHP_EOL
-            .'    protected static $_dbConnectName = \'' .$name .'\';' .PHP_EOL
+            .'    protected static $_dbConnectName = \'' .$_dbConnectName .'\';' .PHP_EOL
             .'    protected static $_instances = array();' .PHP_EOL
             .'    protected static $_schema = array(' .PHP_EOL .$schema .'     );' .PHP_EOL
             .'    protected static $_validate = array(' .PHP_EOL .$validate .'    );' .PHP_EOL
             .'    protected static $_init = false;' .PHP_EOL
-            .'    protected static $_cols = array(\'' .implode("','", array_keys($columns)) .'\');' .PHP_EOL;
+            .'    protected static $_cols = array(\'' .@implode("','", array_keys($columns)) .'\');' .PHP_EOL;
 
         return $s;
     }
 
     private function _writeColumnInfo($name, $property) {
-        $default = 'null';
         $option = array();
         $option[] = "'name' => '{$property['name']}'";
         if (isset($property['default']) && $property['default'] != null) {
@@ -653,13 +561,6 @@ class BuildModels {
                 ."            )," .PHP_EOL;
         }
 
-        if ($property['type'] == 'string' && $property['length'] > 0) {
-            /*$option[] = "            array('name' => 'MaxLength'," .PHP_EOL
-                ."                'value' => {$property['length']}, " .PHP_EOL
-                ."                'message' => '{$real_name} is too long, can not be longer than {$property['length']} characters'," .PHP_EOL
-                ."            )," .PHP_EOL;*/
-        }
-
         if ($property['unique']) {
             $option[] = "            array('name' => 'Unique'," .PHP_EOL
                 ."                'message'=> '{$real_name}\\'s was used'" .PHP_EOL
@@ -675,69 +576,33 @@ class BuildModels {
         return null;
     }
 
-    private function _isInIgnoreList($column) {
-        if(count($this->_igrTbls) > 0) {
-            if (in_array($column, $this->_igrTbls)) {
-                return true;
-            }
-        }
+    private function _generateBaseModel($table) {
+        $dir = $this->getDestinationDir() .'Base/';
 
-        if (count($this->_igrTblPrefix) > 0) {
-            foreach ($this->_igrTblPrefix as $igPrefix) {
-                if(strpos($column, $igPrefix) === 0) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private function _isInAllowList($column) {
-        $return = true;
-        if(count($this->_allowTbls) > 0) {
-            $return = false;
-            if (in_array($column, $this->_allowTbls)) {
-                return true;
-            }
-        } else {
-            $return = true;
-        }
-
-        if (count($this->_allowTblPrefix) > 0) {
-            $return = false;
-            foreach ($this->_allowTblPrefix as $allowPrefix) {
-                if(strpos($column, $allowPrefix) === 0) {
-                    return true;
-                }
-            }
-        } else {
-            $return = true;
-        }
-
-        return $return;
-    }
-
-    private function _generateBaseModel($table, $class) {
-        $dir = $this->getDestinationDir() .'/model/Base/';
         //generate base model
+        $class = str_replace(' ', '', ucwords(str_replace('_', ' ', trim(str_replace($this->tbPrefix, '', $table), '_'))));
+
         $file = $dir .$class .'Base.php';
         Folder::create($dir);
+        /* colums get from yaml files */
         $columns = $this->_getListTableColumn($table);
+        $configs = $this->_getListTableConfig($table);
+        /* comment for new base Class */
         $classComment = $this->_writeClassComment($class);
-        $magicProperties = '';
-        $magicMethod = '';
-        foreach ($columns as $name => $property) {
-            $magicProperties .= $this->_writeClassMagicProperties($name, $property);
-            $magicMethod .= $this->_writeClassMagicMethod($class, $name, $property);
-        }
 
+        $magicProperties = $magicMethod = '';
+        if(!empty($columns)){
+            foreach ($columns as $name => $property) {
+                $magicProperties .= $this->_writeClassMagicProperties($name, $property);
+                $magicMethod .= $this->_writeClassMagicMethod($class, $name, $property);
+            }
+        }
         $buffer = sprintf($this->baseModelTemplate(),
             $classComment,
             $magicProperties,
             $magicMethod,
             $class .'Base',
-            $this->_writeClassInfo($table, $columns),
+            $this->_writeClassInfo($table, $columns,$configs),
             $this->_writeTableDefinition($table, $columns));
 
         $fp = @fopen($file, 'w');
@@ -754,21 +619,22 @@ class BuildModels {
         unset($name);
         unset($property);
         unset($classProperties);
-        echo 'generate om:' .'Base/' .$class.'Base.php' ." succeed!\n";
+        echo ' -- Generate om:' .'Base/' .$class.'Base.php' ." succeed!\n";
     }
 
     private function getDestinationDir()
     {
-        if (null == $this->destinationDir)
-            $this->destinationDir = GLOBAL_PATH;
         return $this->destinationDir;
     }
 
-    private function _generateModel($table, $class) {
-        $dir = $this->getDestinationDir() .'/model/';
+    private function _generateModel($table) {
+        $dir = $this->getDestinationDir();
+
+        $class = str_replace(' ', '', ucwords(str_replace('_', ' ', trim(str_replace($this->tbPrefix, '', $table), '_'))));
         $file = $dir .$class .'.php';
+
         if (file_exists($file)) {
-            return;
+            return false;
         }
 
         $classComment = $this->_writeClassComment($class);
@@ -786,29 +652,18 @@ class BuildModels {
 
         fwrite($fp, "<?php ".PHP_EOL .$buffer);
         fclose($fp);
-        echo 'generate om:' .$class .'.php' ." success!\n";
+        echo ' -- Generate om:' .$class .'.php' ." success!\n";
     }
 
     public function run() {
         $tables = $this->_getTablesList();
-//        $db = $this->conn->getDatabase();
+
         $this->package = Inflection::hungaryNotationToCamel($this->package);
+        echo "\n\n";
         for($i = 0, $size = sizeof($tables); $i < $size; ++$i) {
-            //check is in ignore list
-            $ignore = $this->_isInIgnoreList($tables[$i]);
-
-            //check allow list
-            $allow = $this->_isInAllowList($tables[$i]);
-
-            $build = (!$ignore) && $allow;
-
-            if (!$build) { //except table
-                continue;
-            }
-
-            $modelClass = str_replace(' ', '', ucwords(str_replace('_', ' ', trim(str_replace($this->tbPrefix, '', $tables[$i]), '_'))));
-            $this->_generateBaseModel($tables[$i], $modelClass);
-            $this->_generateModel($tables[$i], $modelClass);
+            $table = $tables[$i];
+            $this->_generateBaseModel($table);
+            $this->_generateModel($table);
         }
     }
 }
