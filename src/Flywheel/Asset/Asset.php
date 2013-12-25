@@ -57,8 +57,8 @@ class Asset {
     private $js_str, $css_str;
 
     function __construct() {
-        $site_config = Flywheel\Config\ConfigHandler::get('assets');
-        if (!$site_config) {
+        $config = Flywheel\Config\ConfigHandler::get('assets');
+        if (!$config) {
             throw new Exception('Config "assets" not found');
         }
 
