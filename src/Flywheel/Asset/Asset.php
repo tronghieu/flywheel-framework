@@ -25,23 +25,24 @@
 
 namespace Flywheel\Asset;
 
-use Flywheel\Factory;
-use Flywheel\Config\ConfigHandler as ConfigHandler;
-use Flywheel\Loader as Loader;
+use \Flywheel\Factory;
+use \Flywheel\Config\ConfigHandler;
+use \Flywheel\Loader as Loader;
 
 require_once('cssmin.php');
 require_once('jsmin.php');
 
 class Asset {
 
-    public $debug = true;
+    public $envi = 'dev';
     public $config;
-    public $base_url;
+    public $base_url, $base_path;
+    public $assets_dir, $assets_path;
     public $cache_dir, $cache_path, $cache_url;
     public $js_dir, $js_path, $js_url;
     public $css_dir, $css_path, $css_url;
     public $asset_uri = '';
-    public $minify = false;
+    public $minify = true;
     public $combine = true;
     private $_assets = array();
     private $_css = array();
@@ -50,13 +51,59 @@ class Asset {
     private $css_array = array('main' => array());
     private $js_str, $css_str;
 
-    function __construct($config = array()) {
-        $this->_path();
-        $site_config = \ConfigHandler::get('assets');
+    function __construct() {
+
+//        $site_config = Flywheel\Config\ConfigHandler::get('assets');        
+//        if (!$site_config) {
+//            throw new Exception('Config "assets" not found');
+//        }
+        $config = array(
+            'envi' => 'prod',
+            'combine' => true,
+            'minify' => true,
+            'base_url' => '',
+            'assets_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets',
+            'assets_dir' => 'assets',
+            'base_path' => 'assets',
+            'cache_dir' => 'cache',
+            'cache_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets\cache', //
+            'cache_url' => 'cache', // base_url/cache_dr
+            'js_dir' => 'js',
+            'js_path' => 'js', //
+            'js_url' => 'js',
+            'css_dir' => 'css',
+            'css_path' => 'css', //
+            'css_url' => 'css',
+        );
         $this->_config($config);
     }
 
-    function _config($config) {
+    private function _path() {
+
+        $this->base_url = "http://" . $_SERVER['HTTP_HOST'];
+        $this->base_url .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
+        $this->base_path = realpath($this->assets_path);
+        if (!$this->base_url) {
+            $this->base_url = \ConfigHandler::get('assets.base_url') . $this->assets_dir;
+        } else
+            $this->base_url = $this->base_url . $this->assets_dir;
+
+
+        if (stripos($this->base_url, '//') === 0) {
+            $slash = '/';
+        } else {
+            $slash = '';
+        }
+
+        $this->cache_path = $this->base_path . '/' . $this->cache_dir . '/';
+        $this->cache_url = $slash . $this->base_url . '/' . $this->cache_dir . '/';
+        $this->js_path = $this->base_path . '/' . $this->js_dir . '/';
+        $this->js_url = $slash . $this->base_url . '/' . $this->js_dir . '/';
+        $this->css_path = $this->base_path . '/' . $this->css_dir . '/';
+        $this->css_url = $slash . $this->base_url . '/' . $this->css_dir . '/';
+    }
+
+    private function _config($config) {
         foreach ($config as $key => $value) {
             if ($key == 'groups') {
                 foreach ($value as $group_name => $assets) {
@@ -67,62 +114,85 @@ class Asset {
             $this->$key = $value;
         }
 
-
-        if (!$this->base_url) {
-            $base_url = "http://" . $_SERVER['HTTP_HOST'];
-            $base_url .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
-
-            $this->base_path = reduce_double_slashes(realpath($this->assets_dir));
-            $this->base_url = $base_url . $this->asset_dir;
-        } else {
-            $this->base_url = $this->base_url . $this->assets_dir;
-        }
+        $this->_path();
     }
 
-    static function display($type, $group = NULL) {
+    public function display($type, $group = NULL) {
         switch (strtolower($type)) {
             case 'js':
                 $this->_display_js();
-                $this->_display_js_string();
                 break;
             case 'css':
                 $this->_display_css();
-                $this->_display_css_string();
-                break;
-            case 'both':
-                $this->_display_js();
-                $this->_display_js_string();
-                $this->_display_css();
-                $this->_display_css_string();
                 break;
             default:
+                $this->_display_js();
+                $this->_display_css();
                 break;
         }
     }
 
     private function _display_js($group = 'main') {
-        if (empty($this->js)) {
+        //print_r($this->_js);die;
+        if (empty($this->_js)) {
             return;
         }
-        if (!isset($this->js[$group])) {
+        if (!isset($this->_js[$group])) {
             return;
         }
-        $jsfiles = $this->js[$group];
+        $files = $this->_js[$group];
+        $cfiles = array();
         if ($this->envi == 'dev') {
-            foreach ($jsfiles AS $jsf) {
-                $this->print_tag($jsf, 'js', '', $echo);
+            foreach ($files AS $fl) {
+                $url = $this->js_url . $fl;
+                $this->print_tag($url, 'js', '', true);
             }
         } elseif ($this->combine == true && $this->minify == true) {
             $now = time();
             $cache_name = '';
-            $last_modified = 0;
+            $last_modified = 000000000;
 
-            foreach ($jsfiles AS $file) {
+            foreach ($files AS $file) {
                 $lastmodified = max($lastmodified, filemtime(realpath($this->js_path . $file)));
                 $cache_name .= $file;
+
+                $cfiles[] = $file;
             }
-            $cache_name = $this->cache_path . $lastmodified . '.' . md5($cache_name) . '.js';
-            $jsr = $this->_combine('js', $cache_name);
+            $cache_name = $lastmodified . '.' . md5($cache_name) . '.js';
+            $this->_combine('js', $this->cache_path . $cache_name);
+            echo $this->_print_cache($cache_name, 'js');
+        }
+    }
+
+    private function _display_css($group = 'main') {
+        //print_r($this->_css);die;
+        if (empty($this->_css)) {
+            return;
+        }
+        if (!isset($this->_css[$group])) {
+            return;
+        }
+        $files = $this->_css[$group];
+        $cfiles = array();
+        if ($this->envi == 'dev') {
+            foreach ($files AS $fl) {
+                $url = $this->css_url . $fl;
+                $this->print_tag($url, 'css', '', true);
+            }
+        } elseif ($this->combine == true) {
+            $now = time();
+            $cache_name = '';
+            $last_modified = 000000000;
+
+            foreach ($files AS $file) {
+                $lastmodified = max($lastmodified, filemtime(realpath($this->css_path . $file)));
+                $cache_name .= $file;
+
+                $cfiles[] = $file;
+            }
+            $cache_name = $lastmodified . '.' . md5($cache_name) . '.css';
+            $this->_combine('css',$cfiles, $this->cache_path . $cache_name);
+            echo $this->_print_cache($cache_name, 'css');
         }
     }
 
@@ -139,26 +209,27 @@ class Asset {
     }
 
     //Add css
-    static function css($files, $group = 'main') {
+    public function css($files, $group = 'main') {
         if (is_string($files)) {
             $files = array($files);
         }
         foreach ($files AS $file) {
-            $this->_assets('css', $file);
+            $this->_assets('css', $file, $group);
         }
     }
 
     //add js
-    static function js() {
+    public function js($files, $group = 'main') {
         if (is_string($files)) {
             $files = array($files);
         }
         foreach ($files AS $file) {
-            $this->_assets('js', $file);
+            $this->_assets('js', $file, $group);
         }
     }
 
     private function _assets($type, $file, $group = 'main') {
+        //print_r($group);die;
         if ($type == 'css') {
             $this->_css[$group][] = $file;
         }
@@ -177,7 +248,7 @@ class Asset {
     }
 
     public function print_tag($file = '', $type = 'css', $attributes = '', $echo = true) {
-
+        $str = '';
         if ($type === 'css') {
             $str = '<link type="text/css" href="' . $file . '"' . $attributes . ' />' . PHP_EOL;
         } elseif ($type === 'js') {
@@ -187,6 +258,16 @@ class Asset {
             echo $str;
         } else {
             return $str;
+        }
+    }
+
+    public function _print_cache($file = '', $type = 'css') {
+        $url = $this->cache_url . $file;
+
+        if ($type === 'css') {
+            return $str = '<link type="text/css" href="' . $url . '"' . $attributes . ' />' . PHP_EOL;
+        } elseif ($type === 'js') {
+            return '<script src="' . $url . '" type="text/javascript"></script>' . PHP_EOL;
         }
     }
 
@@ -235,9 +316,7 @@ class Asset {
     }
 
     private function _minify($type, $file_path) {
-        if (!file_exists($file_path)) {
-            throw new Exception('File ' . $file_path . ' does not exist');
-        }
+        
         $file_content = $this->_get_file_string($file_path);
         switch ($type) {
             case 'css':
@@ -251,66 +330,49 @@ class Asset {
         }
     }
 
-    private function _combine($type, $files) {
+    private function _combine($type, $files, $file_name) {
         $file_content = '';
         $file_path = '';
-
+        if (!is_dir($this->cache_path)) {
+            if (!mkdir($this->cache_path, 0777, true)) {
+                throw new Exception('Cache folder ' . $this->cache_path . ' does not exist');
+                die;
+            }
+        }
         switch ($type) {
             case 'css':
-                $file_path = $this->css_path;
+                
                 foreach ($files AS $file) {
-                    if ($this->minify_css) {
-                        $file_content .= $this->_minify($file_path);
+                    $file_path = $this->css_path.$file;
+                    if (!file_exists($file_path)) {
+                        throw new Exception('File ' .$file_path. ' does not exist');
+                        die;
+                    }
+                    if ($this->minify) {
+                        $file_content .= $this->_minify('css', $file_path);
                     } else {
-                        $file_content .= $this->_get_file_string($file_path);
+                        $file_content .= $this->_get_file_string('css', $file_path);
                     }
                 }
+                
                 break;
             case 'js':
                 $file_path = $this->js_path;
                 foreach ($files AS $file) {
-                    if ($this->minify_js) {
-                        $file_content .= $this->_minify($file_path);
+                    $file_path = $this->js_path.$file;
+                    if ($this->minify) {
+                        $file_content .= $this->_minify('js',$file_path);
                     } else {
-                        $file_content .= $this->_get_file_string($file_path);
+                        $file_content .= $this->_get_file_string('js',$file_path);
                     }
                 }
                 break;
             default:
                 break;
         }
+        //echo $file_content;die;
         $this->_save_cache($file_name, $file_content);
     }
-
-//    private function _path() {
-//
-//        $this->base_url = "http://" . $_SERVER['HTTP_HOST'];
-//        $this->base_url .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
-//
-//        $this->base_path = reduce_double_slashes(realpath($this->assets_dir));
-//
-//        // Now set the assets base URL
-//        if (!$this->base_url) {
-//            $this->base_url = reduce_double_slashes(\ConfigHandler::get('assets.base_url') . '/' . $this->assets_dir);
-//        } else
-//            $this->base_url = $this->base_url . $this->assets_dir;
-//
-//        // Auto protocol
-//        if (stripos($this->base_url, '//') === 0)
-//            $slash = '/';
-//        else
-//            $slash = '';
-//
-//        // And finally the paths and URL's to the css and js assets
-//        $this->js_path = reduce_double_slashes($this->base_path . '/' . $this->js_dir);
-//        $this->js_url = $slash . reduce_double_slashes($this->base_url . '/' . $this->js_dir);
-//        $this->css_path = reduce_double_slashes($this->base_path . '/' . $this->css_dir);
-//        $this->css_url = $slash . reduce_double_slashes($this->base_url . '/' . $this->css_dir);
-//        $this->img_path = reduce_double_slashes($this->base_path . '/' . $this->img_dir);
-//        $this->img_url = $slash . reduce_double_slashes($this->base_url . '/' . $this->img_dir);
-//        $this->cache_path = reduce_double_slashes($this->base_path . '/' . $this->cache_dir);
-//        $this->cache_url = $slash . reduce_double_slashes($this->base_url . '/' . $this->cache_dir);
-//    }
 
     private function _get_url($url) {
         $ch = curl_init();
@@ -329,8 +391,7 @@ class Asset {
     }
 
     public function _save_cache($file_name, $file_data) {
-        $filepath = $this->cache_path . $filename;
-        $result = file_put_contents($filepath, $file_data);
+        $result = file_put_contents($file_name, $file_data);
         return $result;
     }
 
