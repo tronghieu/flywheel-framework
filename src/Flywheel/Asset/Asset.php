@@ -3,7 +3,7 @@
 /**
  * Asset Management for Flywheel Framework
  *  'assets' => array(
- *      'section' => array(
+ *      'default' => array(
  *         'environment' => 'dev', // dev||product * 
  * *       'base_url' => '',
  * *       'cache_dir' => '',
@@ -56,7 +56,25 @@ class Asset {
         $config = Flywheel\Config\ConfigHandler::get('assets');
         if (!$config) {
             throw new Exception('Config "assets" not found');
-        }   
+        }
+        $default = array(
+            'envi' => 'prod',
+            'combine' => true,
+            'minify' => true,
+            'base_url' => '',
+            'assets_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets',
+            'assets_dir' => 'assets',
+            'base_path' => 'assets',
+            'cache_dir' => 'cache',
+            'cache_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets\cache', //
+            'cache_url' => 'cache', // base_url/cache_dr
+            'js_dir' => 'js',
+            'js_path' => 'js', //
+            'js_url' => 'js',
+            'css_dir' => 'css',
+            'css_path' => 'css', //
+            'css_url' => 'css',
+        );
         $config = $config[$section];
         $this->_config($config);
     }
@@ -100,17 +118,17 @@ class Asset {
         $this->_path();
     }
 
-    public function display($type, $group = NULL) {
+    public function display($type, $group = 'main') {
         switch (strtolower($type)) {
             case 'js':
-                $this->_display_js();
+                $this->_display_js($group);
                 break;
             case 'css':
-                $this->_display_css();
+                $this->_display_css($group);
                 break;
             default:
-                $this->_display_js();
-                $this->_display_css();
+                $this->_display_js($group);
+                $this->_display_css($group);
                 break;
         }
     }
