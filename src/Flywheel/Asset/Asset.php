@@ -3,23 +3,30 @@
 /**
  * Asset Management for Flywheel Framework
  * $config = array(
-  'envi' => 'prod',
-  'combine' => true,
-  'minify' => true,
-  'base_url' => '',
-  'assets_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets',
-  'assets_dir' => 'assets',
-  'base_path' => 'assets',
-  'cache_dir' => 'cache',
-  'cache_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets\cache', //
-  'cache_url' => 'cache', // base_url/cache_dr
-  'js_dir' => 'js',
-  'js_path' => 'js', //
-  'js_url' => 'js',
-  'css_dir' => 'css',
-  'css_path' => 'css', //
-  'css_url' => 'css',
+        'envi' => 'dev',
+        'combine' => true,
+        'minify' => true,
+        'base_url' => '',
+        'assets_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets',
+        'assets_dir' => 'assets',
+        'base_path' => 'assets',
+        'cache_dir' => 'cache',
+        'cache_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets\cache', //
+        'cache_url' => 'cache', // base_url/cache_dr
+        'js_dir' => 'js',
+        'js_path' => 'js', //
+        'js_url' => 'js',
+        'css_dir' => 'css',
+        'css_path' => 'css', //
+        'css_url' => 'css',
   );
+ * 
+ * How to use
+ * 
+ * $cache = new \Flywheel\Asset\Asset;
+ * $cache->js('file.css','group_name');
+ * $cache->js('js.css','group_name');
+ * $cache->display(); 
  * @author tradade
  */
 
