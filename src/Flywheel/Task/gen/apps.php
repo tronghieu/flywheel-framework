@@ -23,13 +23,13 @@ function apps_execute() {
 
 class BuildApps {
     public  $appType = '',
-            $appName = '',
-            $destinationDir = '';
+        $appName = '',
+        $destinationDir = '';
     public $structApps = array(
         //Web Application
         'w' => array(
-            'Controllers',
-            'Templates',
+            'Controller',
+            'Template',
             'Widget',
             'Config',
             'Library'
@@ -42,7 +42,7 @@ class BuildApps {
         ),
         //Api Application
         'a'=> array(
-            'Controllers',
+            'Controller',
             'Library',
             'Config'
         )
@@ -85,15 +85,15 @@ class BuildApps {
             case 'w':
                 $app = new BuildAppWeb($config);
                 $classGenerated = $app->run();
-                    break;
+                break;
             case 'c':
                 $app = new BuildAppConsole($config);
                 $classGenerated = $app->run();
-                    break;
+                break;
             case 'a':
                 $app = new BuildAppApi($config);
                 $classGenerated = $app->run();
-                    break;
+                break;
         }
         return $classGenerated;
     }
@@ -161,16 +161,17 @@ class BuildAppWeb {
         $cameHungaryApp = Inflection::hungaryNotationToCamel($this->appName);
         $temp = "<?php".PHP_EOL;
         $temp.= "defined('APP_PATH') or define('APP_PATH', dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR);".PHP_EOL.
-                "\\Flywheel\\Loader::addNamespace('".$cameHungaryApp."', dirname(APP_PATH));\n\n";
+            "\\Flywheel\\Loader::addNamespace('".$cameHungaryApp."', dirname(APP_PATH));\n\n";
         $temp.=
-              "return array(" .PHP_EOL
+            "return array(" .PHP_EOL
             . "  'app_name'=>'".$cameHungaryApp."',".PHP_EOL
             . "  'app_path'=> APP_PATH,".PHP_EOL
-            . "  'view_path'=> APP_PATH .DIRECTORY_SEPARATOR.'Templates/',".PHP_EOL
+            . "  'view_path'=> APP_PATH .DIRECTORY_SEPARATOR.'Template/',".PHP_EOL
             . "  'import'=>array(".PHP_EOL
             . "    'app.Library.*',".PHP_EOL
-            . "    'app.Controllers.*'".PHP_EOL
+            . "    'app.Controller.*'".PHP_EOL
             . "  ),".PHP_EOL
+            . "  'namespace'=> '".$cameHungaryApp."',".PHP_EOL
             . "  'timezone'=>'Asia/Ho_Chi_Minh',".PHP_EOL
             . "  'template'=>'Default'".PHP_EOL
             . ');';
@@ -188,7 +189,7 @@ class BuildAppWeb {
         $temp = "<?php".PHP_EOL;
 
         $temp.=
-              '$r = array(' .PHP_EOL
+            '$r = array(' .PHP_EOL
             . '  \'__urlSuffix__\'=>\'.html\','.PHP_EOL
             . '  \'__remap__\'=> array('.PHP_EOL
             . '     \'route\'=>\'home/default\''.PHP_EOL
@@ -237,17 +238,13 @@ class BuildAppWeb {
     public function _generateDefaultController(){
         $fs = new Filesystem\Filesystem();
 
-        /*$destinationDir = $this->appDir.'Controllers'.DIRECTORY_SEPARATOR.'Default'.DIRECTORY_SEPARATOR;
-
-        if($fs->exists($destinationDir) === false) {
-            $fs->mkdir($destinationDir,0755);
-        }*/
-
-        $baseClass = $this->appName.'Base';
         $class = Inflection::hungaryNotationToCamel($this->appName);
-        $destinationDefaultFile = $this->appDir.'Controllers'.DIRECTORY_SEPARATOR.$class.'.php';
-        $temp = '<?php '.PHP_EOL;
+        $baseClass = $class.'Base';
+
+        $destinationDefaultFile = $this->appDir.'Controller'.DIRECTORY_SEPARATOR.$class.'.php';
+        $temp = '<?php'.PHP_EOL;
         $temp.=
+            'use '.$class.'\Controller\\'.$baseClass.';'.PHP_EOL.
             'class '.$class.' extends '.$baseClass.'{'.PHP_EOL
             . '' . PHP_EOL
             . '    public function executeDefault(){'.PHP_EOL
@@ -265,12 +262,16 @@ class BuildAppWeb {
         $temp = "<?php".PHP_EOL;
         $class = $this->appName.'Base';
 
-        $webController = '\Flywheel\Controller\WebController';
+        $webController = 'WebController';
+        $appName = Inflection::hungaryNotationToCamel($this->appName);
+
+        $temp.='namespace '.$appName.'\Controller;'.PHP_EOL
+               .'use Flywheel\Controller\WebController;'.PHP_EOL;
         $temp.='abstract class '.$class.' extends '.$webController.'{'.PHP_EOL
             . '' . PHP_EOL
             . '}' . PHP_EOL;
         $fs = new Filesystem\Filesystem();
-        $destinationDir = $this->appDir.'Controllers'.DIRECTORY_SEPARATOR.$class.'.php';
+        $destinationDir = $this->appDir.'Controller'.DIRECTORY_SEPARATOR.$class.'.php';
         if($fs->exists($destinationDir) === false){
             $fs->dumpFile($destinationDir,$temp);
             echo "-- ".$class." is generated success !\n";
@@ -281,37 +282,37 @@ class BuildAppWeb {
 
     public function _generateDefaultTemplate(){
 
-        $destinationDir = $this->appDir.'Templates'.DIRECTORY_SEPARATOR.'Default'.DIRECTORY_SEPARATOR;
+        $destinationDir = $this->appDir.'Template'.DIRECTORY_SEPARATOR.'Default'.DIRECTORY_SEPARATOR;
 
         $fs = new Filesystem\Filesystem();
         if($fs->exists($destinationDir) === false) {
             $fs->mkdir($destinationDir,0755);
             $defaultLayout = $destinationDir.DIRECTORY_SEPARATOR.'default.phtml';
             $template =
-'<!DOCTYPE html>
-<html>
-    <head>
-        <title>Hello Word</title>
-    </head>
-    <body>
-        <?php echo $buffer; ?>
-    </body>
-</html>';
+                '<!DOCTYPE html>
+                <html>
+                    <head>
+                        <title>Hello Word</title>
+                    </head>
+                    <body>
+                        <?php echo $buffer; ?>
+                    </body>
+                </html>';
             if($fs->exists($defaultLayout) == false){
                 $fs->dumpFile($defaultLayout,$template);
             }
             echo "-- Default/Template generated success !".PHP_EOL;
         }
 
-        $destinationDirController = $destinationDir.DIRECTORY_SEPARATOR.'Controllers';
+        $destinationDirController = $destinationDir.DIRECTORY_SEPARATOR.'Controller';
         if($fs->exists($destinationDirController) === false) {
 
             $fs->mkdir($destinationDirController,0755);
 
-            echo "-- Template/Controllers generated success !".PHP_EOL;
+            echo "-- Template/Controller generated success !".PHP_EOL;
         }
         /*
-         * Gen Default folder in Controllers Folder
+         * Gen Default folder in Controller Folder
          * */
         $childFolderDefault = $destinationDirController.DIRECTORY_SEPARATOR
             .Inflection::hungaryNotationToCamel($this->appName);
@@ -347,8 +348,8 @@ class BuildAppWeb {
 }
 class BuildAppConsole{
     public  $appType = 'console',
-            $appName = '',
-            $appDir = '';
+        $appName = '',
+        $appDir = '';
 
     public function __construct($config = array()){
         if(isset($config['name'])) $this->appName = Inflection::hungaryNotationToCamel($config['name']);
@@ -398,6 +399,7 @@ class BuildAppConsole{
             . "    'app.Library.*',".PHP_EOL
             . "    'app.Task.*'".PHP_EOL
             . "  ),".PHP_EOL
+            . "  'namespace'=> '".$cameHungaryApp."',".PHP_EOL
             . "  'timezone'=>'Asia/Ho_Chi_Minh',".PHP_EOL
             . ');';
         $fs = new Filesystem\Filesystem();
@@ -428,7 +430,13 @@ class BuildAppConsole{
         $temp = "<?php".PHP_EOL;
         $class = $this->appName.'Base';
 
-        $webController = '\Flywheel\Controller\ConsoleTask';
+        $webController = 'ConsoleTask';
+        $appName = Inflection::hungaryNotationToCamel($this->appName);
+
+        $temp.='namespace '.$appName.'\Task;'.PHP_EOL;
+
+        $temp.='use Flywheel\Controller\ConsoleTask;'.PHP_EOL;
+
         $temp.='abstract class '.$class.' extends '.$webController.'{'.PHP_EOL
             . '' . PHP_EOL
             . '}' . PHP_EOL;
@@ -451,8 +459,8 @@ class BuildAppConsole{
 class BuildAppApi {
 
     public  $appType = 'api',
-            $appName = '',
-            $appDir = '';
+        $appName = '',
+        $appDir = '';
 
     public function __construct($config = array()){
         if(isset($config['name'])) $this->appName = Inflection::hungaryNotationToCamel($config['name']);
@@ -497,9 +505,10 @@ class BuildAppApi {
             . "  'app_name'=>'".$cameHungaryApp."',".PHP_EOL
             . "  'app_path'=> APP_PATH,".PHP_EOL
             . "  'import'=>array(".PHP_EOL
-            . "    'app.Library.*'".PHP_EOL
-            . "    'app.Controllers.*'".PHP_EOL
+            . "    'app.Library.*',".PHP_EOL
+            . "    'app.Controller.*'".PHP_EOL
             . "  ),".PHP_EOL
+            . "  'namespace'=> dirname(APP_PATH),".PHP_EOL
             . "  'timezone'=>'Asia/Ho_Chi_Minh',".PHP_EOL
             . ');';
         $fs = new Filesystem\Filesystem();
@@ -528,14 +537,19 @@ class BuildAppApi {
 
     public function _generateBaseController(){
         $temp = "<?php".PHP_EOL;
-        $class = $this->appName.'BaseController';
+        $appName = Inflection::hungaryNotationToCamel($this->appName);
+        $class = $this->appName.'Base';
 
-        $webController = '\Flywheel\Controller\ApiController';
+        $webController = 'ApiController';
+
+        $temp.='namespace '.$appName.'\Controller;'.PHP_EOL;
+        $temp.='use Flywheel\Controller\ApiController;'.PHP_EOL;
+
         $temp.='abstract class '.$class.' extends '.$webController.'{'.PHP_EOL
             . '' . PHP_EOL
             . '}' . PHP_EOL;
         $fs = new Filesystem\Filesystem();
-        $destinationDir = $this->appDir.'Controllers'.DIRECTORY_SEPARATOR.$class.'.php';
+        $destinationDir = $this->appDir.'Controller'.DIRECTORY_SEPARATOR.$class.'.php';
         if($fs->exists($destinationDir) === false){
             $fs->dumpFile($destinationDir,$temp);
             echo "-- ".$class." is generated success !\n";
