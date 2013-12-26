@@ -33,7 +33,7 @@ class Factory
     /**
      * get response
      * @param null $name
-     * @return \Flywheel\Router\BaseRouter
+     * @return \Flywheel\Router\WebRouter | \Flywheel\Router\ApiRouter
      */
     public static function getRouter($name = null) {
         if (!isset(self::$_registry['router'])) {
