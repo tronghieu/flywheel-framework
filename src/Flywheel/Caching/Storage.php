@@ -12,19 +12,32 @@ class Storage extends Object {
     protected $_group;
     protected $_key;
     protected $_path;
+    protected $_cachePath;
     protected static $_instances = array();
-    var $option;
-    var $storage;
+    public static $config;
+    public static $storage;
+    var $option = array();
+    var $tmp = array();
 
     public function __construct($key, $option = array()) {
+
         $hash = (isset($option['hash'])) ?
                 $option['hash'] : null;
 
         if (!$hash) {
-            $hash = $config['__hash__'];
+            $hash = $option['hash'];
         }
-        //$this->storage = $config['storage'];
-        //$this->option = $config['option'];
+        if ($key == "") {
+            $key = self::$storage;
+            self::option("storage", $key);
+        } else {
+            self::$storage = $key;
+        }
+//        print_r(self::$config);
+//        die;
+        $this->tmp['storage'] = $key;
+        $this->option = array_merge($this->option, self::$config, $option);
+
         $this->_hash = md5($hash);
         $this->_group = (isset($option['group'])) ? $option['group'] : $key;
         $this->_key = $key;
@@ -37,13 +50,18 @@ class Storage extends Object {
         $configs = ConfigHandler::get('caching');
         $configs = array(
             '__enable__' => true,
-            '__default__' => 'widget',
-            '__hash__' => '-8/RsLPePPy54BtNGBm*MqX7=vn8>j6QHJGG~49AN',
+            'default' => 'widget',
+            'hash' => '-8/RsLPePPy54BtNGBm*MqX7=vn8>j6QHJGG~49AN',
+            'path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets\cache',
+            'cachePath' => '',
             'file' => array(
-                '__path__' => '',
+                'storage' => 'file',
+                'option' => array(
+                    'path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets\cache',
+                ),
             ),
             'widget' => array(
-                'storage' => 'Apc',
+                'storage' => 'apc',
                 'option' => array(
                     'group' => 'html'
                 ),
@@ -56,7 +74,18 @@ class Storage extends Object {
                 ),
             ),
             'memcache' => array(
-                'storage' => 'Memcache',
+                'storage' => 'memcache',
+                'option' => array(
+                    'servers' => array('default' => array(
+                            'host' => 'localhost',
+                            'port' => 11211,
+                            'weight' => 1,
+                            'timeout' => 300
+                        ))
+                ),
+            ),
+             'memcached' => array(
+                'storage' => 'memcached',
                 'option' => array(
                     'servers' => array('default' => array(
                             'host' => 'localhost',
@@ -67,11 +96,15 @@ class Storage extends Object {
                 ),
             ),
         );
+        self::$config = $configs;
 
-        $key = $key ? $key : $configs['__default__'];
+        $key = $key ? $key : $configs['default'];
         $option = $configs[$key];
+
+
         if (!isset(self::$_instances[$option['storage']])) {
-            $class = "\\Flywheel\Caching\\Storage\\" . $option['storage'];
+            $class = "\\Flywheel\Caching\\Storage\\Cache_" . $option['storage'];
+            //echo $class;die;
             self::$_instances[$key] = new $class($key, $option['option']);
         }
 
@@ -89,8 +122,65 @@ class Storage extends Object {
         return $this->_hash . '-cache-' . $this->_group . '-' . $name;
     }
 
+    function option($name, $value = null) {
+        if ($value == null) {
+            if (isset($this->option[$name])) {
+                return $this->option[$name];
+            } else {
+                return null;
+            }
+        } else {
+            self::$config[$name] = $value;
+            $this->option[$name] = $value;
+            return $this;
+        }
+    }
+
     public function set_option($option = array()) {
+        //print_r($option);die;
+
         $this->option = array_merge($this->option, $option);
+    }
+
+    public function get_path($path = false) {
+        //print_r($this->option);die;
+        if ($this->option['path'] == "" && self::$config['path'] != "") {
+            $this->option("path", self::$config['path']);
+        }
+
+
+        if ($this->option['path'] == '') {
+            if ($this->isPHPModule()) {
+                $tmp_dir = ini_get('upload_tmp_dir') ? ini_get('upload_tmp_dir') : sys_get_temp_dir();
+                $this->option("path", $tmp_dir);
+            } else {
+                $this->option("path", dirname(__FILE__));
+            }
+
+            if (self::$config['path'] == "") {
+                self::$config['path'] = $this->option("path");
+            }
+        }
+
+        $full_path = $this->option("path") . "/" . $this->option("hash") . "/";
+
+        if ($path == false) {
+
+            if (!file_exists($full_path) || !is_writable($full_path)) {
+                if (!file_exists($full_path)) {
+                    @mkdir($full_path, 0777);
+                }
+                if (!is_writable($full_path)) {
+                    @chmod($full_path, 0777);
+                }
+                if (!file_exists($full_path) || !is_writable($full_path)) {
+                    throw new Exception("You will need create a folder named " . $this->option("path") . "/" . $this->option("hash") . "/ and chmod 0777 to use file cache");
+                }
+            }
+        }
+
+        $this->option['cachePath'] = $full_path;
+        return $this->option['cachePath'];
     }
 
 }
