@@ -5,7 +5,7 @@ namespace Flywheel\Mongodb;
 
  //$a=new hoang();
 
-class MongoConnection {
+class Connection {
 	
 	private $dbHost = '';
 	private $dbName = '';
@@ -16,7 +16,7 @@ class MongoConnection {
 	public function __construct($host,$port,$name) {
     	//echo '++++'.$host.$port.$name.'<br>';
 		$this->dbHost = $host;
-		$this->conn = new \MongoClient("mongodb://".$this->dbHost);
+		$this->conn = new \MongoClient("mongodb://".$this->dbHost);//mongodb://:@localhost:27017    
 		$this->db = $this->conn->$name;
 
 		//print_r($this->conn->hoang->find());

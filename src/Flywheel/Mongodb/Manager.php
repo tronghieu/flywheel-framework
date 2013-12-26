@@ -2,7 +2,7 @@
 namespace Flywheel\Mongodb;
 use Flywheel\Object;
 
-class MongoManager  extends Object{
+class Manager  extends Object{
  
 private static $configuration;
 

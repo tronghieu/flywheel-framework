@@ -1,7 +1,7 @@
 <?php
 namespace Flywheel\Mongodb;
 
-class MongoCriteria {
+class Criteria {
 	public static $limit;
     public static $skip;
     public static $condition;

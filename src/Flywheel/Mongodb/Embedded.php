@@ -5,7 +5,7 @@ use Flywheel\Object;
 
 
 
-class MongoEmbedded extends Object{
+class Embedded extends Object{
 	protected static $_embedded_name;
     //protected static $mongoId;
     protected  static $isNew;
@@ -22,7 +22,7 @@ class MongoEmbedded extends Object{
         //$this->init();
          $this->isNew = 1;//'true';
 
-         echo 'ds'. $this->isNew;
+       //  echo 'ds'. $this->isNew;
         if (!empty($data)) {  
             $this->hydrate($data);
        }

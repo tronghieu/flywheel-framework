@@ -3,7 +3,7 @@ namespace Flywheel\Mongodb;
 
 use Flywheel\Object;
 
-class MongoDocument extends Object{
+class Document extends Object{
 	protected static $_tableName;
     protected static $mongoId;
     protected  static $isNew;
@@ -15,6 +15,19 @@ class MongoDocument extends Object{
 	}
 	*/
 	  public function __construct($data = null) { 
+         $list_embedded=$this->embeddedDocuments();
+        foreach ($this->_schema  as $p => $q) {
+                if (isset($list_embedded[$p]))  { 
+                    $a=$list_embedded[$p];  
+                 //  $contruct_data=$data[$p];
+                    $this->_data[$p]= new $a() ;  
+                    $this->$p= new $a() ; 
+                }
+                else {  //echo $data[$p];
+                    $this->$p= $data[$p]; 
+                     $this->_data[$p] = $data[$p]; 
+                }
+          }      
        // $this->setTableDefinition();
         //$this->_initDataValue();
         //$this->init();
@@ -41,9 +54,9 @@ class MongoDocument extends Object{
         $list_embedded=$this->embeddedDocuments();
             foreach ($this->_schema  as $p => $q) {
                 if (isset($list_embedded[$p]))  {
-                    $a=$list_embedded[$p];
+                    $a=$list_embedded[$p];  echo $a;
                     $contruct_data=$data[$p];
-                    $this->_data[$p]= new $a($contruct_data) ;  
+                    $this->_data[$p]= $contruct_data; // new $a($contruct_data) ;  
                     $this->$p= new $a($contruct_data) ; 
                 }
                 else {  //echo $data[$p];
@@ -81,7 +94,7 @@ class MongoDocument extends Object{
         else $sort=array();  
         $start= $criteria->skip;
         $strListField='*';
-        $data =MongoManager::getConnection()->selectDocs($collectionName, $strListField , $cond,
+        $data =Manager::getConnection()->selectDocs($collectionName, $strListField , $cond,
                              $sort, $start, $limit) ;  
      //    echo '<pre>' ;print($data);echo '</pre>' ;
           $result= array();
@@ -130,7 +143,7 @@ class MongoDocument extends Object{
         return $data;
     }*/
     public  function remove(){ echo 'XXX';
-         MongoManager::getConnection()->removeById(static::getTableName(),$this->mongoId);
+         Manager::getConnection()->removeById(static::getTableName(),$this->mongoId);
     }
     public static function getTableName() {
         return static::$_tableName;
@@ -139,37 +152,44 @@ class MongoDocument extends Object{
        // echo '<br>'."save".'<br>';
         $data=array();
          $list_embedded=$this->embeddedDocuments();
-        //print_r($list_embedded);
+        
         foreach ($this->_schema as $p => $q) {
-          // echo $p;
-
-            if (isset($list_embedded[$p]))  { 
-                    
-                   // print_r($this->$p->_schema);
+          
+            if (isset($list_embedded[$p]))  {// echo $p;
+                
                     foreach ($this->$p->_schema as $key => $value) {
                       $data[$p][$key]= $this->$p->$key;
-                    }
-            }else{
-        // echo $p.'-+';
-        // echo $this->cate;
-         $data[$p] =$this->$p;  }
-         //print_r($this);
-//         echo get_class($this)  ;
-            # code...
+                     }
+            }else{ 
+                $data[$p] =$this->$p;
+            }
+        
         }
        
-            if ($this->IsNew()) {
-                MongoManager::getConnection()->insert(static::getTableName(),$data);
-            }else{  
-                //echo 'NOT NEW';
-                $data=array();
-                foreach ($this->_schema as $p => $value) {
-                if($this->$p==$this->_data[$p]) echo 'nothing';
-                else  $data[$p] =$this->$p; 
-                }
+            if ($this->IsNew()) { 
                
+                Manager::getConnection()->insert(static::getTableName(),$data);
+            }else{  
+                 
+                $data_diffirent=array();
+                foreach ($this->_schema as $p => $q) {
+                    if (isset($list_embedded[$p]))  {
+                            foreach ($this->$p->_schema as $key => $value) {
+                                if($this->$p->$key==$this->_data[$p][$key]) $data_diffirent[$p][$key]=$this->_data[$p][$key];
+                                else  $data_diffirent[$p][$key]= $this->$p->$key;
+                             
+                             }  
+                             
+                    }else{   
+                            if($this->$p==$this->_data[$p])  $data_diffirent[$p]=$this->_data[$p]; //echo 'nothing';
+                            else  $data_diffirent[$p] =$this->$p; 
+                    }
+                }
+                echo '<pre>';
+                print_r( $data_diffirent);
+                 echo '</pre>';
        // static::write($data);
-        // MongoManager::getConnection()->updateById(static::getTableName(),$this->mongoId,$data);
+         Manager::getConnection()->updateById(static::getTableName(),$this->mongoId,$data_diffirent);
 
             }
     }
@@ -180,21 +200,21 @@ class MongoDocument extends Object{
 
         foreach (static::$_schema as $p => $value) {
            
-           if ($this->$p==$this->_data[$p])  // echo 'nothing';
+           if ($this->$p==$this->_data[$p])  ;// echo 'nothing';
            else  $data[$p] =$this->$p; 
            }
             //echo '<pre>';   
             //print_r($data) ;
             //echo '</pre>';
            // static::write($data);
-        MongoManager::getConnection()->updateById(static::getTableName(),$this->mongoId,$data);
+        Manager::getConnection()->updateById(static::getTableName(),$this->mongoId,$data);
     }
 
 
 
      public static function retrieveById($mongoid){
        //  echo 'br'.'get_class'.get_class($this)  ;
-     $data=  MongoManager::getConnection()->getDocById(static::getTableName(),$mongoid)	;
+     $data=  Manager::getConnection()->getDocById(static::getTableName(),$mongoid)	;
      $obj=new static($data);	
 		echo '<pre>';	
 		//print_r($obj) ;
