@@ -1,7 +1,7 @@
 <?php
-namespace Flywheel\Mongodb;
-use Flywheel\Mongodb\MongoConnection;
-class MongoQuery {
+namespace Flywheel\MongoDb;
+use Flywheel\Mongodb\Connection;
+class Query {
 
 private $_connection = null;
 //private $_from = null;
@@ -17,11 +17,11 @@ private $_sqlParts   = array(
         'orderBy' => array()
     );
 
- public function __construct(MongoConnection $connection)
+ public function __construct(Connection $connection)
     {
         $this->_connection = $connection; 
          $this->_from= 'ds';
-         echo 'KKKKK';
+        
     }	
 
  public function execute(){

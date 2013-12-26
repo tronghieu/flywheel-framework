@@ -1,5 +1,5 @@
 <?php
-namespace Flywheel\Mongodb;
+namespace Flywheel\MongoDb;
 
 
 
