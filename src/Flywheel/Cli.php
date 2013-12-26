@@ -3,7 +3,9 @@ namespace Flywheel;
 class Cli {
     private $_script;
     private $_tasklist = array(
+        'gen:schemas',
         'gen:models',
+        'gen:apps',
         'compile:web_app',
         'compile:api_app'
     );
@@ -15,8 +17,10 @@ usage
   command <task> <param>
 
 task list
-  - gen:models          generate models from database, type gen:models help for
+  - gen:schemas         generate schemas from database, type gen:models help for
     usage
+  - gen:models          generate models from schemas
+  - gen:apps            generate apps from specify structs
   - compile:web_app     compile core classes to runtime/compile/web.php
   - compile:api_app     compile core classes to runtime/compile/api.php
 EOD;
