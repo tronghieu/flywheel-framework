@@ -146,8 +146,9 @@ abstract class WebController extends BaseController
 
         $action = 'execute' . Inflection::camelize($action);
 
-        if (!method_exists($this, $action))
+        if (!method_exists($this, $action)) {
             throw new NotFound404("Controller: Action \"". $router->getController().'/'.$action ."\" doesn't exist");
+        }
 
         $this->beforeExecute();
         $this->filter();
@@ -164,74 +165,10 @@ abstract class WebController extends BaseController
 
     public function afterExecute() {}
 
-
-    /**
-     * forward request handler to another action
-     *     rule:     - action's forwarded in same application
-     *             - cannot use component define or remap
-     *
-     * @param string    $controllerPath path to controllers
-     *                         (not include "controllers"). example: 'User/Following'
-     * @param string    $action action name
-     * @param array        $params
-     *
-     * @throws Exception
-     * @throws NotFound404
-     * @return string
-     */
-    final public function forward($controllerPath, $action, $params = array()) {
-        $this->getEventDispatcher()->dispatch('onBeginForwardingRequest', new Event($this));
-        $controllerPath = rtrim($controllerPath, '/');
-        $controllerPath = explode('/', $controllerPath);
-        $path = array();
-        for ($i = 0, $size = sizeof($controllerPath); $i < $size; ++$i) {
-            if ($controllerPath[$i] != null) {
-                $controllerPath[$i] = preg_replace('/[^a-z0-9_]+/i', '', $controllerPath[$i]);
-                $controllerPath[$i] = Inflection::camelize($controllerPath[$i]);
-                if ($i !== ($size-1)) {
-                    $path[] = $controllerPath[$i];
-                } else {
-                    $class  = $controllerPath[$i] .'Controller';
-                    $name   = $controllerPath[$i];
-                }
-            }
-        }
-
-        $path = implode(DIRECTORY_SEPARATOR, $path);
-
-        // replace unwanted action's characters
-        $action = preg_replace('/[^a-z0-9_]+/i', '', $action);
-        $action = 'execute' .$action;
-
-        $file = Base::getAppPath().DIRECTORY_SEPARATOR.$path.DIRECTORY_SEPARATOR .$class .'.php';
-        if (!file_exists($file))
-            throw new Exception("Controller: \"{$path}\" [{$file}] does not exist!");
-
-        require_once $file;
-        $controller = new $class($name);
-        $controller->_path = $path .DIRECTORY_SEPARATOR;
-        $controller->_view = $controller->_path .'default';
-        Base::getApp()->setController($controller);
-
-        if (!method_exists($controller, $action))
-            throw new NotFound404("Action \"{$name}/{$action}\" doesn't exist");
-        $buffer = $controller->$action();
-        Base::getApp()->setController($controller);
-
-        if (null !== $buffer)
-            return $buffer;
-
-        if ('COMPONENT' == $controller->_renderMode) { //Default render Component
-            $buffer = $controller->renderComponent();
-            Base::getApp()->setController($controller);
-            return $buffer;
-        }
-        $this->getEventDispatcher()->dispatch('onAfterForwardingRequest', new Event($this));
-    }
-
     protected function _beforeRender() {
         $this->getEventDispatcher()->dispatch('onBeforeControllerRender', new Event($this));
     }
+
     protected function _afterRender() {
         $this->getEventDispatcher()->dispatch('onAfterControllerRender', new Event($this));
     }
@@ -247,10 +184,10 @@ abstract class WebController extends BaseController
     protected function renderPartial($vars = null) {
         $this->_renderMode = 'PARTIAL';
         $view = $this->view();
-        $viewFile = $this->getTemplatePath() .'/controllers/' .$this->_view;
+        $viewFile = $this->getTemplatePath() .'/Controller/' .$this->_view;
         if (!$this->_isCustomView && !$view->checkViewFileExist($viewFile)) {
             $this->setView('default');
-            $viewFile = $this->getTemplatePath() .'/controllers/' .$this->_view;
+            $viewFile = $this->getTemplatePath() .'/Controller/' .$this->_view;
         }
         return $view->render($viewFile, $vars);
     }
