@@ -54,11 +54,29 @@ class Asset {
     function __construct($section = 'default') {
 
       
-        $config = ConfigHandler::get('assets');
-        if (!$config) {
-            throw new Exception('Config "assets" not found');
-        }
-        $config = $config[$section];        
+//        $config = ConfigHandler::get('assets');
+//        if (!$config) {
+//            throw new Exception('Config "assets" not found');
+//        }
+        $config = $config[$section];
+        $config = array(
+            'envi' => 'prod',
+            'combine' => true,
+            'minify' => true,
+            'base_url' => '',
+            'assets_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets',
+            'assets_dir' => 'assets',
+            'base_path' => 'assets',
+            'cache_dir' => 'cache',
+            'cache_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets\cache', //
+            'cache_url' => 'cache', // base_url/cache_dr
+            'js_dir' => 'js',
+            'js_path' => 'js', //
+            'js_url' => 'js',
+            'css_dir' => 'css',
+            'css_path' => 'css', //
+            'css_url' => 'css',
+        );
 
         $this->_config($config);
     }
@@ -118,6 +136,7 @@ class Asset {
     }
 
     private function _display_js($group = 'main') {
+        //print_r($this->_js);die;
         if (empty($this->_js)) {
             return;
         }
@@ -153,6 +172,7 @@ class Asset {
     }
 
     private function _display_css($group = 'main') {
+        //print_r($this->_css);die;
         if (empty($this->_css)) {
             return;
         }

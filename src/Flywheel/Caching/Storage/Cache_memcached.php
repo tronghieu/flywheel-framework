@@ -18,7 +18,7 @@ class Cache_memcached extends Storage implements IStorage {
 
     var $mc;
 
-    function _construct($key, $option = array()) {
+    function _construct($option = array()) {
         if (!class_exists("Memcached")) {
             throw new \Exception ("Cannot load Memcached driver. Make sure Memcached has been installed on your system.");
         }

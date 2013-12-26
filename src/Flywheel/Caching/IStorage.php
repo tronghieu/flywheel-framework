@@ -4,7 +4,7 @@ namespace Flywheel\Caching;
 
 interface IStorage {
 
-    function __construct($key, $option = array());
+    function __construct($option = array());
 
     /**
      * Get cached data from cache by id and group

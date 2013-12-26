@@ -7,27 +7,25 @@ use Flywheel\Caching\Storage;
 
 class Cache_file extends Storage implements IStorage {
 
-    function __construct($key, $option = array()) {
-        //print_r($this->option);die;
+    function __construct($option = array()) {
         $this->set_option($option);
-        $this->get_path();
+
         if (!$this->_check_storage()) {
             throw new \Exception("Your cache directory is not writable.");
         }
+        $this->get_path();
     }
 
-    private function file_path($keyword, $skip = false) {
-        $path = $this->getPath();
-        $code = md5($keyword);
+    private function _file_path($key, $create_folder = false) {
+        $path = $this->get_path();
+        $code = md5($key);
         $folder = substr($code, 0, 2);
         $path = $path . "/" . $folder;
-        /*
-         * Skip Create Sub Folders;
-         */
-        if ($skip == false) {
+
+        if ($create_folder == false) {
             if (!file_exists($path)) {
                 if (!@mkdir($path, 0777)) {
-                    throw new \Exception($this->getPath() . " cannot writable");
+                    throw new \Exception($this->get_path() . " cannot writable");
                 }
             } elseif (!is_writeable($path)) {
                 @chmod($path, 0777);
@@ -38,51 +36,67 @@ class Cache_file extends Storage implements IStorage {
         return $file_path;
     }
 
-    function set($keyword, $value = "", $time = 300, $option = array()) {
-        $file_path = $this->getFilePath($keyword);
-        //  echo "<br>DEBUG SET: ".$keyword." - ".$value." - ".$time."<br>";
-        $data = $this->encode($value);
+    private function _read_file($file) {
+        if (function_exists("file_get_contents")) {
+            return file_get_contents($file);
+        } else {
+            $string = "";
 
-        $toWrite = true;
-        /*
-         * Skip if Existing Caching in Options
-         */
+            $file_handle = @fopen($file, "r");
+            if (!$file_handle) {
+                throw new \Exception("Can't read file");
+            }
+            while (!feof($file_handle)) {
+                $line = fgets($file_handle);
+                $string .= $line;
+            }
+            fclose($file_handle);
+
+            return $string;
+        }
+    }
+
+    function set($key, $value = "", $time = 300, $option = array()) {
+        $file_path = $this->_file_path($key);
+        $data = serialize($value);
+        $write = true;
+
         if (file_exists($file_path)) {
-            $content = $this->readfile($file_path);
-            $old = $this->decode($content);
-            $toWrite = false;
+            $content = $this->_read_file($file_path);
+            $old = @unserialize($content);
+            $write = false;
             if ($this->is_expired($old)) {
-                $toWrite = true;
+                $write = true;
             }
         }
 
-        if ($toWrite == true) {
+        if ($write == true) {
             $f = fopen($file_path, "w+");
             fwrite($f, $data);
             fclose($f);
         }
     }
 
-    function get($keyword, $option = array()) {
+    function get($key, $option = array()) {
 
-        $file_path = $this->getFilePath($keyword);
+        $file_path = $this->_file_path($key);
         if (!file_exists($file_path)) {
             return null;
         }
 
-        $content = $this->readfile($file_path);
-        $object = $this->decode($content);
+        $content = $this->_read_file($file_path);
+        $object = @unserialize($content);
         if ($this->is_expired($object)) {
             @unlink($file_path);
-            $this->auto_clean_expired();
+            $this->_clean_expired();
             return null;
         }
 
         return $object;
     }
 
-    function delete($keyword, $option = array()) {
-        $file_path = $this->getFilePath($keyword, true);
+    function delete($key, $option = array()) {
+        $file_path = $this->_file_path($key, true);
         if (@unlink($file_path)) {
             return true;
         } else {
@@ -90,47 +104,43 @@ class Cache_file extends Storage implements IStorage {
         }
     }
 
-    /*
-     * Return total cache size + auto removed expired files
-     */
-
-    function stats($option = array()) {
+    function check_files($option = array()) {
         $res = array(
             "info" => "",
             "size" => "",
             "data" => "",
         );
 
-        $path = $this->getPath();
+        $path = $this->get_path();
         $dir = @opendir($path);
         if (!$dir) {
-            throw new Exception("Can't read PATH:" . $path, 94);
+            throw new \Exception("Can't read path:" . $path);
         }
 
         $total = 0;
         $removed = 0;
         while ($file = readdir($dir)) {
             if ($file != "." && $file != ".." && is_dir($path . "/" . $file)) {
-                // read sub dir
+
                 $subdir = @opendir($path . "/" . $file);
                 if (!$subdir) {
-                    throw new Exception("Can't read path:" . $path . "/" . $file);
+                    throw new \Exception("Can't read path:" . $path . "/" . $file);
                 }
 
                 while ($f = readdir($subdir)) {
                     if ($f != "." && $f != "..") {
                         $file_path = $path . "/" . $file . "/" . $f;
                         $size = filesize($file_path);
-                        $object = $this->decode($this->readfile($file_path));
+                        $object = @unserialize($this->_read_file($file_path));
                         if ($this->is_expired($object)) {
                             unlink($file_path);
                             $removed = $removed + $size;
                         }
                         $total = $total + $size;
                     }
-                } // end read subdir
-            } // end if
-        } // end while
+                }
+            }
+        }
 
         $res['size'] = $total - $removed;
         $res['info'] = array(
@@ -141,20 +151,20 @@ class Cache_file extends Storage implements IStorage {
         return $res;
     }
 
-    function auto_clean_expired() {
+    function _clean_expired() {
         $autoclean = $this->get("timeout");
         if ($autoclean == null) {
             $this->set("timeout", 3600 * 24);
-            $res = $this->stats();
+            $res = $this->check_files();
         }
     }
 
     function clear($option = array()) {
 
-        $path = $this->getPath();
+        $path = $this->get_path();
         $dir = @opendir($path);
         if (!$dir) {
-            throw new Exception("Can't read path:" . $path);
+            throw new \Exception("Can't read path:" . $path);
         }
 
         while ($file = readdir($dir)) {
@@ -162,7 +172,7 @@ class Cache_file extends Storage implements IStorage {
                 // read sub dir
                 $subdir = @opendir($path . "/" . $file);
                 if (!$subdir) {
-                    throw new Exception("Can't read path:" . $path . "/" . $file, 93);
+                    throw new \Exception("Can't read path:" . $path . "/" . $file);
                 }
 
                 while ($f = readdir($subdir)) {
@@ -170,18 +180,17 @@ class Cache_file extends Storage implements IStorage {
                         $file_path = $path . "/" . $file . "/" . $f;
                         unlink($file_path);
                     }
-                } // end read subdir
-            } // end if
-        } // end while
+                }
+            }
+        }
     }
 
-    function is_existing($keyword) {
-        $file_path = $this->getFilePath($keyword, true);
+    function is_existing($key) {
+        $file_path = $this->_file_path($key, true);
         if (!file_exists($file_path)) {
             return false;
         } else {
-            // check expired or not
-            $value = $this->get($keyword);
+            $value = $this->get($key);
             if ($value == null) {
                 return false;
             } else {
@@ -200,14 +209,10 @@ class Cache_file extends Storage implements IStorage {
     }
 
     function _check_storage() {
-        echo $this->getPath();die;
-        if (is_writable($this->getPath())) {
+        if (is_writable($this->get_path())) {
             return true;
-        } else {
-            
         }
         return false;
     }
-
 
 }

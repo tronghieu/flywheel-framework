@@ -18,17 +18,17 @@ class Cache_memcache extends Storage implements IStorage {
 
     var $mc;
 
-    function _construct($key, $option = array()) {
+    function _construct($option = array()) {
         if (!function_exists("memcache_connect")) {
             throw new Exception("Cannot load Memcache driver. Make sure Memcache extension has been installed on your system.");
         }
         $this->set_option($option);
-        $this->mc = new \Memcache();
+        $this->mc = new \Memcache;
         $this->connect();
     }
 
     private function _setup() {
-        //$this->mc = new Memcache;
+        $this->mc = new Memcache;
         $this->connect();
     }
 

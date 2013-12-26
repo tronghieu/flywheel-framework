@@ -6,14 +6,6 @@ use Flywheel\Caching\IStorage;
 use Flywheel\Caching\Storage;
 
 class Cache_redis extends Storage implements IStorage {
-    /*
-     * $config['servers'] = array(
-     *  'default' => array(
-     *  'host' => '',
-     *  'port' =>  '',
-     *  'weight' => '1'
-     * )
-     * ); */
 
     public $option;
     var $_redis = NULL;

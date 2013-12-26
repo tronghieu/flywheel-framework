@@ -7,7 +7,7 @@ use Flywheel\Caching\Storage;
 
 class Cache_apc extends Storage implements IStorage {
 
-    function _construct($key, $option = array()) {
+    function _construct($option = array()) {
         if ($this->_check_driver()) {
             throw new Exception("Cannot load APC driver. Make sure APC extension has been installed on your system.");
         }

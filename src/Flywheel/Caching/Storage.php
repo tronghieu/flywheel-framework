@@ -1,54 +1,5 @@
 <?php
-
-namespace Flywheel\Caching;
-
-use Flywheel\Config\ConfigHandler;
-use Flywheel\Object;
-
-class Storage extends Object {
-
-    protected $_lifetime = 900; //
-    protected $_hash;
-    protected $_group;
-    protected $_key;
-    protected $_path;
-    protected $_cachePath;
-    protected static $_instances = array();
-    public static $config;
-    public static $storage;
-    var $option = array();
-    var $tmp = array();
-
-    public function __construct($key, $option = array()) {
-
-        $hash = (isset($option['hash'])) ?
-                $option['hash'] : null;
-
-        if (!$hash) {
-            $hash = $option['hash'];
-        }
-        if ($key == "") {
-            $key = self::$storage;
-            self::option("storage", $key);
-        } else {
-            self::$storage = $key;
-        }
-//        print_r(self::$config);
-//        die;
-        $this->tmp['storage'] = $key;
-        $this->option = array_merge($this->option, self::$config, $option);
-
-        $this->_hash = md5($hash);
-        $this->_group = (isset($option['group'])) ? $option['group'] : $key;
-        $this->_key = $key;
-    }
-
-    /**
-     * return IStorage
-     */
-    public static function factory($key = null) {
-        $configs = ConfigHandler::get('caching');
-        $configs = array(
+́/*$configs = array(
             '__enable__' => true,
             'default' => 'widget',
             'hash' => '-8/RsLPePPy54BtNGBm*MqX7=vn8>j6QHJGG~49AN',
@@ -84,7 +35,7 @@ class Storage extends Object {
                         ))
                 ),
             ),
-             'memcached' => array(
+            'memcached' => array(
                 'storage' => 'memcached',
                 'option' => array(
                     'servers' => array('default' => array(
@@ -95,7 +46,57 @@ class Storage extends Object {
                         ))
                 ),
             ),
-        );
+            'redis' => array(
+                'storage' => 'redis',
+                'option' => array(
+                    'servers' => array(
+                        'default' => array(
+                            'host' => '192.168.1.150',
+                            'port' => 6379,
+                        )
+                    )
+                )
+            )
+        );*/́́́
+
+namespace Flywheel\Caching;
+
+use Flywheel\Config\ConfigHandler;
+use Flywheel\Object;
+
+class Storage extends Object {
+
+    protected $_hash;
+    protected $_group;
+    protected $_path;
+    protected $_cachePath;
+    protected static $_instances = array();
+    public static $config;
+    public static $storage;
+    var $option = array();
+    var $tmp = array();
+
+    public function __construct($option = array()) {
+
+        $hash = (isset($option['hash'])) ?
+                $option['hash'] : null;
+
+        if (!$hash) {
+            $hash = $option['hash'];
+        }
+        self::$storage = $option['storage'];
+
+        $this->option = array_merge($this->option, self::$config, $option);
+        $this->_hash = md5($hash);
+        $this->_group = (isset($option['group'])) ? $option['group'] : $key;
+    }
+
+    /**
+     * return IStorage
+     */
+    public static function factory($key = null) {
+        $configs = ConfigHandler::get('caching');
+        
         self::$config = $configs;
 
         $key = $key ? $key : $configs['default'];
@@ -104,8 +105,7 @@ class Storage extends Object {
 
         if (!isset(self::$_instances[$option['storage']])) {
             $class = "\\Flywheel\Caching\\Storage\\Cache_" . $option['storage'];
-            //echo $class;die;
-            self::$_instances[$key] = new $class($key, $option['option']);
+            self::$_instances[$key] = new $class($option['option']);
         }
 
         return self::$_instances[$key];
@@ -137,13 +137,10 @@ class Storage extends Object {
     }
 
     public function set_option($option = array()) {
-        //print_r($option);die;
-
         $this->option = array_merge($this->option, $option);
     }
-
+    
     public function get_path($path = false) {
-        //print_r($this->option);die;
         if ($this->option['path'] == "" && self::$config['path'] != "") {
             $this->option("path", self::$config['path']);
         }
