@@ -18,7 +18,8 @@
         "symfony/config" : "2.*",
         "symfony/filesystem" : "2.*",
         "symfony/finder" : "2.*",
-        "zendframework/zend-permissions-acl" : "2.*"
+        "zendframework/zend-permissions-acl" : "2.*",
+        "mrclay/minify":"*"
     },
     "autoload": {
         "psr-0": {"Flywheel": "src/"},

@@ -53,12 +53,13 @@ class Asset {
 
     function __construct($section = 'default') {
 
-        $config = Flywheel\Config\ConfigHandler::get('assets');
+      
+        $config = ConfigHandler::get('assets');
         if (!$config) {
             throw new Exception('Config "assets" not found');
         }
-        
-        $config = $config[$section];
+        $config = $config[$section];        
+
         $this->_config($config);
     }
 
@@ -134,7 +135,7 @@ class Asset {
         } elseif ($this->combine == true && $this->minify == true) {
             $now = time();
             $cache_name = '';
-            $last_modified = 000000000;
+            $last_modified = 0;
 
             foreach ($files AS $file) {
                 $lastmodified = max($lastmodified, filemtime(realpath($this->js_path . $file)));
@@ -142,8 +143,12 @@ class Asset {
 
                 $cfiles[] = $file;
             }
+
             $cache_name = $lastmodified . '.' . md5($cache_name) . '.js';
-            $this->_combine('js', $this->cache_path . $cache_name);
+            if (!file_exists($this->cache_path . $cache_name)) {
+                $this->_combine('js', $this->cache_path . $cache_name);
+            }
+
             echo $this->_print_cache($cache_name, 'js');
         }
     }
@@ -166,7 +171,7 @@ class Asset {
         } elseif ($this->combine == true) {
             $now = time();
             $cache_name = '';
-            $last_modified = 000000000;
+            $last_modified = 0;
 
             foreach ($files AS $file) {
                 $lastmodified = max($lastmodified, filemtime(realpath($this->css_path . $file)));
@@ -175,7 +180,10 @@ class Asset {
                 $cfiles[] = $file;
             }
             $cache_name = $lastmodified . '.' . md5($cache_name) . '.css';
-            $this->_combine('css', $cfiles, $this->cache_path . $cache_name);
+            if (!file_exists($this->cache_path . $cache_name)) {
+                $this->_combine('css', $cfiles, $this->cache_path . $cache_name);
+            }
+
             echo $this->_print_cache($cache_name, 'css');
         }
     }
