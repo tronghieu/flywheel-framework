@@ -118,7 +118,6 @@ class Asset {
     }
 
     private function _display_js($group = 'main') {
-        //print_r($this->_js);die;
         if (empty($this->_js)) {
             return;
         }
@@ -154,7 +153,6 @@ class Asset {
     }
 
     private function _display_css($group = 'main') {
-        //print_r($this->_css);die;
         if (empty($this->_css)) {
             return;
         }
