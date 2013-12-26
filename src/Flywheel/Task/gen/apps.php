@@ -23,8 +23,8 @@ function apps_execute() {
 
 class BuildApps {
     public  $appType = '',
-            $appName = '',
-            $destinationDir = '';
+        $appName = '',
+        $destinationDir = '';
     public $structApps = array(
         //Web Application
         'w' => array(
@@ -85,15 +85,15 @@ class BuildApps {
             case 'w':
                 $app = new BuildAppWeb($config);
                 $classGenerated = $app->run();
-                    break;
+                break;
             case 'c':
                 $app = new BuildAppConsole($config);
                 $classGenerated = $app->run();
-                    break;
+                break;
             case 'a':
                 $app = new BuildAppApi($config);
                 $classGenerated = $app->run();
-                    break;
+                break;
         }
         return $classGenerated;
     }
@@ -161,9 +161,9 @@ class BuildAppWeb {
         $cameHungaryApp = Inflection::hungaryNotationToCamel($this->appName);
         $temp = "<?php".PHP_EOL;
         $temp.= "defined('APP_PATH') or define('APP_PATH', dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR);".PHP_EOL.
-                "\\Flywheel\\Loader::addNamespace('".$cameHungaryApp."', dirname(APP_PATH));\n\n";
+            "\\Flywheel\\Loader::addNamespace('".$cameHungaryApp."', dirname(APP_PATH));\n\n";
         $temp.=
-              "return array(" .PHP_EOL
+            "return array(" .PHP_EOL
             . "  'app_name'=>'".$cameHungaryApp."',".PHP_EOL
             . "  'app_path'=> APP_PATH,".PHP_EOL
             . "  'view_path'=> APP_PATH .DIRECTORY_SEPARATOR.'Templates/',".PHP_EOL
@@ -171,6 +171,7 @@ class BuildAppWeb {
             . "    'app.Library.*',".PHP_EOL
             . "    'app.Controllers.*'".PHP_EOL
             . "  ),".PHP_EOL
+            . "  'namespace'=> dirname(APP_PATH),".PHP_EOL
             . "  'timezone'=>'Asia/Ho_Chi_Minh',".PHP_EOL
             . "  'template'=>'Default'".PHP_EOL
             . ');';
@@ -188,7 +189,7 @@ class BuildAppWeb {
         $temp = "<?php".PHP_EOL;
 
         $temp.=
-              '$r = array(' .PHP_EOL
+            '$r = array(' .PHP_EOL
             . '  \'__urlSuffix__\'=>\'.html\','.PHP_EOL
             . '  \'__remap__\'=> array('.PHP_EOL
             . '     \'route\'=>\'home/default\''.PHP_EOL
@@ -288,15 +289,15 @@ class BuildAppWeb {
             $fs->mkdir($destinationDir,0755);
             $defaultLayout = $destinationDir.DIRECTORY_SEPARATOR.'default.phtml';
             $template =
-'<!DOCTYPE html>
-<html>
-    <head>
-        <title>Hello Word</title>
-    </head>
-    <body>
-        <?php echo $buffer; ?>
-    </body>
-</html>';
+                '<!DOCTYPE html>
+                <html>
+                    <head>
+                        <title>Hello Word</title>
+                    </head>
+                    <body>
+                        <?php echo $buffer; ?>
+                    </body>
+                </html>';
             if($fs->exists($defaultLayout) == false){
                 $fs->dumpFile($defaultLayout,$template);
             }
@@ -347,8 +348,8 @@ class BuildAppWeb {
 }
 class BuildAppConsole{
     public  $appType = 'console',
-            $appName = '',
-            $appDir = '';
+        $appName = '',
+        $appDir = '';
 
     public function __construct($config = array()){
         if(isset($config['name'])) $this->appName = Inflection::hungaryNotationToCamel($config['name']);
@@ -398,6 +399,7 @@ class BuildAppConsole{
             . "    'app.Library.*',".PHP_EOL
             . "    'app.Task.*'".PHP_EOL
             . "  ),".PHP_EOL
+            . "  'namespace'=> dirname(APP_PATH),".PHP_EOL
             . "  'timezone'=>'Asia/Ho_Chi_Minh',".PHP_EOL
             . ');';
         $fs = new Filesystem\Filesystem();
@@ -451,8 +453,8 @@ class BuildAppConsole{
 class BuildAppApi {
 
     public  $appType = 'api',
-            $appName = '',
-            $appDir = '';
+        $appName = '',
+        $appDir = '';
 
     public function __construct($config = array()){
         if(isset($config['name'])) $this->appName = Inflection::hungaryNotationToCamel($config['name']);
@@ -500,6 +502,7 @@ class BuildAppApi {
             . "    'app.Library.*'".PHP_EOL
             . "    'app.Controllers.*'".PHP_EOL
             . "  ),".PHP_EOL
+            . "  'namespace'=> dirname(APP_PATH),".PHP_EOL
             . "  'timezone'=>'Asia/Ho_Chi_Minh',".PHP_EOL
             . ');';
         $fs = new Filesystem\Filesystem();
