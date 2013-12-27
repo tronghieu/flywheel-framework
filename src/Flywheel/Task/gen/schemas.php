@@ -13,6 +13,7 @@ function schemas_execute() {
 
     $params = func_get_arg(0);
 
+    ConfigHandler::import('root.config');
 
     if (isset($params['config'])) {
         $conn = Manager::getConnection($params['config']);
