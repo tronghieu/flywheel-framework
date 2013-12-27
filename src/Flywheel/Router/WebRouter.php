@@ -12,7 +12,12 @@ class WebRouter extends BaseRouter {
      * @var Collection[]
      */
     protected $_collectors = array();
+    /**
+     * @var
+     * @deprecated from version 1.1
+     */
     protected $_controllerPath;
+
     protected $_camelControllerName;
     protected $_controller;
     protected $_action;
@@ -92,9 +97,11 @@ class WebRouter extends BaseRouter {
      * get path of request controllers
      *
      * @return string
+     * @deprecated from version 1.1, will be removed from 1.2 always return null
      */
     public function getControllerPath() {
-        return $this->_controllerPath;
+        return null;
+        //return $this->_controllerPath;
     }
 
     /**
@@ -123,7 +130,7 @@ class WebRouter extends BaseRouter {
                 break;
             } else {
                 $this->_camelControllerName = $_camelName;
-                $this->_controllerPath		= $_path;
+//                $this->_controllerPath		= $_path;
                 $this->_controller = $route[$i];
             }
         }

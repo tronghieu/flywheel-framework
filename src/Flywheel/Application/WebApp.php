@@ -71,8 +71,8 @@ class WebApp extends BaseApp
             throw new NotFound404("Application: Controller \"{$controllerName}\"[{$file}] does not existed!");
         }
 
-        /* @var \Flywheel\Controller\WebController _controller */
-        $this->_controller = new $className($controllerName, $controllerPath);
+        /* @var \Flywheel\Controller\Web _controller */
+        $this->_controller = new $className($controllerName, $router->getControllerPath());
 
         $this->_controller->execute($router->getAction());
         return $this->_controller->render();

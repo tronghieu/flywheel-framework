@@ -2,7 +2,7 @@
 
 namespace Flywheel\Html\Widget;
 
-use Flywheel\Controller\WebController;
+use Flywheel\Controller\Web;
 use Flywheel\Controller\Widget;
 use Flywheel\Factory;
 use Flywheel\Html\DataGrid\Base;
@@ -28,7 +28,7 @@ class Menu extends Widget {
         }
 
         if (($coll = \Flywheel\Base::getApp()->getController())
-            && $coll instanceof WebController) {
+            && $coll instanceof Web) {
             return $coll->createUrl($url[0],array_splice($url,1));
         }
 

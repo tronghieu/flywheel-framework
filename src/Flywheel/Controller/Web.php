@@ -141,8 +141,11 @@ abstract class Web extends BaseController
         $router = Factory::getRouter();
         $this->_action = $action;
 
-        //set view file with action name
-        $this->_view = $this->_path .$action;
+        /* removed from version 1.1
+         * //set view file with action name
+         * $this->_view = $this->_path .$action;
+         */
+
 
         $action = 'execute' . Inflection::camelize($action);
 
@@ -174,31 +177,31 @@ abstract class Web extends BaseController
     }
 
     /**
-     * Render Partial
-     *      only render a web page's partial.
+     * Render Partial only render a web page's partial.
      *
      * @param string
-     *
+     * @throws Exception
      * @return string
      */
-    protected function renderPartial($vars = null) {
+    public function renderPartial($vars = null) {
         $this->_renderMode = 'PARTIAL';
         $view = $this->view();
         $viewFile = $this->getTemplatePath() .'/Controller/' .$this->_view;
         if (!$this->_isCustomView && !$view->checkViewFileExist($viewFile)) {
-            $this->setView('default');
-            $viewFile = $this->getTemplatePath() .'/Controller/' .$this->_view;
+            throw new Exception('Controller view file not found or not set!');
+            /* removed from version 1.1
+             * $this->setView('default');
+             * $viewFile = $this->getTemplatePath() .'/Controller/' .$this->_view;
+             */
         }
         return $view->render($viewFile, $vars);
     }
 
     /**
-     * Render Component
-     *      render web page
-     *
+     * Render Component render web page
      * @return string
      */
-    protected function renderComponent() {
+    public function renderComponent() {
         $buffer = $this->renderPartial();
         $this->_renderMode = 'COMPONENT';
 
@@ -211,7 +214,7 @@ abstract class Web extends BaseController
      * @param string $text
      * @return string
      */
-    protected function renderText($text) {
+    public function renderText($text) {
         $this->_renderMode = 'TEXT';
         return $text;
     }
@@ -229,8 +232,7 @@ abstract class Web extends BaseController
     }
 
     /**
-     * Set Layout
-     *      set layout templates
+     * Set Layout set layout templates
      *
      * @param string $layout
      */
@@ -255,7 +257,7 @@ abstract class Web extends BaseController
      */
     protected function setView($view) {
         $this->_isCustomView = true;
-        $this->_view = $this->_path.$view;
+        $this->_view = $view;
     }
 
     /**
@@ -334,6 +336,6 @@ abstract class Web extends BaseController
         if ($end == true) {
             $this->afterExecute();
         }
-        Factory::getRequest()->redirect($url, $code, $end);
+        $this->request()->redirect($url, $code, $end);
     }
 }
