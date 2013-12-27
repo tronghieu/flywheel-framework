@@ -19,7 +19,7 @@ abstract class BaseApp extends Object
     /**
      * Controller
      *
-     * @var BaseController
+     * @var \Flywheel\Controller\BaseController
      */
     protected $_controller;
 

@@ -118,12 +118,12 @@ class WebRouter extends BaseRouter {
         for ($i = 0; $i < sizeof($route); ++$i) {
             $_camelName	= Inflection::camelize($route[$i]);
 
-            $_path .= $_camelName .DIRECTORY_SEPARATOR;
-            if (false === (file_exists(Base::getAppPath().'/Controller/' .$_path))) {
+            $_path .= DIRECTORY_SEPARATOR .$_camelName;
+            if (false === (file_exists(Base::getAppPath().'/Controller' .$_path .'.php'))) {
                 break;
             } else {
                 $this->_camelControllerName = $_camelName;
-                $this->_controllerPath		= dirname($_path);
+                $this->_controllerPath		= $_path;
                 $this->_controller = $route[$i];
             }
         }
