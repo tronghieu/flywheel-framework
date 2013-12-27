@@ -26,7 +26,7 @@ class WebRouter extends BaseRouter {
 
     public function init($config = null) {
         if (null == $config) {
-            $routes = ConfigHandler::load('app.config.routing', 'routing', true);
+            $routes = ConfigHandler::load('app.Config.routing', 'routing', true);
         } else {
             $routes = $config;
         }
