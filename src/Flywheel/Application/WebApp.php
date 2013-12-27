@@ -67,7 +67,7 @@ class WebApp extends BaseApp
         $controllerPath	= $router->getControllerPath();
 
         if (!file_exists(($file = $this->_basePath.DIRECTORY_SEPARATOR
-            .'Controller'.DIRECTORY_SEPARATOR .$controllerPath.$controllerName.'.php'))){
+            .'Controller'.DIRECTORY_SEPARATOR .str_replace("\\", DIRECTORY_SEPARATOR, $controllerName) .'.php'))){
             throw new NotFound404("Application: Controller \"{$controllerName}\"[{$file}] does not existed!");
         }
 
