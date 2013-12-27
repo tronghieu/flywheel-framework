@@ -8,6 +8,31 @@ class ConfigHandler {
     public static $_loaded = array();
 
     /**
+     * import config from file by alias
+     *
+     * @param $alias
+     * @param bool $require
+     * @param string $ext
+     * @return bool|mixed
+     * @throws \Flywheel\Exception
+     */
+    public static function import($alias, $require = false, $ext = '.cfg.php') {
+        if(($path=Loader::getPathOfAlias($alias))!==false) {
+            if (file_exists($path .$ext)) {
+                $config = require($path .$ext);
+                self::$_data = array_merge_recursive(self::$_data, $config);
+            } else {
+                if (true == $require) {
+                    throw new Exception("Alias \"{$alias}\" which was loaded is invalid. Make sure it points to an existing PHP file and the file is readable.");
+                } else {
+                    return false;
+                }
+            }
+            return $config;
+        }
+    }
+
+    /**
      * @param $alias
      * @param string $namespace
      * @param bool $require
