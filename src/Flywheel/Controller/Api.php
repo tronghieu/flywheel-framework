@@ -2,7 +2,7 @@
 namespace Flywheel\Controller;
 use Flywheel\Factory;
 use Flywheel\Event\Event as Event;
-class ApiController extends BaseController
+class Api extends BaseController
 {
     public function __construct($name, $params) {
         $this->_name = $name;

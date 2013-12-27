@@ -9,7 +9,7 @@ use Flywheel\Config\ConfigHandler;
 use Flywheel\Event\Event;
 use Flywheel\Document\Html;
 
-abstract class WebController extends BaseController
+abstract class Web extends BaseController
 {
     /**
      * Page layout
