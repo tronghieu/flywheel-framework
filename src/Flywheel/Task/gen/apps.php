@@ -262,11 +262,11 @@ class BuildAppWeb {
         $temp = "<?php".PHP_EOL;
         $class = $this->appName.'Base';
 
-        $webController = 'WebController';
+        $webController = 'Web';
         $appName = Inflection::hungaryNotationToCamel($this->appName);
 
         $temp.='namespace '.$appName.'\Controller;'.PHP_EOL
-               .'use Flywheel\Controller\WebController;'.PHP_EOL;
+               .'use Flywheel\Controller\Web;'.PHP_EOL;
         $temp.='abstract class '.$class.' extends '.$webController.'{'.PHP_EOL
             . '' . PHP_EOL
             . '}' . PHP_EOL;
