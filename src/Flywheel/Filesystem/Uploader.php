@@ -371,6 +371,7 @@ class Uploader {
 
         if (null != $this->_newName) {
             $name = Folder::cleanFileName($this->_newName);
+            $name = str_replace($this->_data['file_extension'], '', $name);
         } else {
             $name = Folder::cleanFileName($this->_data['file_origin_name']);
             $name = str_replace($this->_data['file_extension'], '', $name);
