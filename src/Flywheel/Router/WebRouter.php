@@ -76,12 +76,12 @@ class WebRouter extends BaseRouter {
 
     /**
      * Get Controller
-     * 	ten controllers
      *
+     * @deprecated from version 1.1, will be removed from 1.2, use @$this::getCamelControllerName() instead
      * @return string
      */
     public function getController() {
-        return $this->_controller;
+        return $this->getCamelControllerName();
     }
 
     /**
@@ -123,18 +123,21 @@ class WebRouter extends BaseRouter {
         }
         $_path = '';
         $_camelName = '';
-        for ($i = 0; $i < sizeof($route); ++$i) {
-            $_camelName	.= '\\' . Inflection::camelize($route[$i]);
 
-            $_path = str_replace("\\", DIRECTORY_SEPARATOR, $_camelName);
-            if (false === (file_exists(Base::getAppPath().'/Controller' .$_path .'.php'))) {
-                continue;
-            } else {
-                $this->_camelControllerName = trim($_camelName, "\\");
-//                $this->_controllerPath		= $_path;
-                $this->_controller = $route[$i];
+        $size = sizeof($route);
+        for ($i = 0; $i < $size; ++$i) {
+            $route[$i] = Inflection::camelize($route[$i]);
+        }
+
+        for ($i = $size - 1; $i >= 0; --$i) {
+            $_camelName = implode("\\", array_slice($route, 0, $i+1));
+            $_path = implode(DIRECTORY_SEPARATOR, array_slice($route, 0, $i+1));
+            if (false !== file_exists($file = Base::getAppPath().'/Controller/' .$_path .'.php')) {
+                $this->_camelControllerName = trim ($_camelName, "\\");
+                break;
             }
         }
+
         return $i;
     }
 
@@ -243,7 +246,7 @@ class WebRouter extends BaseRouter {
         $segment = explode('/', $route);
 
         $seek = $this->_parseControllers($route);
-
+        $seek++;
         if (count($segment) > $seek) {
             $this->_action = $segment[$seek];
             $seek++;

@@ -146,7 +146,6 @@ abstract class Web extends BaseController
          * $this->_view = $this->_path .$action;
          */
 
-
         $action = 'execute' . Inflection::camelize($action);
 
         if (!method_exists($this, $action)) {
