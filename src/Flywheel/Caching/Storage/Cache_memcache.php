@@ -27,11 +27,6 @@ class Cache_memcache extends Storage implements IStorage {
         $this->connect();
     }
 
-    private function _setup() {
-        $this->mc = new Memcache;
-        $this->connect();
-    }
-
     function connect() {
         foreach ($this->option['servers'] as $key => $server) {
             if (!$this->add_server($server)) {
@@ -46,22 +41,22 @@ class Cache_memcache extends Storage implements IStorage {
     }
 
     function set($key, $value = "", $lifetime = 300) {
-        $this->_setup();
+        
         return $this->mc->set($this->keyName($key), $value, $lifetime);
     }
 
     function get($key) {
-        $this->_setup();
+        
         return $this->mc->get($this->keyName($key));
     }
 
     function delete($key, $option = array()) {
-        $this->_setup();
+        
         return $this->mc->delete($this->keyName($key));
     }
 
     function clear() {
-        $this->_setup();
+        
         return $this->mc->flush();
     }
 
