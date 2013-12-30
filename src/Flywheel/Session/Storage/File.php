@@ -11,9 +11,11 @@
  * @license BSD http://www.opensource.org/licenses/bsd-license.php
  */
 namespace Flywheel\Session\Storage;
+
 use Flywheel\Session\Exception;
 
-class File implements ISessionHandler {
+class File implements ISessionHandler
+{
     private $_config;
     /**
      * Redis driver
@@ -22,8 +24,9 @@ class File implements ISessionHandler {
      */
     protected $_driver;
 
-    public function __construct($config = null) {
-        if(!isset($config['savePath'])) {
+    public function __construct($config = null)
+    {
+        if (!isset($config['savePath'])) {
             $config['savePath'] = session_save_path();
         }
         $this->_config = $config;
@@ -35,50 +38,48 @@ class File implements ISessionHandler {
      * @param string $sessionName
      * @return bool|void
      */
-    public function open($savePath, $sessionName) {
+    public function open($savePath, $sessionName)
+    {
         /*if(!isset($this->_config['savePath'])) {
             $this->_config['savePath'] = session_save_path();
         }*/
     }
 
-    public function read($sid) {
-
+    public function read($sid)
+    {
         $sessionContent = array();
-        $file_type  = isset($this->_config['type']) ? $this->_config['type'] : 'json';
-        $fp         = fopen($this->_config['savePath'], 'r');
+        $file_type = isset($this->_config['type']) ? $this->_config['type'] : 'json';
+        $filePath = $this->_config['savePath'] . $sid . '.txt';
+        $fp = fopen($filePath, 'r');
 
-        switch($file_type) {
-            case 'json':
-                $sessionContent = filesize($this->_config['savePath']) > 0 ?
-                    json_decode(fread($fp, filesize($this->_config['savePath'])), true) : array();
-                break;
-            case 'serialize':
-                $sessionContent = filesize($this->_config['savePath']) > 0 ?
-                    unserialize(fread($fp, filesize($this->_config['savePath']))) : array();
-                break;
-            default: break;
-        }
-
-        if (isset($sessionContent[$sid])) {
-            if ($sessionContent[$sid]['last_modified'] + (int) @$this->_config['lifetime'] > time()) {
-                return $sessionContent[$sid]['data'];
-            }
-            unset($sessionContent[$sid]);
-            switch($file_type) {
+        if (file_exists($filePath)) {
+            switch ($file_type) {
                 case 'json':
-                    fputs( $fp, json_encode($sessionContent) );
+                    $sessionContent = filesize($filePath) > 0 ? json_decode(fread($fp, filesize($filePath)), true) : array();
                     break;
                 case 'serialize':
-                    fputs( $fp, serialize($sessionContent) );
+                    $sessionContent = filesize($filePath) > 0 ? unserialize(fread($fp, filesize($filePath))) : array();
                     break;
-                default: break;
+                default:
+                    break;
+            }
+
+            if (isset($sessionContent)) {
+                // Check life time
+                if ($sessionContent['last_modified'] + (int)@$this->_config['lifetime'] > time()) {
+                    return $sessionContent['data'];
+                }
+                // Delete file
+                unlink($filePath);
             }
         }
 
         return null;
     }
 
-    public function close() {}
+    public function close()
+    {
+    }
 
     /**
      * Write session to file
@@ -86,36 +87,36 @@ class File implements ISessionHandler {
      * @param string $data
      * @return bool|void
      */
-    public function write($sid, $data) {
+    public function write($sid, $data)
+    {
         // File type
         $file_type = isset($this->_config['type']) ? $this->_config['type'] : 'json';
-        $fp = fopen($this->_config['savePath'], 'w+');
-        switch($file_type) {
+        $filePath = $this->_config['savePath'] . $sid . '.txt';
+        $fp = fopen($filePath, 'w+');
+        $content = array(
+            'last_modified' => time(),
+            'data' => $data
+        );
+        switch ($file_type) {
             case 'json':
-                $content = filesize($this->_config['savePath']) > 0 ?
-                    json_decode(fread($fp, filesize($this->_config['savePath']))) : array();
-                $content[$sid] = array (
-                                    'last_modified' => time(),
-                                    'data'	=> $data
-                                );
-                fputs( $fp, json_encode($content) );
+                fputs($fp, json_encode($content));
                 break;
             case 'serialize':
-                $content = filesize($this->_config['savePath']) > 0 ?
-                    unserialize(fread($fp, filesize($this->_config['savePath']))) : array();
-                $content[$sid] = array (
-                    'last_modified' => time(),
-                    'data'	=> $data
-                );
-                fputs( $fp, serialize($content) );
+                fputs($fp, serialize($content));
                 break;
-            default: break;
+            default:
+                fputs($fp, json_encode($content));
+                break;
         }
     }
-    public function destroy($sid) {
+
+    public function destroy($sid)
+    {
 
     }
-    public function gc($sessMaxLifeTime = 0) {
+
+    public function gc($sessMaxLifeTime = 0)
+    {
         return true;
     }
 

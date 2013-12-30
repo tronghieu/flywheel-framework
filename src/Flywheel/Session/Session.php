@@ -37,20 +37,10 @@ class Session extends Object
     /**
      * Get instance object
      */
-    public static function getInstance($config = array())
+    public static function getInstance()
     {
-        // Load config
-        if (empty($config)) {
-            ($config = ConfigHandler::load('app.config.session', 'session', false)
-                or ($config = ConfigHandler::load('global.config.session', 'session')));
-            if (false == $config) {
-                throw new Exception('Session: config file not found, "session.cfg.php" must be exist at globals/config or '
-                    . Base::getAppPath() . ' config directory');
-            }
-        }
-
         if (null == static::$_instance) {
-            static::$_instance = new static($config);
+            static::$_instance = new static();
         }
         return static::$_instance;
     }
@@ -61,10 +51,19 @@ class Session extends Object
      */
     public function __construct($config = array())
     {
+        // Load config
+        if (empty($config)) {
+            ($config = ConfigHandler::load('app.config.session', 'session', false)
+                or ($config = ConfigHandler::load('global.config.session', 'session')));
+            if (false == $config) {
+                throw new Exception('Session: config file not found, "session.cfg.php" must be exist at globals/config or '
+                    . Base::getAppPath() . ' config directory');
+            }
+        }
         $this->_config = array_merge($this->_config, $config);
         if (isset($this->_config['storage']) && $this->_config['storage']) {
             $handlerClass = $this->_config['storage'];
-            unset($this->_config['storage']);
+            unset($this->_config['handler']);
             $storage = new $handlerClass($this->_config);
 
             session_set_save_handler(
@@ -269,12 +268,11 @@ class Session extends Object
     }
 
     /**
-     * validate session
+     * validate session by ip address
      */
-    protected function _validate()
+    public function _validate()
     {
         $ip = self::get('session.client.address');
-
         if ($ip === null) {
             self::set('session.client.address', $_SERVER['REMOTE_ADDR']);
         } elseif ($_SERVER['REMOTE_ADDR'] !== $ip) {
@@ -286,7 +284,6 @@ class Session extends Object
         if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
             self::set('session.client.forwarded', $_SERVER['HTTP_X_FORWARDED_FOR']);
         }
-
         return true;
     }
 
