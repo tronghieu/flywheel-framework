@@ -54,11 +54,30 @@ class Asset {
     function __construct($section = 'default') {
 
 
-       $config = ConfigHandler::get('assets');
-       if (!$config) {
-           throw new Exception('Config "assets" not found');
-       }
+//        $config = ConfigHandler::get('assets');
+//        if (!$config) {
+//            throw new Exception('Config "assets" not found');
+//        }
         $config = $config[$section];
+        $config = array(
+            'envi' => 'prod',
+            'combine' => true,
+            'minify' => true,
+            'base_url' => '',
+            'assets_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets',
+            'assets_dir' => 'assets',
+            'base_path' => 'assets',
+            'cache_dir' => 'cache',
+            'cache_path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets\cache', //
+            'cache_url' => 'cache', // base_url/cache_dr
+            'js_dir' => 'js',
+            'js_path' => 'js', //
+            'js_url' => 'js',
+            'css_dir' => 'css',
+            'css_path' => 'css', //
+            'css_url' => 'css',
+        );
+
         $this->_config($config);
     }
 
@@ -218,6 +237,7 @@ class Asset {
     }
 
     private function _assets($type, $file, $group = 'main') {
+        //print_r($group);die;
         if ($type == 'css') {
             $this->_css[$group][] = $file;
         }
@@ -370,6 +390,7 @@ class Asset {
             default:
                 break;
         }
+        //echo $file_content;die;
         $this->_saveCache($file_name, $file_content);
     }
 
