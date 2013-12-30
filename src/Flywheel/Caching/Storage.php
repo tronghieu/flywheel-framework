@@ -37,65 +37,7 @@ class Storage extends Object {
      */
     public static function factory($key = null) {
         $configs = ConfigHandler::get('caching');
-        $configs = array(
-            '__enable__' => true,
-            'default' => 'widget',
-            'hash' => '-8/RsLPePPy54BtNGBm*MqX7=vn8>j6QHJGG~49AN',
-            'path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets\cache',
-            'cachePath' => '',
-            'file' => array(
-                'storage' => 'file',
-                'option' => array(
-                    'path' => 'E:\Copy\uwamp\www\alm2\www_html\mobile\assets\cache',
-                ),
-            ),
-            'widget' => array(
-                'storage' => 'apc',
-                'option' => array(
-                    'group' => 'html'
-                ),
-            ),
-            'apc' => array(
-                'storage' => 'Apc',
-                'option' => array(
-                    'group' => 'html',
-                    'timeout' => 300
-                ),
-            ),
-            'memcache' => array(
-                'storage' => 'memcache',
-                'option' => array(
-                    'servers' => array('default' => array(
-                            'host' => 'localhost',
-                            'port' => 11211,
-                            'weight' => 1,
-                            'timeout' => 300
-                        ))
-                ),
-            ),
-            'memcached' => array(
-                'storage' => 'memcached',
-                'option' => array(
-                    'servers' => array('default' => array(
-                            'host' => 'localhost',
-                            'port' => 11211,
-                            'weight' => 1,
-                            'timeout' => 300
-                        ))
-                ),
-            ),
-            'redis' => array(
-                'storage' => 'redis',
-                'option' => array(
-                    'servers' => array(
-                        'default' => array(
-                            'host' => '192.168.1.150',
-                            'port' => 6379,
-                        )
-                    )
-                )
-            )
-        );
+      
         self::$config = $configs;
 
         $key = $key ? $key : $configs['default'];
