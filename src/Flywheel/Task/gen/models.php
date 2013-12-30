@@ -105,7 +105,7 @@ EOD;
      * @param string $table
      */
     public function _getSchemas($table) {
-
+        $table = str_replace(' ', '', ucwords(str_replace('_', ' ', trim(str_replace($this->tbPrefix, '', $table), '_'))));
         $fileSystem = new Filesystem\Filesystem();
         $dir = ROOT_PATH.'/model/Structures/';
         $file = $dir.$table.'.yml';
