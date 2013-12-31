@@ -169,7 +169,8 @@ class BuildAppWeb {
             . "  'view_path'=> APP_PATH .DIRECTORY_SEPARATOR.'Template/',".PHP_EOL
             . "  'import'=>array(".PHP_EOL
             . "    'app.Library.*',".PHP_EOL
-            . "    'app.Controller.*'".PHP_EOL
+            . "    'app.Controller.*',".PHP_EOL
+            . "    'root.model.*'".PHP_EOL
             . "  ),".PHP_EOL
             . "  'namespace'=> '".$cameHungaryApp."',".PHP_EOL
             . "  'timezone'=>'Asia/Ho_Chi_Minh',".PHP_EOL
@@ -244,6 +245,7 @@ class BuildAppWeb {
         $destinationDefaultFile = $this->appDir.'Controller'.DIRECTORY_SEPARATOR.$class.'.php';
         $temp = '<?php'.PHP_EOL;
         $temp.=
+            'namespace '.$class.'\\Controller;'.PHP_EOL.
             'use '.$class.'\Controller\\'.$baseClass.';'.PHP_EOL.
             'class '.$class.' extends '.$baseClass.'{'.PHP_EOL
             . '' . PHP_EOL
@@ -397,7 +399,8 @@ class BuildAppConsole{
             . "  'app_path'=> APP_PATH,".PHP_EOL
             . "  'import'=>array(".PHP_EOL
             . "    'app.Library.*',".PHP_EOL
-            . "    'app.Task.*'".PHP_EOL
+            . "    'app.Task.*',".PHP_EOL
+            . "    'root.model.*'".PHP_EOL
             . "  ),".PHP_EOL
             . "  'namespace'=> '".$cameHungaryApp."',".PHP_EOL
             . "  'timezone'=>'Asia/Ho_Chi_Minh',".PHP_EOL
@@ -506,7 +509,8 @@ class BuildAppApi {
             . "  'app_path'=> APP_PATH,".PHP_EOL
             . "  'import'=>array(".PHP_EOL
             . "    'app.Library.*',".PHP_EOL
-            . "    'app.Controller.*'".PHP_EOL
+            . "    'app.Controller.*',".PHP_EOL
+            . "    'root.model.*'".PHP_EOL
             . "  ),".PHP_EOL
             . "  'namespace'=> dirname(APP_PATH),".PHP_EOL
             . "  'timezone'=>'Asia/Ho_Chi_Minh',".PHP_EOL
