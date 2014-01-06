@@ -63,7 +63,7 @@ class Session extends Object
         $this->_config = array_merge($this->_config, $config);
         if (isset($this->_config['storage']) && $this->_config['storage']) {
             $handlerClass = $this->_config['storage'];
-            unset($this->_config['handler']);
+            unset($this->_config['storage']);
             $storage = new $handlerClass($this->_config);
 
             session_set_save_handler(

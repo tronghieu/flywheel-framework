@@ -8,6 +8,7 @@ use Flywheel\Event\Event;
 use Flywheel\Config\ConfigHandler;
 use Flywheel\Loader;
 use \Flywheel\Exception\NotFound404;
+use Flywheel\Session\Session;
 
 class WebApp extends BaseApp
 {
@@ -43,7 +44,8 @@ class WebApp extends BaseApp
         $this->getEventDispatcher()->dispatch('onBeginRequest', new Event($this));
 
         //Session start
-		Factory::getSession()->start();
+		//Factory::getSession()->start();
+        Session::getInstance()->start();
         $buffer = $this->_loadController();
         $response = Factory::getResponse();
         $response->setBody($buffer);
