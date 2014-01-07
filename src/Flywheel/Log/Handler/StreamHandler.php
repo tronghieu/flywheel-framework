@@ -10,5 +10,7 @@ class StreamHandler extends Monolog\Handler\StreamHandler {
             touch($this->url); // Create blank file
             chmod($this->url, 0777);
         }
+
+        parent::write($record);
     }
 }
