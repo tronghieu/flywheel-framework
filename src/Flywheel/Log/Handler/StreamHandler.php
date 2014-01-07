@@ -1,7 +1,7 @@
 <?php
 namespace Flywheel\Log\Handler;
 
-class StreamHandler extends Monolog\Handler\StreamHandler {
+class StreamHandler extends \Monolog\Handler\StreamHandler {
     /**
      * {@inheritdoc}
      */
