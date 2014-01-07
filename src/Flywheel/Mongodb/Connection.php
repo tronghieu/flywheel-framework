@@ -1,5 +1,5 @@
 <?php
-namespace Flywheel\MongoDb;
+namespace Flywheel\Mongodb;
 
 
 
@@ -16,6 +16,7 @@ class Connection {
 	public function __construct($host,$port,$name) {
     	//echo '++++'.$host.$port.$name.'<br>';
 		$this->dbHost = $host;
+		
 		$this->conn = new \MongoClient("mongodb://".$this->dbHost);//mongodb://:@localhost:27017    
 		$this->db = $this->conn->$name;
 
@@ -156,14 +157,14 @@ class Connection {
 	//select documents with take and skip commands of the provided collection
 	//return 2d array
 	public function selectDocs($collectionName, $strListField = '*', $cond = array(), $sort = array(), $start = 0, $limit = -1) {
-		$collection = $this->db->$collectionName;
+		$collection = $this->db->$collectionName; //echo $collectionName
 		echo '<pre>';
 		//print_r($cond);
 		echo '</pre>';
-		echo $limit;
+		//echo $limit;
 		if($strListField == '*') {
 			if($limit > -1) $cursor = $collection->find($cond)->sort($sort)->skip($start)->limit($limit);
-			else $cursor = $collection->find($cond)->sort($sort)->skip($start); //  echo 'OK'; echo $sort;echo $start;
+			else $cursor = $collection->find($cond)->sort($sort)->skip($start);  //echo 'OK'; echo $sort;echo $start;
 		} else {
 			$fields = array();
 			$arrListField = explode(',', $strListField);
@@ -189,7 +190,7 @@ class Connection {
 		$collection = $this->db->$collectionName;
 		
 		if($strListField == '*') {
-			$cursor = $collection->find(array("_id" => $mongoId));
+			$cursor = $collection->find(array("_id" => new \MongoId($mongoId)));
 		} else {
 			$fields = array();
 			$arrListField = explode(',', $strListField);
@@ -197,7 +198,7 @@ class Connection {
 				$fields[trim($arrListField[$i], ' ')] = 1;
 			}
 			
-			$cursor = $collection->find(array("_id" => $mongoId), $fields);
+			$cursor = $collection->find(array("_id" => new \MongoId($mongoId)), $fields);
 		}
 		
 		if($cursor->hasNext()) {

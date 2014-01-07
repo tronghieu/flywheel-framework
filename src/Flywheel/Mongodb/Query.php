@@ -1,7 +1,7 @@
 <?php
-namespace Flywheel\MongoDb;
-use Flywheel\Mongodb\Connection;
-class Query {
+namespace Flywheel\Mongodb;
+use Flywheel\Mongodb\MongoConnection;
+class MongoQuery {
 
 private $_connection = null;
 //private $_from = null;
@@ -17,12 +17,12 @@ private $_sqlParts   = array(
         'orderBy' => array()
     );
 
- public function __construct(Connection $connection)
+ public function __construct(MongoConnection $connection)
     {
         $this->_connection = $connection; 
          $this->_from= 'ds';
-        
-    }	
+         echo 'KKKKK';
+    } 
 
  public function execute(){
     
@@ -36,56 +36,56 @@ private $_sqlParts   = array(
  }
 
  public function select($select){ 
- 	$this->_sqlParts['select']=$select;
- 	
- 	return $this;
+  $this->_sqlParts['select']=$select;
+  
+  return $this;
  }
  public function from($collection){ 
- 	$this->_sqlParts['from']=$collection;
- 	
- 	return $this;
- }	
+  $this->_sqlParts['from']=$collection;
+  
+  return $this;
+ }  
   public function limit($limit){ 
- 	$this->_sqlParts['limit']=$limit;
- 	
- 	return $this;
- }	
+  $this->_sqlParts['limit']=$limit;
+  
+  return $this;
+ }  
 public function condition($condition=array()){ 
- 	$this->_sqlParts['condition']=$condition;
- 	
- 	return $this;
+  $this->_sqlParts['condition']=$condition;
+  
+  return $this;
  }
  public function andWhere($key,$value){ 
- 	$this->_sqlParts['where'][$key] =$value;
- 	
- 	return $this;
+  $this->_sqlParts['where'][$key] =$value;
+  
+  return $this;
  }
   public function orwhere($key,$value){ 
- 	//$this->_sqlParts['where'][$key] =$value;
- 	
- 	return $this;
+  //$this->_sqlParts['where'][$key] =$value;
+  
+  return $this;
  }
  
  public function skip($skip){ 
- 	$this->_sqlParts['skip']=$skip;
- 	
- 	return $this;
+  $this->_sqlParts['skip']=$skip;
+  
+  return $this;
  }
  public function orderBy($key,$value){ 
- 	if($value=='ASC')  $option=1;
- 	elseif ($value=='DESC')  $option=-1;
- 	else   throw new Exception("chi cho phep 'ASC'  hoac 'DESC' ");
+  if($value=='ASC')  $option=1;
+  elseif ($value=='DESC')  $option=-1;
+  else   throw new Exception("chi cho phep 'ASC'  hoac 'DESC' ");
 
- 	$this->_sqlParts['sort']=array($key=>$option); //=>($option=='DESC')?1:-1);
- 	
- 	return $this;
- }		
+  $this->_sqlParts['sort']=array($key=>$option); //=>($option=='DESC')?1:-1);
+  
+  return $this;
+ }    
 
 
   public function count(){ 
- 	$this->_sqlParts['count']=TRUE;
- 	
- 	return $this;
+  $this->_sqlParts['count']=TRUE;
+  
+  return $this;
  }
   
                

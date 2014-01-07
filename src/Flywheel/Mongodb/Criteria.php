@@ -1,5 +1,5 @@
 <?php
-namespace Flywheel\MongoDb;
+namespace Flywheel\Mongodb;
 
 class Criteria {
 	public static $limit;

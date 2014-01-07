@@ -6,17 +6,17 @@ use Flywheel\Object;
 
 
 class Embedded extends Object{
-	protected static $_embedded_name;
+    protected static $_embedded_name;
     //protected static $mongoId;
     protected  static $isNew;
 
-	public  $_data=array();
-	/*
-	public static function read(){
-		return  MongoManager::getConnection()->createQuery()->from(static::getTableName());;  //'Doc';
-	}
-	*/
-	  public function __construct($data = null) { 
+    public  $_data=array();
+    /*
+    public static function read(){
+        return  MongoManager::getConnection()->createQuery()->from(static::getTableName());;  //'Doc';
+    }
+    */
+      public function __construct($data = null) { 
        // $this->setTableDefinition();
         //$this->_initDataValue();
         //$this->init();
@@ -35,9 +35,9 @@ class Embedded extends Object{
     }
     public function hydrate($data) {
         //echo 'hydrate';  
-        echo '<pre>';	
-		//print_r($data) ;
-		echo '</pre>';
+        echo '<pre>';   
+        //print_r($data) ;
+        echo '</pre>';
 
         //print_r($data['_id']->{'$id'});
 
