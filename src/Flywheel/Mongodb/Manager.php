@@ -13,7 +13,7 @@ public static function initialize() {
        
     }
 public static function initConfig() { 
-        self::loadConfig(ROOT_PATH .'/global/config/mongodb.cfg.php');
+        self::loadConfig(ROOT_PATH .'/config.cfg.php');   //config.cfg .example.php
     }
 
 public static function loadConfig($configFile) {
@@ -22,16 +22,16 @@ public static function loadConfig($configFile) {
             throw new Exception("Unable to open Mongo configuration file: " . var_export($configFile, true));
        // echo 'configuration))))))';
         //var_dump($configuration);
-        self::$configuration = $configuration;
+        self::$configuration = $configuration['database']['mongodb'];
     }
 public function getConnection(){
-	self::initialize();
-	$host=self::$configuration['host'];	
-	$port=self::$configuration['port'];	
-	$db=self::$configuration['db'];	
-	$conn = new MongoConnection($host,$port,$db);
-	return  $conn;
-	}
+    self::initialize();
+    $host=self::$configuration['host']; 
+    $port=self::$configuration['port']; 
+    $db=self::$configuration['db']; 
+    $conn = new Connection($host,$port,$db);
+    return  $conn;
+    }
 
 
 }

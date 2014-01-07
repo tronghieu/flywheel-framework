@@ -4,17 +4,17 @@ namespace Flywheel\Mongodb;
 use Flywheel\Object;
 
 class Document extends Object{
-	protected static $_tableName;
-    protected static $mongoId;
+    protected static $_tableName;
+    public  $mongoId;
     protected  static $isNew;
 
-	public  $_data=array();
-	/*
-	public static function read(){
-		return  MongoManager::getConnection()->createQuery()->from(static::getTableName());;  //'Doc';
-	}
-	*/
-	  public function __construct($data = null) { 
+    public  $_data=array();
+    /*
+    public static function read(){
+        return  MongoManager::getConnection()->createQuery()->from(static::getTableName());;  //'Doc';
+    }
+    */
+      public function __construct($data = null) { 
          $list_embedded=$this->embeddedDocuments();
         foreach ($this->_schema  as $p => $q) {
                 if (isset($list_embedded[$p]))  { 
@@ -106,26 +106,26 @@ class Document extends Object{
 
     }
 /*
-	public static function read(){ //echo 'CALSS'. get_class($this);// $a = new hoang();  print_r($a);
-		
+    public static function read(){ //echo 'CALSS'. get_class($this);// $a = new hoang();  print_r($a);
+        
 
-		$data =MongoManager::getConnection()
-				->createQuery()
-				->from(static::getTableName()); 
+        $data =MongoManager::getConnection()
+                ->createQuery()
+                ->from(static::getTableName()); 
        
         /* foreach ($data as $key => $value) {
               $obj=new static($value);   
               $result[]=$obj;
                     # code...
                 }       
-		print_r($result);
-				//->{static::getTableName()};
-				//->find();
-				
+        print_r($result);
+                //->{static::getTableName()};
+                //->find();
+                
              //  ->where($condition)
                // ->limit($limit);  //'Doc';
-		return $data;
-	}
+        return $data;
+    }
     public static function write($data){ //echo 'CALSS'. get_class($this);// $a = new hoang();  print_r($a);
         
 
@@ -186,7 +186,7 @@ class Document extends Object{
                     }
                 }
                 echo '<pre>';
-                print_r( $data_diffirent);
+             //   print_r( $data_diffirent);
                  echo '</pre>';
        // static::write($data);
          Manager::getConnection()->updateById(static::getTableName(),$this->mongoId,$data_diffirent);
@@ -214,12 +214,12 @@ class Document extends Object{
 
      public static function retrieveById($mongoid){
        //  echo 'br'.'get_class'.get_class($this)  ;
-     $data=  Manager::getConnection()->getDocById(static::getTableName(),$mongoid)	;
-     $obj=new static($data);	
-		echo '<pre>';	
-		//print_r($obj) ;
-		echo '</pre>';
-	return $obj;	
+     $data=  Manager::getConnection()->getDocById(static::getTableName(),$mongoid)  ;
+     $obj=new static($data);    
+        echo '<pre>';   
+        //print_r( $data) ;
+        echo '</pre>';
+    return $obj;    
      }
      /*
      public static function remove(){
