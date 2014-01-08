@@ -44,7 +44,6 @@ class WebApp extends BaseApp
         $this->getEventDispatcher()->dispatch('onBeginRequest', new Event($this));
 
         //Session start
-		//Factory::getSession()->start();
         Session::getInstance()->start();
         $buffer = $this->_loadController();
         $response = Factory::getResponse();
