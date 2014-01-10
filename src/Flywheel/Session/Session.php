@@ -53,12 +53,7 @@ class Session extends Object
     {
         // Load config
         if (empty($config)) {
-            ($config = ConfigHandler::load('app.config.session', 'session', false)
-                or ($config = ConfigHandler::load('global.config.session', 'session')));
-            if (false == $config) {
-                throw new Exception('Session: config file not found, "session.cfg.php" must be exist at globals/config or '
-                    . Base::getAppPath() . ' config directory');
-            }
+            ConfigHandler::get('session'); // Read config from session key in config file
         }
         $this->_config = array_merge($this->_config, $config);
         if (isset($this->_config['storage']) && $this->_config['storage']) {
