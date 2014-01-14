@@ -14,11 +14,11 @@ class Api extends BaseController
     public function beforeExecute() {}
 
     final public function execute($regMethod, $method = null) {
-        $method = Inflection::camelize($method);
-        $apiMethod = strtolower($regMethod) .$method;
+        $apiMethod = strtolower($regMethod) .Inflection::camelize($method);
         $this->getEventDispatcher()->dispatch('onBeginControllerExecute', new Event($this, array('action' => $apiMethod)));
-        if (!method_exists($this, $apiMethod))
+        if (!method_exists($this, $apiMethod)) {
             throw new \Flywheel\Exception\Api('Api '.Factory::getRouter()->getApi() ."/{$method} not found", 404);
+        }
 
         $this->beforeExecute();
         $buffer = $this->$apiMethod();
