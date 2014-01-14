@@ -44,6 +44,7 @@ class ApiRouter extends BaseRouter
      * get full api path
      *
      * @return mixed
+     * @deprecated from version 1.1
      */
     public function getPath() {
         return $this->_path;
@@ -61,18 +62,28 @@ class ApiRouter extends BaseRouter
             $this->_format = $_cf[1];
             $segment[count($segment) - 1] = $_cf[0];
         }
-        $this->_path = Base::getAppPath() .'/Controller/';
-        while(!empty($segment)) {
-            $seg = array_shift($segment);
-            if (is_dir($this->_path.$seg)) {
-                $this->_path .= DIRECTORY_SEPARATOR;
-            } elseif (is_file($this->_path.($api = Inflection::camelize($seg)).'.php')) {
-                $this->_api = $api;
+
+        $size = sizeof($segment);
+        $router = array();
+        for ($i = 0; $i < $size; ++$i) {
+            $router[$i] = Inflection::camelize($segment[$i]);
+        }
+
+        for ($i = $size - 1; $i >= 0; --$i) {
+            $router = array_slice($router, 0, $i+1);
+            $_camelName = implode("\\", $router);
+            $_path = implode(DIRECTORY_SEPARATOR, $router);
+            if (false !== file_exists($file = Base::getAppPath().'/Controller/' .$_path .'.php')) {
+                $this->_api = trim ($_camelName, "\\");
                 break;
             }
         }
-        if (null == $this->_api)
+
+        if (null == $this->_api) {
             throw new ApiException('API not found', 404);
+        }
+
+        $segment = array_slice($segment, $i+1);
 
         if (!empty($segment)) {
             $this->_method = array_shift($segment);
