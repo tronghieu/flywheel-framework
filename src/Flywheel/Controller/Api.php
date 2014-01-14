@@ -2,6 +2,8 @@
 namespace Flywheel\Controller;
 use Flywheel\Factory;
 use Flywheel\Event\Event as Event;
+use Flywheel\Util\Inflection;
+
 class Api extends BaseController
 {
     public function __construct($name, $params) {
@@ -12,6 +14,7 @@ class Api extends BaseController
     public function beforeExecute() {}
 
     final public function execute($regMethod, $method = null) {
+        $method = Inflection::camelize($method);
         $apiMethod = strtolower($regMethod) .$method;
         $this->getEventDispatcher()->dispatch('onBeginControllerExecute', new Event($this, array('action' => $apiMethod)));
         if (!method_exists($this, $apiMethod))
