@@ -37,7 +37,7 @@ class Storage extends Object {
      */
     public static function factory($key = null) {
         $configs = ConfigHandler::get('caching');
-      
+        
         self::$config = $configs;
 
         $key = $key ? $key : $configs['default'];
@@ -45,7 +45,7 @@ class Storage extends Object {
 
 
         if (!isset(self::$_instances[$option['storage']])) {
-            $class = "\\Flywheel\Caching\\Storage\\Cache_" . $option['storage'];
+            $class = "\\Flywheel\Caching\\Storage\\" . ucfirst($option['storage']);
             self::$_instances[$key] = new $class($option['option']);
         }
 
@@ -77,13 +77,7 @@ class Storage extends Object {
 
 
         if ($this->option['path'] == '') {
-            if ($this->isPHPModule()) {
-                $tmp_dir = ini_get('upload_tmp_dir') ? ini_get('upload_tmp_dir') : sys_get_temp_dir();
-                $this->option("path", $tmp_dir);
-            } else {
-                $this->option("path", dirname(__FILE__));
-            }
-
+            $this->option("path", dirname(__FILE__));
             if (self::$config['path'] == "") {
                 self::$config['path'] = $this->option("path");
             }

@@ -4,21 +4,19 @@
  * Asset Management for Flywheel Framework
  *  'assets' => array(
  *      'default' => array(
- *         'environment' => 'dev', // dev||product * 
- * *       'base_url' => '',
- * *       'cache_dir' => '',
- * *       'cache_path' => '',  
- * *       'cache_url' => '',      
- * *       'js_path' => '',
- * *       'js_dir' => '',
- * *       'js_url' => '', 
- * *       'css_path' => '', 
- * *       'css_dir' => '',
- * *       'css_url' => '',
- * *       'minify_css' => '',
- * *       'minify_js' => '',
+ *         'environment' => 'dev', // dev||product *
+ * *       'base_url' => '', // auto define if option is null
+ * *       'cache_dir' => 'cache', // 
+ * *       'cache_path' => '', /path/to/cache/folder. Default assets/cache/
+ * *       'cache_url' => 'http://domain/assets/cache',
+ * *       'js_path' => '', //Default: /pathto/assets/js
+ * *       'js_dir' => 'js',  // 
+ * *       'js_url' => 'http://domain/assets/js',
+ * *       'css_path' => '',
+ * *       'css_dir' => 'css',
+ * *       'css_url' => 'http://domain/assets/css' 
  *    ),
- * 
+ *
  * );
  * @author tradade
  */
@@ -32,7 +30,8 @@ use \Flywheel\Loader as Loader;
 require_once('cssmin.php');
 require_once('jsmin.php');
 
-class Asset {
+class Asset
+{
 
     public $envi = 'dev';
     public $config;
@@ -51,27 +50,29 @@ class Asset {
     private $css_array = array('main' => array());
     private $js_str, $css_str;
 
-    function __construct($section = 'default') {
+    function __construct($section = 'default')
+    {
 
 
-       $config = ConfigHandler::get('assets');
-       if (!$config) {
-           throw new Exception('Config "assets" not found');
-       }
+        $config = ConfigHandler::get('assets');
+        if (!$config) {
+            throw new Exception('Config "assets" not found');
+        }
         $config = $config[$section];
-        
+
         $this->_config($config);
     }
 
-    private function _path() {
+    private function _path()
+    {
 
-        $this->base_url = "http://" . $_SERVER['HTTP_HOST'];
-        $this->base_url .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
-        $this->base_path = realpath($this->assets_path);
         if (!$this->base_url) {
-            $this->base_url = \ConfigHandler::get('assets.base_url') . $this->assets_dir;
-        } else
+            $this->base_url = "http://" . $_SERVER['HTTP_HOST'];
+            $this->base_url .= str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']) . $this->assets_dir;
+            $this->base_path = realpath($this->assets_path);
+        } else {
             $this->base_url = $this->base_url . $this->assets_dir;
+        }
 
 
         if (stripos($this->base_url, '//') === 0) {
@@ -88,7 +89,8 @@ class Asset {
         $this->css_url = $slash . $this->base_url . '/' . $this->css_dir . '/';
     }
 
-    private function _config($config) {
+    private function _config($config)
+    {
         foreach ($config as $key => $value) {
             if ($key == 'groups') {
                 foreach ($value as $group_name => $assets) {
@@ -102,7 +104,8 @@ class Asset {
         $this->_path();
     }
 
-    public function display($type, $group = 'main') {
+    public function display($type, $group = 'main')
+    {
         switch (strtolower($type)) {
             case 'js':
                 $this->_displayJs($group);
@@ -117,7 +120,8 @@ class Asset {
         }
     }
 
-    private function _displayJs($group = 'main') {
+    private function _displayJs($group = 'main')
+    {
         if (empty($this->_js)) {
             return;
         }
@@ -152,7 +156,8 @@ class Asset {
         }
     }
 
-    private function _displayCss($group = 'main') {
+    private function _displayCss($group = 'main')
+    {
         if (empty($this->_css)) {
             return;
         }
@@ -187,7 +192,8 @@ class Asset {
     }
 
     //Add assets to a group
-    public function group($group_name = '', $assets) {
+    public function group($group_name = '', $assets)
+    {
         if (!isset($assets['js']) && !isset($assets['css'])) {
             return;
         }
@@ -199,7 +205,8 @@ class Asset {
     }
 
     //Add css
-    public function css($files, $group = 'main') {
+    public function css($files, $group = 'main')
+    {
         if (is_string($files)) {
             $files = array($files);
         }
@@ -209,7 +216,8 @@ class Asset {
     }
 
     //add js
-    public function js($files, $group = 'main') {
+    public function js($files, $group = 'main')
+    {
         if (is_string($files)) {
             $files = array($files);
         }
@@ -218,8 +226,8 @@ class Asset {
         }
     }
 
-    private function _assets($type, $file, $group = 'main') {
-        //print_r($group);die;
+    private function _assets($type, $file, $group = 'main')
+    {
         if ($type == 'css') {
             $this->_css[$group][] = $file;
         }
@@ -228,7 +236,8 @@ class Asset {
         }
     }
 
-    private function _getFileString($file) {
+    private function _getFileString($file)
+    {
         if ($this->_isUrl($file) && function_exists('curl_version')) {
             $file_data = $this->_getUrl($file);
         } else {
@@ -253,10 +262,11 @@ class Asset {
         return $file_data;
     }
 
-    public function printTag($file = '', $type = 'css', $attributes = '', $echo = true) {
+    public function printTag($file = '', $type = 'css', $attributes = '', $echo = true)
+    {
         $str = '';
         if ($type === 'css') {
-            $str = '<link type="text/css" href="' . $file . '"' . $attributes . ' />' . PHP_EOL;
+            $str = '<link rel="stylesheet" type="text/css" href="' . $file . '"' . $attributes . ' />' . PHP_EOL;
         } elseif ($type === 'js') {
             $str = '<script src="' . $file . '" type="text/javascript"' . $attributes . '></script>' . PHP_EOL;
         }
@@ -267,17 +277,19 @@ class Asset {
         }
     }
 
-    public function _printCache($file = '', $type = 'css') {
+    public function _printCache($file = '', $type = 'css')
+    {
         $url = $this->cache_url . $file;
 
         if ($type === 'css') {
-            return $str = '<link type="text/css" href="' . $url . '"' . $attributes . ' />' . PHP_EOL;
+            return $str = '<link rel="stylesheet" type="text/css" href="' . $url . '"' . $attributes . ' />' . PHP_EOL;
         } elseif ($type === 'js') {
             return '<script src="' . $url . '" type="text/javascript"></script>' . PHP_EOL;
         }
     }
 
-    public function clear($type = '') {
+    public function clear($type = '')
+    {
         if ($type === 'css') {
             foreach (new DirectoryIterator($this->cache_path) as $file) {
                 if (!$file->isDot() && $file->getExtension() === 'css') {
@@ -299,7 +311,8 @@ class Asset {
         return true;
     }
 
-    private function _jsString($str, $group = 'main') {
+    private function _jsString($str, $group = 'main')
+    {
         if (is_string($str)) {
             $str = array($str);
         }
@@ -308,7 +321,8 @@ class Asset {
         }
     }
 
-    private function _cssString($str, $group = 'main') {
+    private function _cssString($str, $group = 'main')
+    {
         if (is_string($str)) {
             $str = array($str);
         }
@@ -317,7 +331,8 @@ class Asset {
         }
     }
 
-    private function _minify($type, $file_path) {
+    private function _minify($type, $file_path)
+    {
 
         $file_content = $this->_getFileString($file_path);
         switch ($type) {
@@ -332,7 +347,8 @@ class Asset {
         }
     }
 
-    private function _combine($type, $files, $file_name) {
+    private function _combine($type, $files, $file_name)
+    {
         $file_content = '';
         $file_path = '';
         if (!is_dir($this->cache_path)) {
@@ -353,7 +369,7 @@ class Asset {
                     if ($this->minify) {
                         $file_content .= $this->_minify('css', $file_path);
                     } else {
-                        $file_content .= $this->_getFileString('css', $file_path);
+                        $file_content .= $this->_getFileString($file_path);
                     }
                 }
 
@@ -365,18 +381,18 @@ class Asset {
                     if ($this->minify) {
                         $file_content .= $this->_minify('js', $file_path);
                     } else {
-                        $file_content .= $this->_getFileString('js', $file_path);
+                        $file_content .= $this->_getFileString($file_path);
                     }
                 }
                 break;
             default:
                 break;
         }
-        //echo $file_content;die;
         $this->_saveCache($file_name, $file_content);
     }
 
-    private function _getUrl($url) {
+    private function _getUrl($url)
+    {
         $ch = curl_init();
         $timeout = 5;
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -387,12 +403,14 @@ class Asset {
         return $data;
     }
 
-    private function _isUrl($str) {
+    private function _isUrl($string)
+    {
         $pattern = '@(((https?|ftp):)?//([-\w\.]+)+(:\d+)?(/([\w/_\.]*(\?\S+)?)?)?)@';
         return preg_match($pattern, $string);
     }
 
-    public function _saveCache($file_name, $file_data) {
+    public function _saveCache($file_name, $file_data)
+    {
         $result = file_put_contents($file_name, $file_data);
         return $result;
     }
