@@ -134,6 +134,7 @@ class Factory
 
     /**
      * Get Session
+     * @deprecated Change method to \Flywheel\Session\Session::getInstance()
      *
      * @throws Exception
      * @return \Flywheel\Storage\Session
