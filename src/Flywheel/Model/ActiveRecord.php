@@ -824,13 +824,39 @@ abstract class ActiveRecord extends Object {
         return $where;
     }
 
-    public static function findAll() {
+    public static function findAll($conditions = array(),$order = 'id asc',$limit = '') {
         static::create();
-        return self::getReadConnection()->createQuery()
+        $query = self::getReadConnection()->createQuery();
+        $query
             ->select(static::getTableAlias() . '.*')
-            ->from(self::quote(static::getTableName()), static::getTableAlias())
+            ->from(self::quote(static::getTableName()), static::getTableAlias());
+
+        if($conditions && !empty($conditions)){
+            foreach ($conditions as $condition){
+                if(is_string($condition)) {
+                    $query->andWhere($condition);
+                }
+            }
+        }
+
+        if($order && $order !='' && is_string($order)){
+            $orderArray = explode(' ',$order);
+            if(!empty($orderArray) && isset($orderArray[0]) && isset($orderArray[1])){
+                $query->orderBy($orderArray[0],$orderArray[1]);
+            }
+        }
+
+        if($limit && $limit !='' && is_string($limit) && strpos($limit,',')!==false){
+            $limitArray = explode(',',$order);
+            if(!empty($limitArray) && isset($limitArray[0]) && isset($limitArray[1])){
+                $query->setFirstResult($limitArray[0]);
+                $query->setMaxResults($limitArray[1]);
+            }
+        }
+        $data = $query
             ->execute()
             ->fetchAll(\PDO::FETCH_CLASS, static::getPhpName(), array(null, false));
+        return $data;
     }
 
     public static function findBy($by, $param = null, $first = false) {
