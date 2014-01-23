@@ -498,6 +498,7 @@ EOD;
             .'    protected static $_instances = array();' .PHP_EOL
             .'    protected static $_schema = array(' .PHP_EOL .$schema .'     );' .PHP_EOL
             .'    protected static $_validate = array(' .PHP_EOL .$validate .'    );' .PHP_EOL
+            .'    protected static $_validatorRules = array(' .PHP_EOL .$validate .'    );' .PHP_EOL
             .'    protected static $_init = false;' .PHP_EOL
             .'    protected static $_cols = array(\'' .@implode("','", array_keys($columns)) .'\');' .PHP_EOL;
 
