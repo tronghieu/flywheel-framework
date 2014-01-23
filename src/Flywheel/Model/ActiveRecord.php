@@ -675,7 +675,7 @@ abstract class ActiveRecord extends Object {
                     continue;
                 }
 
-                if (!isset(self::$_validatorRules[$name. '.' .$rule['name']])) {
+                if (!isset(static::$_validatorRules[$name. '.' .$rule['name']])) {
                     if (!isset($rule['value'])) {
                         $rule['value'] = '';
                     }
@@ -684,12 +684,12 @@ abstract class ActiveRecord extends Object {
                     $validationRule->setClass($rule['name']);
                     $validationRule->setMessage($rule['message']);
                     $validationRule->setValue($rule['value']);
-                    self::$_validatorRules[$name. '.' .$rule['name']] = $validationRule;
+                    static::$_validatorRules[static::getTableName(). '.' .$name. '.' .$rule['name']] = $validationRule;
                 } else {
-                    $validationRule = self::$_validatorRules[$name. '.' .$rule['name']];
+                    $validationRule = static::$_validatorRules[static::getTableName(). '.' .$name. '.' .$rule['name']];
                 }
 
-                $validator = self::createValidator($validationRule->getClass());
+                $validator = static::createValidator($validationRule->getClass());
                 if ($validator && ($this->$name != null || $this->isNotNull($name)) && !$validator->isValid($validationRule->getValue(), $this->$name)) {
                     $this->setValidationFailure(static::getTableName() .'.' .$name, t($validationRule->getMessage()), $validator);
                 }
@@ -697,7 +697,7 @@ abstract class ActiveRecord extends Object {
         }
 
         if (!empty($unique) && !$this->hasValidationFailures()) {
-            $validator = self::createValidator('\Flywheel\Model\Validator\UniqueValidator');
+            $validator = static::createValidator('\Flywheel\Model\Validator\UniqueValidator');
             $validator->isValid($this, $unique);
         }
 
@@ -713,11 +713,11 @@ abstract class ActiveRecord extends Object {
      */
     public static function createValidator($validatorName) {
         try {
-            if (!isset(self::$_validator[$validatorName])) {
-                self::$_validator[$validatorName] = new $validatorName();
+            if (!isset(static::$_validator[$validatorName])) {
+                static::$_validator[$validatorName] = new $validatorName();
             }
 
-            return self::$_validator[$validatorName];
+            return static::$_validator[$validatorName];
         } catch (\Exception $e) {
             throw new Exception("ActiveRecord::createValidator(): failed trying to instantiate {$validatorName}:{$e->getMessage()} in {$e->getFile()} at {$e->getLine()}}");
         }
