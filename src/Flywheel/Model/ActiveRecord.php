@@ -941,7 +941,7 @@ abstract class ActiveRecord extends Object {
 
         if (strpos($method, 'get') === 0) {
             $name = Inflection::camelCaseToHungary(substr($method, 3, strlen($method)));
-            if (isset(static::$_cols[$name])) {
+            if (in_array($name, static::$_cols)) {
                 return isset($this->_data[$name])? $this->_data[$name]: null ;
             }
 
