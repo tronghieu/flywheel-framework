@@ -826,13 +826,11 @@ abstract class ActiveRecord extends Object {
 
     public static function findAll() {
         static::create();
-        $query = self::getReadConnection()->createQuery();
-        $data = $query
+        return self::getReadConnection()->createQuery()
             ->select(static::getTableAlias() . '.*')
             ->from(self::quote(static::getTableName()), static::getTableAlias())
             ->execute()
             ->fetchAll(\PDO::FETCH_CLASS, static::getPhpName(), array(null, false));
-        return $data;
     }
 
     public static function findAllByConditions($conditions = array(),$order = 'id asc',$limit = '') {
