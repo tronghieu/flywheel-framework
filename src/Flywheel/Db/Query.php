@@ -901,7 +901,10 @@ class Query
 
         // Loop through all FROM clauses
         foreach ($this->_sqlParts['from'] as $from) {
-            $fromClause = $from['table'] . ' ' . $from['alias'];
+            $table = $from['table'];
+            if( strpos($table, '`') === false ) $table = '`'.$table.'`';
+
+            $fromClause = $table . ' ' . $from['alias'];
 
             if (isset($this->_sqlParts['join'][$from['alias']])) {
                 foreach ($this->_sqlParts['join'][$from['alias']] as $join) {
