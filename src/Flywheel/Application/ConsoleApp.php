@@ -128,8 +128,10 @@ class ConsoleApp extends BaseApp
             throw new Exception("Missing 'task' parameter!");
         }
 
-        $class = $this->getAppNamespace() .'\\Task\\' .Inflection::hungaryNotationToCamel($this->_task);
-        $taskPath = TASK_DIR .'/' .str_replace('\\', DIRECTORY_SEPARATOR, $class) .'.php';
+        $camelName = Inflection::hungaryNotationToCamel($this->_task);
+
+        $class = $this->getAppNamespace() .'\\Task\\' .$camelName;
+        $taskPath = TASK_DIR .'/' .$this->getAppNamespace() .'/Task/' .str_replace('\\', DIRECTORY_SEPARATOR, $camelName) .'.php';
         if (file_exists($taskPath)) {
 //            require_once $file;
             $this->_controller = new $class($this->_task, $taskPath);
