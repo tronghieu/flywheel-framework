@@ -17,7 +17,7 @@ class Client {
         if (null == $config || is_string($config)) {
             $c = ConfigHandler::get('redis');
             if (null == $config || !isset($c[$config])) {
-                $config = '__default__';
+                $config = $c['__default__'];
             }
 
             if (!isset($c[$config])) {
