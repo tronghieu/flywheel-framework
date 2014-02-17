@@ -27,6 +27,6 @@ class Client {
             $config = $c[$config];
         }
 
-        return Connection::getInstance($config['dsn'], ($config['option'])? $config['option'] : array());
+        return Connection::getInstance($config['dsn'], (isset($config['option']) && $config['option'])? $config['option'] : array());
     }
 }
