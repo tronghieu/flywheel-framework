@@ -131,7 +131,7 @@ class ConsoleApp extends BaseApp
         $camelName = Inflection::hungaryNotationToCamel($this->_task);
 
         $class = $this->getAppNamespace() .'\\Task\\' .$camelName;
-        $taskPath = TASK_DIR .'/' .$this->getAppNamespace() .'/Task/' .str_replace('\\', DIRECTORY_SEPARATOR, $camelName) .'.php';
+        $taskPath = TASK_DIR .'Task/' .str_replace('\\', DIRECTORY_SEPARATOR, $camelName) .'.php';
         if (file_exists($taskPath)) {
 //            require_once $file;
             $this->_controller = new $class($this->_task, $taskPath);
