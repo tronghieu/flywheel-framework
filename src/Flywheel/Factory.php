@@ -166,7 +166,7 @@ class Factory
      */
     public static function getCookie() {
         if (!isset(self::$_registry['cookie'])) {
-            self::getSession(); //make s$ure that session initialized
+            \Flywheel\Session\Session::getInstance()->start();
             $class = self::$_classesList['Cookie'];
             self::$_registry['cookie'] = new $class(ConfigHandler::get('session', false));
         }
