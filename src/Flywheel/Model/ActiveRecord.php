@@ -412,10 +412,18 @@ abstract class ActiveRecord extends Object {
      */
     public function toArray($raw = false) {
         if (true === $raw) {
-            return get_object_vars($this);
+            $data = get_object_vars($this);
+        } else {
+            $data = $this->_data;
         }
 
-        return $this->_data;
+        foreach ($data as $k => $v) {
+            if ($v instanceof DateTime) {
+                $data[$k] = $v->toString();
+            }
+        }
+
+        return $data;
     }
 
     /**
