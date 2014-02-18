@@ -13,13 +13,14 @@ class Redis extends BaseAdapter {
     protected function _init() {
         try {
             if (null == $this->_conn) {
-                $t = explode('/',$this->_config['dsn']);
+                $config = $this->_config['config'];
+                $t = explode('/',$config['dsn']);
                 $db = isset($t[1])? $t[1] : 0;
                 $t = explode(':', $t[0]);
                 $redis = new Connection();
                 $redis->connect($t[0], $t[1]);
-                if (isset($this->_config['auth'])) {
-                    $redis->auth($this->_config['auth']);
+                if (isset($config['auth'])) {
+                    $redis->auth($config['auth']);
                 }
                 $redis->select($db);
                 $this->_conn = $redis;
