@@ -951,6 +951,10 @@ class Query
             . ' SET ' . implode(", ", $this->_sqlParts['set'])
             . ($this->_sqlParts['where'] !== null ? ' WHERE ' . ((string) $this->_sqlParts['where']) : '');
 
+        $query = ($this->_maxResults === null && $this->_firstResult == null)
+            ? $query
+            : $this->_connection->getAdapter()->applyLimit($query, $this->_firstResult, $this->_maxResults);
+
         return $query;
     }
 
@@ -963,6 +967,10 @@ class Query
     {
         $table = $this->_sqlParts['from']['table'] . ($this->_sqlParts['from']['alias'] ? ' ' . $this->_sqlParts['from']['alias'] : '');
         $query = 'DELETE FROM ' . $table . ($this->_sqlParts['where'] !== null ? ' WHERE ' . ((string) $this->_sqlParts['where']) : '');
+
+        $query = ($this->_maxResults === null && $this->_firstResult == null)
+            ? $query
+            : $this->_connection->getAdapter()->applyLimit($query, $this->_firstResult, $this->_maxResults);
 
         return $query;
     }
