@@ -9,7 +9,7 @@ class Queue implements IQueue {
     protected static $_instances = array();
 
     protected static $_adaptersList = array(
-        'redis' => 'Adapter\Redis'
+        'redis' => '\Flywheel\Queue\Adapter\Redis'
     );
 
     /**
