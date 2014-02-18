@@ -12,8 +12,11 @@ namespace Flywheel\Queue\Adapter;
 abstract class BaseAdapter {
     protected $_config = array();
 
+    protected $_name;
+
     public function __construct($config) {
         $this->_config = $config;
+        $this->_name = $config['name']? $config['name'] : 'default';
         $this->_init();
     }
 
