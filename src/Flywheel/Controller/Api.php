@@ -14,6 +14,10 @@ class Api extends BaseController
     public function beforeExecute() {}
 
     final public function execute($regMethod, $method = null) {
+        if (!$method) {
+            throw new \Flywheel\Exception\Api('Api not found', 404);
+        }
+
         $apiMethod = strtolower($regMethod) .Inflection::camelize($method);
         $this->getEventDispatcher()->dispatch('onBeginControllerExecute', new Event($this, array('action' => $apiMethod)));
         if (!method_exists($this, $apiMethod)) {
