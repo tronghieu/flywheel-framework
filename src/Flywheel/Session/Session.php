@@ -36,6 +36,7 @@ class Session extends Object
 
     /**
      * Get instance object
+     * @return Session
      */
     public static function getInstance()
     {
