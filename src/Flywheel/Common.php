@@ -1,5 +1,6 @@
 <?php
 use Flywheel\Factory;
+use Flywheel\Translation\Translator;
 
 if (false == function_exists('array_zip')) {
     /**
@@ -35,8 +36,8 @@ if (false == function_exists('array_zip')) {
  * @return string
  */
 function t($id, array $parameters = array(), $domain = 'messages', $locale = null) {
-    if (($translator = Factory::getTranslator())) {
-        return $translator = Factory::getTranslator()->trans($id, $parameters, $domain, $locale);
+    if (($translator = Translator::getInstance())) {
+        return Translator::getInstance()->trans($id, $parameters, $domain, $locale);
     }
 
     return $id;
