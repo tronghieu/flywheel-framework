@@ -23,7 +23,7 @@ class Translator extends \Symfony\Component\Translation\Translator {
             return null;
         }
 
-        if (null == !static::$_instance) {
+        if (null == static::$_instance) {
             $translator = new Translator($i18nCfg['default_locale'], new MessageSelector());
             $translator->setFallbackLocales($i18nCfg['default_fallback']);
             $translator->addLoader('array', new ArrayLoader());
