@@ -137,7 +137,7 @@ class Factory
      * @deprecated Change method to \Flywheel\Session\Session::getInstance()
      *
      * @throws Exception
-     * @return \Flywheel\Storage\Session
+     * @return \Flywheel\Session\Session
      */
     public static function getSession() {
         if (!Base::getApp()) {
