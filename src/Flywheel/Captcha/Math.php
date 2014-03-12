@@ -88,7 +88,7 @@ class Math {
      */
     public $timeout = 900;
 
-    public $difficultLevel = 2;
+    public $difficultLevel = 1;
 
     public $useTransparentText = true;
 
@@ -96,7 +96,7 @@ class Math {
     public $imgHeight = 80;
     public $scale = 10;
 
-    protected $_limit = 100;
+    public $limit = 100;
     protected $_display;
     protected $_backgroundImg;
     protected $_image;
@@ -198,18 +198,18 @@ class Math {
         }
 
         if ($this->difficultLevel == 3) {
-            $this->_limit = 1000;
+            $this->limit = 1000;
         }
 
         $operator = $operators[array_rand($operators)];
         call_user_func(array($this, $operator));
-        $this->_display .= ' = ?';
+        $this->_display .= '=?';
     }
 
     protected function _calculatePlusMinus() {
-        $first = mt_rand(1, $this->_limit);
+        $first = mt_rand(1, $this->limit);
         do {
-            $second = mt_rand(1, $this->_limit);
+            $second = mt_rand(1, $this->limit);
         } while($second == $first);
 
         $operator = (mt_rand(0,1))? '+' : '-';
@@ -227,13 +227,13 @@ class Math {
                 $this->_result = $first + $second;
         }
 
-        $this->_display = "{$first} {$operator} {$second}";
+        $this->_display = "{$first}{$operator}{$second}";
         $this->_store($this->_result);
     }
 
     protected function _calculateMultiplicationDivision() {
-        $first = mt_rand(1, $this->_limit);
-        $second = mt_rand(1, $this->_limit);
+        $first = mt_rand(1, $this->limit);
+        $second = mt_rand(1, $this->limit);
         $operator = (mt_rand(0,1))? '*' : '/';
 
         $result = $first*$second;
@@ -244,7 +244,7 @@ class Math {
             $result = $t;
         }
 
-        $this->_display = "{$first} {$operator} {$second}";
+        $this->_display = "{$first}{$operator}{$second}";
         $this->_result = $result;
         $this->_store($this->_result);
     }
