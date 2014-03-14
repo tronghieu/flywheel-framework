@@ -204,6 +204,27 @@ abstract class ActiveRecord extends Object {
     }
 
     /**
+     * Select always return array of object when calling @see \Flywheel\Db\Query::execute()
+     * (or empty if have no records)
+     */
+    public static function select() {
+        $q = self::read();
+        $q->setSelectQueryCallback(array(static::getPhpName(), 'selectQueryCallback'));
+    }
+
+    /**
+     * @param \PDOStatement $stmt
+     * @return array|null
+     */
+    public static function selectQueryCallback(\PDOStatement $stmt) {
+        if ($stmt instanceof \PDOStatement) {
+            return $stmt->fetchAll(\PDO::FETCH_CLASS, static::getPhpName(), array(null, false));
+        }
+
+        return null;
+    }
+
+    /**
      * return the named attribute value.
      * if this is a new record and the attribute is not set before, the default column value will be returned.
      * if this record is the result of a query and the attribute is not loaded, null will be returned.     *

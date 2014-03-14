@@ -74,6 +74,8 @@ class Query
      */
     private $_boundCounter = 0;
 
+    private $_selectQueryCallback;
+
     /**
      * Initializes a new <tt>Query</tt>.
      *
@@ -129,6 +131,11 @@ class Query
                 $result = $result->fetch(\PDO::FETCH_ASSOC);
                 return $result['result'];
             }
+
+            if ($this->_selectQueryCallback) {
+                return call_user_func($this->_selectQueryCallback, $result);
+            }
+
             return $result;
         } else {
             return $this->_connection->executeUpdate($this->getSQL(), $this->params, $this->paramTypes);
@@ -1050,5 +1057,17 @@ class Query
         $this->_boundCounter++;
         $this->setParameter($this->_boundCounter, $value, $type);
         return "?";
+    }
+
+    /**
+     * @param callable $callback
+     * @throws Exception
+     */
+    public function setSelectQueryCallback($callback) {
+        if (!is_callable($callback)) {
+            throw new Exception("select query callback require callable method");
+        }
+
+        $this->_selectQueryCallback = $callback;
     }
 }
