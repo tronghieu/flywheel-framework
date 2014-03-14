@@ -206,10 +206,12 @@ abstract class ActiveRecord extends Object {
     /**
      * Select always return array of object when calling @see \Flywheel\Db\Query::execute()
      * (or empty if have no records)
+     * @return \Flywheel\Db\Query
      */
     public static function select() {
         $q = self::read();
         $q->setSelectQueryCallback(array(static::getPhpName(), 'selectQueryCallback'));
+        return $q;
     }
 
     /**
