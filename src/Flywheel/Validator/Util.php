@@ -32,6 +32,6 @@ class Util
     }
 
     public static function isValidPhoneNumber($phone) {
-        return preg_match("/\(?([0-9]{3})\)?([ .-]?)([0-9]{3})\2([0-9]{4})/", $phone);
+        return preg_match("/^([0-9\(\)\/\+ \-]*)$/", $phone);
     }
 }
