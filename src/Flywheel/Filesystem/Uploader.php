@@ -432,12 +432,26 @@ class Uploader {
         $this->_field = null;
     }
 
+    /**
+     * get uploded file's mimetype
+     *
+     * @param $field
+     * @return mixed|null|string
+     */
     private function _getUploadedFileMimeType($field) {
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $fileMimeType = finfo_file($finfo, $_FILES[$field]['tmp_name']);
-        finfo_close($finfo);
+        if(function_exists('mime_content_type')) {
+            $mime_type = mime_content_type($_FILES[$field]['tmp_name']);
+            return $mime_type;
+        }
 
-        return $fileMimeType;
+        if(function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME);
+            $mime_type = finfo_file($finfo, $_FILES[$field]['tmp_name']);
+            finfo_close($finfo);
+            return $mime_type;
+        }
+
+        return null;
     }
 
     /**
