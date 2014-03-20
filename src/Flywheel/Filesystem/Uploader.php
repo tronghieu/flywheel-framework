@@ -314,9 +314,7 @@ class Uploader {
         $ext = $this->getExtension($_FILES[$field]['name'], false);
         $expectMimeType = $this->getMimeTypeByExtension($ext, $mime);
 
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $fileMimeType = finfo_file($finfo, $_FILES[$field]['tmp_name']);
-        finfo_close($finfo);
+        $fileMimeType = $this->_getUploadedFileMimeType($field);
 
         if (is_array($expectMimeType)) {
             if (!in_array($fileMimeType, $expectMimeType)) {
@@ -432,6 +430,14 @@ class Uploader {
         $this->_ansiName = true;
         $this->_removeSpaceName = true;
         $this->_field = null;
+    }
+
+    private function _getUploadedFileMimeType($field) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $fileMimeType = finfo_file($finfo, $_FILES[$field]['tmp_name']);
+        finfo_close($finfo);
+
+        return $fileMimeType;
     }
 
     /**
