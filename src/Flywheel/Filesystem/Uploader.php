@@ -312,19 +312,24 @@ class Uploader {
             $mime = $this->_allowedMimeType;
         }
         $ext = $this->getExtension($_FILES[$field]['name'], false);
-        $fileMimeType = $this->getMimeTypeByExtension($ext, $mime);
-        if (is_array($fileMimeType)) {
-            if (!in_array($_FILES[$field]['type'], $fileMimeType)) {
-                $this->_error[] = 'Mime (' .$ext .'-' .$_FILES[$field]['type'] .') type does not allow';
+        $expectMimeType = $this->getMimeTypeByExtension($ext, $mime);
+
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $fileMimeType = finfo_file($finfo, $_FILES[$field]['tmp_name']);
+        finfo_close($finfo);
+
+        if (is_array($expectMimeType)) {
+            if (!in_array($fileMimeType, $expectMimeType)) {
+                $this->_error[] = 'Mime (' .$ext .'-' .$fileMimeType .') type does not allow';
                 return false;
             }
-        } elseif (is_string($fileMimeType)) {
-            if ($fileMimeType != $_FILES[$field]['type']) {
-                $this->_error[] = 'Mime (' .$ext .'-' .$_FILES[$field]['type'] .') type does not allow';
+        } elseif (is_string($expectMimeType)) {
+            if ($expectMimeType != $fileMimeType) {
+                $this->_error[] = 'Mime (' .$ext .'-' .$fileMimeType .') type does not allow';
                 return false;
             }
-        } elseif (false == $fileMimeType) {
-            $this->_error[] = 'Mime (' .$ext .'-' .$_FILES[$field]['type'] .') type does not allow';
+        } elseif (false == $expectMimeType) {
+            $this->_error[] = 'Mime (' .$ext .'-' .$fileMimeType .') type does not allow';
             return false;
         }
 
