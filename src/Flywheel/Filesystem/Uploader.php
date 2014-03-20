@@ -433,7 +433,7 @@ class Uploader {
     }
 
     /**
-     * get uploded file's mimetype
+     * get uploaded file's mimetype
      *
      * @param $field
      * @return mixed|null|string
