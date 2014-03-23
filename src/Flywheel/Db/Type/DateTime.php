@@ -14,7 +14,11 @@ class DateTime extends \DateTime {
     protected $_empty = false;
 
     public function __construct($time='now', \DateTimeZone $timezone=null) {
-        if ('0000-00-00' == $time || '00:00:00' == $time || '0000-00-00 00:00:00' == $time) {
+        if ('0000-00-00' == $time
+            || '00:00:00' == $time
+            || '0000-00-00 00:00:00' == $time
+            || '-0001-11-30' == $time
+            || '-0001-11-30 00:00:00' == $time) {
             $this->_empty = true;
         }
 
