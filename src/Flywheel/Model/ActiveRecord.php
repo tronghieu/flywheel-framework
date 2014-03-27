@@ -752,8 +752,6 @@ abstract class ActiveRecord extends Object {
         } catch (\Exception $e) {
             throw new Exception("ActiveRecord::createValidator(): failed trying to instantiate {$validatorName}:{$e->getMessage()} in {$e->getFile()} at {$e->getLine()}}");
         }
-
-        return null;
     }
 
     /**
@@ -817,11 +815,12 @@ abstract class ActiveRecord extends Object {
     /**
      * Resolves the passed find by field name inflecting the parameter.
      *
-     * @param string $name
+     * @param string $fieldName
      * @return string $fieldName
      */
-    protected static function _resolveFindByFieldName($name) {
-        $fieldName = Inflection::camelCaseToHungary($name);
+    protected static function _resolveFindByFieldName($fieldName) {
+//        $fieldName = Inflection::camelCaseToHungary($name);
+        $fieldName = strtolower($fieldName);
         if (isset(static::$_schema[$fieldName])) {
             return (static::getTableAlias()? static::getTableAlias() .'.' :'')
             .self::getReadConnection()->getAdapter()->quoteIdentifier($fieldName);
@@ -834,14 +833,16 @@ abstract class ActiveRecord extends Object {
         if ('' == $fieldName || 1 == $fieldName || '*' == $fieldName || 'all' == strtolower($fieldName))
             return '1';
 
+        $fieldName = preg_replace('~(?<=\\w)([A-Z])~', '_$1', $fieldName);
+
         $ands = array();
-        $e = explode('And', $fieldName);
+        $e = explode('_And_', $fieldName);
         foreach ($e as $k => $v) {
             $and = '';
-            $e2 = explode('Or', $v);
+            $e2 = explode('_Or_', $v);
             $ors = array();
             foreach ($e2 as $k2 => $v2) {
-                if ($v2 = static::_resolveFindByFieldName($v2)) {
+                if ($v2 = static::_resolveFindByFieldName(trim($v2, '_'))) {
                     $ors[] = $v2 . ' = ?';
                 } else {
                     throw new Exception('Invalid field name to find by: ' . $v2);
