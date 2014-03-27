@@ -1061,6 +1061,7 @@ class Query
 
     /**
      * @param callable $callback
+     * @return $this
      * @throws Exception
      */
     public function setSelectQueryCallback($callback) {
@@ -1069,5 +1070,6 @@ class Query
         }
 
         $this->_selectQueryCallback = $callback;
+        return $this;
     }
 }
