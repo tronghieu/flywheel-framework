@@ -2,10 +2,17 @@
 
 namespace Flywheel\Cache\Storage;
 
+use Flywheel\Cache\Exception;
 use Flywheel\Cache\IStorage;
 use Flywheel\Cache\Storage;
 
 class Apc extends Storage implements IStorage {
+    public function __construct() {
+        if (!$this->isSupported()) {
+            throw new Exception('Could not load APC extension. Make sure APC extension has been installed on your system.');
+        }
+    }
+
 
     /**
      * Get cached data from APC by id
@@ -64,6 +71,6 @@ class Apc extends Storage implements IStorage {
      * Test to see if the cache storage is available.
      */
     public static function isSupported() {
-        return extension_loaded('apc');
+        return extension_loaded('apc') && ini_get('apc.enabled');
     }
 }

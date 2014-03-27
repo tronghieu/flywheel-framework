@@ -45,7 +45,7 @@ class Storage extends Object {
 
         if (!isset(self::$_instances[$config])) {
             $options = $config[$config];
-            $class = "\\Flywheel\Cache\\Storage\\" .$options['storage'];
+            $class = "\\Flywheel\\Cache\\Storage\\" .$options['storage'];
             self::$_instances[$config] = new $class($config, $options);
         }
 
