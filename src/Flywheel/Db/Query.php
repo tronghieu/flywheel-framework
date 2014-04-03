@@ -8,6 +8,7 @@ class Query
     const DELETE = 1;
     const UPDATE = 2;
     const COUNT = 3;
+    const SUM = 4;
 
     /** The builder states. */
     const STATE_DIRTY = 0;
@@ -125,9 +126,9 @@ class Query
      */
     public function execute()
     {
-        if ($this->_type == self::SELECT || $this->_type == self::COUNT) {
+        if ($this->_type == self::SELECT || $this->_type == self::COUNT || $this->_type == self::SUM) {
             $result = $this->_connection->executeQuery($this->getSQL(), $this->params, $this->paramTypes);
-            if ($this->_type == self::COUNT) {
+            if ($this->_type == self::COUNT || $this->_type == self::SUM) {
                 $result = $result->fetch(\PDO::FETCH_ASSOC);
                 return $result['result'];
             }
@@ -379,6 +380,11 @@ class Query
     public function count($col = '*') {
         $this->_type = self::COUNT;
         return $this->add('select', array("COUNT({$col}) AS result"));
+    }
+
+    public function sum($col = 'id'){
+        $this->_type = self::SUM;
+        return $this->add('select', array("SUM({$col}) AS result"));
     }
 
     /**
