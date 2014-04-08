@@ -3,6 +3,8 @@
 namespace Flywheel\Captcha;
 use Flywheel\Session\Session;
 
+//error_reporting(E_ALL); ini_set('display_errors', 1);
+
 /**
  * Mathematics captcha
  * Class Math
@@ -185,9 +187,14 @@ class Math {
 
 
     protected function _store($result) {
-        $_SESSION[md5(self::$id)] = array(
+        $data = array(
             'captcha' => $result,
             'live_time' => time() + $this->timeout);
+        /*$_SESSION[md5(self::$id)] = array(
+            'captcha' => $result,
+            'live_time' => time() + $this->timeout);*/
+
+        setcookie(md5(self::$id), json_encode($data), time()+$this->timeout);
     }
 
     protected function _calculateResult() {
@@ -591,7 +598,8 @@ class Math {
      * @return bool
      */
     public static function getStoredCaptcha($id) {
-        return isset($_SESSION[md5($id)])? $_SESSION[md5($id)]: false;
+//        return isset($_SESSION[md5($id)])? $_SESSION[md5($id)]: false;
+        return isset($_COOKIE[md5($id)])? json_decode($_COOKIE[md5($id)], true) : false;
     }
 
     /**
@@ -654,4 +662,4 @@ class Math {
 
         return false;
     }
-} 
+}
