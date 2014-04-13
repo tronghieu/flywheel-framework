@@ -34,4 +34,15 @@ class Util
     public static function isValidPhoneNumber($phone) {
         return preg_match("/^([0-9\(\)\/\+ \-]*)$/", $phone);
     }
+
+    /**
+     * Validate date with format
+     * @param $date
+     * @param string $format
+     * @return bool
+     */
+    public static function validateDate($date, $format = 'Y-m-d H:i:s') {
+        $d = \DateTime::createFromFormat($format, $date);
+        return $d && $d->format($format) == $date;
+    }
 }
