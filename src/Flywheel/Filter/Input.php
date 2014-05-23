@@ -79,7 +79,7 @@ class Input
 
             case 'STRING':
                 $source = (string) $source;
-                $result = trim($source);
+                $result = trim(htmlspecialchars($source));
                 break;
 
             default:
