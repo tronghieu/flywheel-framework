@@ -73,8 +73,13 @@ class Input
                 $result = (string) $source;
                 break;
 
-            case 'STRING':
+            case 'TEXT':
                 $result = (string) $source;
+                break;
+
+            case 'STRING':
+                $source = (string) $source;
+                $result = trim($source);
                 break;
 
             default:
