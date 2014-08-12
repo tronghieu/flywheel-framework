@@ -150,7 +150,7 @@ class WebRouter extends BaseRouter {
      * @param string $ampersand the token separating name-value pairs in the URL. Defaults to '&'.
      * @return string the constructed URL
      */
-    public function createUrl($route,$params=array(),$ampersand='&') {
+    public function createUrl($route,$params=array(),$absolute=false,$ampersand='&') {
         $anchor = '';
 
         foreach($params as $i=>$param) {
@@ -167,7 +167,7 @@ class WebRouter extends BaseRouter {
         $route=trim($route,'/');
 
         if ('/' == ($url = $this->_createFromDefaultController($route))) {
-            return $this->createUrlDefault('', $params, $ampersand);
+            return $this->createUrlDefault('', $params, $absolute, $ampersand);
         }
 
         for ($i = sizeof($this->_collectors)-1; $i >= 0; $i--) {
@@ -175,13 +175,17 @@ class WebRouter extends BaseRouter {
                 if ($this->_collectors[$i]->hasHostInfo) {
                     return ('' == $url)? '/' .$anchor : $url.$anchor;
                 } else {
-                    return rtrim($this->getBaseUrl(), '/') .'/' .$url .$anchor;
+                    if( $absolute ) {
+                        return rtrim($this->getBaseUrl(), '/') .'/' .$url .$anchor;
+                    } else {
+                        return $url .$anchor;
+                    }
                 }
             }
         }
 
 
-        return $this->createUrlDefault($route,$params,$ampersand).$anchor;
+        return $this->createUrlDefault($route,$params,$absolute,$ampersand).$anchor;
     }
 
     protected function _createFromDefaultController($route) {
@@ -200,8 +204,12 @@ class WebRouter extends BaseRouter {
      * @param string $ampersand the token separating name-value pairs in the URL.
      * @return string the constructed URL
      */
-    protected function createUrlDefault($route,$params,$ampersand) {
-        $url = rtrim($this->getBaseUrl(), '/') .(('' != $route)? '/' .$route : '');
+    protected function createUrlDefault($route,$params,$absolute,$ampersand) {
+        if( $absolute ) {
+            $url = rtrim($this->getBaseUrl(), '/') .(('' != $route)? '/' .$route : '');
+        } else {
+            $url = (('' != $route)? '/' .$route : '');
+        }
 
         if ('' !== ($query = $this->createPathInfo($params,'=',$ampersand))) {
             $url .= '?' .$query;
