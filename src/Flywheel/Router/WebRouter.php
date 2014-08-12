@@ -48,6 +48,18 @@ class WebRouter extends BaseRouter {
         parent::init($config);
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * add router's collection
      *
