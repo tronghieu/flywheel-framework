@@ -94,8 +94,8 @@ abstract class Web extends BaseController
      * @param string $ampersand
      * @return mixed
      */
-    public function createUrl($route, $params = array(), $ampersand = '&') {
-        return Factory::getRouter()->createUrl($route, $params, $ampersand);
+    public function createUrl($route, $params = array(), $absolute = false, $ampersand = '&') {
+        return Factory::getRouter()->createUrl($route, $params, $absolute, $ampersand);
     }
 
     /**
@@ -112,7 +112,7 @@ abstract class Web extends BaseController
         return $this->_template;
     }
 
-	/**
+    /**
      * @return \Flywheel\Document\Html
      */
     public function document() {
