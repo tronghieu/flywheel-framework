@@ -106,14 +106,12 @@ class WebRequest extends Request
         $domain = Factory::getRouter()->getDomain();
 
         if( $absolute ) {
-            $app = str_replace( $domain, '', $baseUrl );
-            $app = rtrim($app, '/');
-            $url = $app . $url;
-        } else {
-            if (false === strpos($baseUrl, '.php')) {
-                $baseUrl = rtrim($baseUrl, '/') .'/';
+            if (strpos($url, 'http') !== 0) { //not entire url
+                if (false === strpos($baseUrl, '.php')) {
+                    $baseUrl = rtrim($baseUrl, '/') .'/';
+                }
+                $url = $baseUrl .ltrim($url,'/');
             }
-            $url = $baseUrl .ltrim($url,'/');
         }
 
         header('Location: '.$url, true, $code);
