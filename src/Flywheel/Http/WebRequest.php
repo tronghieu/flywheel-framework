@@ -101,16 +101,34 @@ class WebRequest extends Request
      * @param int $code the HTTP status code. Defaults to 302. See {@link http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html}
      * @param bool $end whether to terminate the current application
      */
-    public static function redirect($url, $code = 302, $end = true) {
-        if (strpos($url, 'http') !== 0) { //not entire url
-            $baseUrl = Factory::getRouter()->getBaseUrl();
-            if (false === strpos($baseUrl, '.php')) {
-                $baseUrl = rtrim($baseUrl, '/') .'/';
+    public static function redirect($url, $code = 302, $end = true, $absolute = true) {
+        $baseUrl = Factory::getRouter()->getBaseUrl();
+        $domain = Factory::getRouter()->getDomain();
+
+        if( $absolute ) {
+            if (strpos($url, 'http') !== 0) { //not entire url
+                if (false === strpos($baseUrl, '.php')) {
+                    $baseUrl = rtrim($baseUrl, '/') .'/';
+                }
+                $url = $baseUrl .ltrim($url,'/');
             }
-            $url = $baseUrl .ltrim($url,'/');
         }
+
         header('Location: '.$url, true, $code);
-        if (true == $end)
+        if ( true == $end ) {
             Base::end();
+        }
+
+//        if (strpos($url, 'http') !== 0) { //not entire url
+//            $baseUrl = Factory::getRouter()->getBaseUrl();
+//            if (false === strpos($baseUrl, '.php')) {
+//                $baseUrl = rtrim($baseUrl, '/') .'/';
+//            }
+//            $url = $baseUrl .ltrim($url,'/');
+//        }
+//
+//        header('Location: '.$url, true, $code);
+//        if (true == $end)
+//            Base::end();
     }
 }
