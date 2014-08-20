@@ -150,7 +150,7 @@ class WebRouter extends BaseRouter {
      * @param string $ampersand the token separating name-value pairs in the URL. Defaults to '&'.
      * @return string the constructed URL
      */
-    public function createUrl($route, $params=array(), $ampersand='&', $absolute=false) {
+    public function createUrl($route, $params=array(), $ampersand='&', $absolute=true) {
 
         $anchor = '';
         $ampersand='&';
