@@ -178,7 +178,6 @@ class WebRouter extends BaseRouter {
                 if ($this->_collectors[$i]->hasHostInfo) {
                     return ('' == $url)? '/' .$anchor : $url.$anchor;
                 } else {
-                    return $url . $anchor;
                     if( $absolute ) {
                         return rtrim($this->getBaseUrl(), '/') .'/' .$url .$anchor;
                     } else {
@@ -214,7 +213,6 @@ class WebRouter extends BaseRouter {
         } else {
             $url = (('' != $route)? '/' .$route : '');
         }
-        $url = (('' != $route)? '/' .$route : '');
 
         if ('' !== ($query = $this->createPathInfo($params,'=',$ampersand))) {
             $url .= '?' .$query;
