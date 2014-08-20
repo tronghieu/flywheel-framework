@@ -105,30 +105,16 @@ class WebRequest extends Request
         $baseUrl = Factory::getRouter()->getBaseUrl();
         $domain = Factory::getRouter()->getDomain();
 
-        if( $absolute ) {
-            if (strpos($url, 'http') !== 0) { //not entire url
-                if (false === strpos($baseUrl, '.php')) {
-                    $baseUrl = rtrim($baseUrl, '/') .'/';
-                }
-                $url = $baseUrl .ltrim($url,'/');
+        if (strpos($url, 'http') !== 0) { //not entire url
+            $baseUrl = Factory::getRouter()->getBaseUrl();
+            if (false === strpos($baseUrl, '.php')) {
+                $baseUrl = rtrim($baseUrl, '/') .'/';
             }
+            $url = $baseUrl .ltrim($url,'/');
         }
 
         header('Location: '.$url, true, $code);
-        if ( true == $end ) {
+        if (true == $end)
             Base::end();
-        }
-
-//        if (strpos($url, 'http') !== 0) { //not entire url
-//            $baseUrl = Factory::getRouter()->getBaseUrl();
-//            if (false === strpos($baseUrl, '.php')) {
-//                $baseUrl = rtrim($baseUrl, '/') .'/';
-//            }
-//            $url = $baseUrl .ltrim($url,'/');
-//        }
-//
-//        header('Location: '.$url, true, $code);
-//        if (true == $end)
-//            Base::end();
     }
 }
