@@ -32,6 +32,12 @@ class SelectOption extends Html {
             'value' => $value,
             'htmlOptions' => $htmlOptions
         );
+
+        if (isset($htmlOptions) && $htmlOptions['disabled']) {
+            $this->options[$name]['disabled'] = true;
+            unset($this->options[$name]['htmlOptions']['disabled']);
+        }
+
         return $this;
     }
 
@@ -43,6 +49,7 @@ class SelectOption extends Html {
         foreach($this->options as $name => $option) {
             $s .= '<option value="' .$option['value'] .'" ' .$this->_serializeHtmlOption($option['htmlOptions'])
                 . (in_array($option['value'], $this->selectValues)? ' selected="selected"' : '')
+                . ($option['disabled']? ' disabled' :'')
                 . '>' .$name .'</option>';
         }
 
