@@ -701,12 +701,18 @@ class NestedSet extends ModelBehavior {
         $scope = $node->getScopeValue();
         $this->setScopeValue($scope);
 
+        /** @var \Flywheel\Model\ActiveRecord $owner */
+        $owner = $this->getOwner();
+        if (!$owner->validate()) {//check validate before save
+            return $owner;
+        }
+
         $this->nestedSetQueries []= array(
             'callable'  => array($this, 'makeRoomForLeaf'),
             'arguments' => array($left, $scope)
         );
 
-        $this->getOwner()->save();
+        $owner->save();
         $node->reload();
 
         return $this->getOwner();
@@ -726,12 +732,18 @@ class NestedSet extends ModelBehavior {
         $scope = $node->getScopeValue();
         $this->setScopeValue($scope);
 
+        /** @var \Flywheel\Model\ActiveRecord $owner */
+        $owner = $this->getOwner();
+        if (!$owner->validate()) {//check validate before save
+            return $owner;
+        }
+
         $this->nestedSetQueries []= array(
             'callable'  => array($this, 'makeRoomForLeaf'),
             'arguments' => array($left, $scope)
         );
 
-        $this->getOwner()->save();
+        $owner->save();
         $node->reload();
 
         return $this->getOwner();
@@ -747,13 +759,19 @@ class NestedSet extends ModelBehavior {
             throw new Exception('Cannot move a node as child of one of its subtree nodes.');
         }
 
-        $this->getOwner()->beforeSave();
+        /** @var \Flywheel\Model\ActiveRecord $owner */
+        $owner = $this->getOwner();
+        if (!$owner->validate()) {//check validate before save
+            return $owner;
+        }
+
+        $owner->beforeSave();
         $this->_moveSubtreeTo($node->getLeftValue() + 1, $node->getLevelValue() - $this->getLevelValue() + 1, $node->getScopeValue());
-        $this->getOwner()->afterSave();
-        $this->getOwner()->reload();
+        $owner->afterSave();
+        $owner->reload();
         $node->reload();
 
-        return $this->getOwner();
+        return $owner;
     }
 
     public function moveToLastChildOf($node) {
@@ -764,13 +782,19 @@ class NestedSet extends ModelBehavior {
             throw new Exception('Cannot move a node as child of one of its subtree nodes.');
         }
 
-        $this->getOwner()->beforeSave();
+        /** @var \Flywheel\Model\ActiveRecord $owner */
+        $owner = $this->getOwner();
+        if (!$owner->validate()) {//check validate before save
+            return $owner;
+        }
+
+        $owner->beforeSave();
         $this->_moveSubtreeTo($node->getRightValue(), $node->getLevelValue() - $this->getLevelValue() + 1, $node->getScopeValue());
-        $this->getOwner()->afterSave();
-        $this->getOwner()->reload();
+        $owner->afterSave();
+        $owner->reload();
         $node->reload();
 
-        return $this->getOwner();
+        return $owner;
     }
 
     public function moveToPrevSiblingOf($node) {
@@ -784,13 +808,19 @@ class NestedSet extends ModelBehavior {
             throw new Exception('Cannot move a node as sibling of one of its subtree nodes.');
         }
 
+        /** @var \Flywheel\Model\ActiveRecord $owner */
+        $owner = $this->getOwner();
+        if (!$owner->validate()) {//check validate before save
+            return $owner;
+        }
+
         $this->beforeSave();
         $this->_moveSubtreeTo($node->getLeftValue(), $node->getLevelValue() - $this->getLevelValue(), $node->getScopeValue());
-        $this->getOwner()->afterSave();
-        $this->getOwner()->reload();
+        $owner->afterSave();
+        $owner->reload();
         $node->reload();
 
-        return $this->getOwner();
+        return $owner;
     }
 
     public function moveToNextSiblingOf($node) {
@@ -804,11 +834,17 @@ class NestedSet extends ModelBehavior {
             throw new Exception('Cannot move a node as sibling of one of its subtree nodes.');
         }
 
+        /** @var \Flywheel\Model\ActiveRecord $owner */
+        $owner = $this->getOwner();
+        if (!$owner->validate()) {//check validate before save
+            return $owner;
+        }
+
         $this->_moveSubtreeTo($node->getRightValue() + 1, $node->getLevelValue() - $this->getLevelValue(), $node->getScopeValue());
-        $this->getOwner()->reload();
+        $owner->reload();
         $node->reload();
 
-        return $this->getOwner();
+        return $owner;
     }
 
     // deletion methods
