@@ -9,7 +9,10 @@ class BrowserConsoleHandler implements IHandler {
     protected static $_jsVar = [];
 
     public function __construct() {
-        if (PHP_SAPI !== 'cli' && !self::$_initialized) {
+        $is_xhr = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+            && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest';
+
+        if (PHP_SAPI !== 'cli' && !self::$_initialized && !$is_xhr) {
             self::$_initialized = true;
             register_shutdown_function(array('\Flywheel\Debug\BrowserConsoleHandler', 'send'));
         }
