@@ -55,7 +55,7 @@ class BrowserConsoleHandler implements IHandler {
         foreach($records['sql_queries']['queries'] as $q) {
             self::$_records['SQL Queries'][$q['query']] = [
                 'info' => "\tTime: {$q['exec_time']} ({$q['memory']} MB)",
-                'params' => $q['params']
+                'params' => isset($q['params'])? $q['params'] : null,
             ];
         }
 
