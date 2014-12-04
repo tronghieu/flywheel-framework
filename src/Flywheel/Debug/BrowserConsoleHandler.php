@@ -1,9 +1,12 @@
 <?php
 namespace Flywheel\Debug;
 
+use Flywheel\Util\Inflection;
+
 class BrowserConsoleHandler implements IHandler {
     protected static $_initialized = false;
-    protected static $_records = array();
+    protected static $_records = [];
+    protected static $_jsVar = [];
 
     public function __construct() {
         if (PHP_SAPI !== 'cli' && !self::$_initialized) {
@@ -23,37 +26,31 @@ class BrowserConsoleHandler implements IHandler {
     public function write($records)
     {
         //serialize
-        self::$_records[] = '&para;' .date('Y-m-d H:i:s') .' [' .$records['SERVER_ADDRESS'] .']';
+        self::$_records[] = '-----------BEGIN PROFILE----------';
+        self::$_records[] = date('Y-m-d H:i:s') .' [' .$records['SERVER_ADDRESS'] .']';
         self::$_records[] = 'Memory (MB): ' .$records['memory']['memory_usage']
-            .'/' .$records['memory']['max_memory_allow']
-            .' ('.round($records['memory']['memory_usage_percent'], 2) .'%)';
+            .'MB/' .$records['memory']['max_memory_allow']
+            .'MB ('.round($records['memory']['memory_usage_percent'], 2) .'%)';
 
         self::$_records[] = 'Total execute time: ' .$records['total_exec_time'] .' seconds';
-        self::$_records[] = json_encode([
-            'Server variables' => [
-                'argv' => $records['argv'],
-                'argc' => $records['argc'],
-                'cookies' => $records['cookies'],
-                'session' => $records['session'],
-            ]
-        ]);
-        self::$_records[] = json_encode([
-            'Requests' => $records['requests']
-        ]);
 
-        self::$_records[] = json_encode([
-            'Marks' => $records['activities']
-        ]);
+        self::$_records[] = 'Server variables';
+
+        self::$_records['argv'] = $records['argv'];
+        self::$_records['argc'] = $records['argc'];
+        self::$_records['cookies'] = $records['cookies'];
+        self::$_records['session'] = $records['session'];
+
+        self::$_records['Requests'] = $records['requests'];
+
+        self::$_records['Marks'] = $records['activities'];
 
         self::$_records[] = 'Total queries: ' .$records['sql_queries']['total_queries']
             . ', Execute time: ' .$records['sql_queries']['total_exec_time'] .' seconds';
-        self::$_records[] = json_encode([
-            'SQL Queries' => [
-                $records['sql_queries']['queries']
-            ]
-        ]);
+        self::$_records['SQL Queries'] = $records['sql_queries']['queries'];
 
         self::$_records[] = 'Total ' .sizeof($records['included_files']) .' included files';
+        self::$_records[] = '-----------END PROFILE----------';
     }
 
     /**
@@ -89,8 +86,16 @@ class BrowserConsoleHandler implements IHandler {
     private static function _generateScript()
     {
         $script = array();
-        for($i = 0, $s = sizeof(self::$_records); $i < $s; ++$i) {
-            $script[] = self::_callArray('log', self::_handleStyles(self::$_records[$i]));
+        foreach (self::$_records as $key => $record) {
+            if (is_numeric($key)) {
+                $script[] = self::_callArray('log', [self::_quote($record)]);
+            } else {
+                $var_name = self::_makeJsVarName($key);
+                if (is_array($record)) {
+                    self::$_jsVar[$var_name] = $record;
+                }
+                $script[] = self::_callArray('log', [self::_quote($key)], $var_name);
+            }
         }
 
         /*
@@ -110,7 +115,29 @@ class BrowserConsoleHandler implements IHandler {
             }
         }
          */
-        return "(function (c) {if (c && c.groupCollapsed) {\n" . implode("\n", $script) . "\n}})(console);";
+        return "(function (c) {if (c && c.groupCollapsed) {\n" .self::_genJsVars() . implode("\n", $script) . "\n}})(console);";
+    }
+
+    /**
+     * @param $key
+     * @return string
+     */
+    private static function _makeJsVarName($key) {
+        return strtolower(str_replace(' ', '_', $key));
+    }
+
+    /**
+     * @return string
+     */
+    private static function _genJsVars() {
+        $code = '';
+        if (!empty(self::$_jsVar)) {
+            foreach (self::$_jsVar as $name => $value) {
+                $code .= "var {$name} = ".json_encode($value) .";\n";
+            }
+        }
+
+        return $code;
     }
 
     private static function _handleStyles($formatted)

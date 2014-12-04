@@ -294,12 +294,12 @@ class Profiler extends Object {
             $t['query'] = $total_queries .'. ' .$sql['query'];
             $t['parameters'] = $sql['params'];
             $t['exec_time'] = ($time < 0.001)? '~0.001' : round($time, 3);
-            $t['memory'] = (($memory < 0)? '-' : '+') .$memory;
+            $t['memory'] = (($memory < 0)? '-' : '+') . round($memory, 3);
             $sql_queries[] = $t;
         }
         $data['sql_queries'] = [
             'total_queries' => $total_queries,
-            'total_exec_time' => $total_memories,
+            'total_exec_time' => round($total_memories, 3),
             'queries' => $sql_queries,
         ];
 
