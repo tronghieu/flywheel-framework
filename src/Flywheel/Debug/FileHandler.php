@@ -9,7 +9,9 @@ class FileHandler implements IHandler {
     protected $_file_ext = '.log';
 
     public function __construct($otp = []) {
-        $this->_path = isset($otp['path'])? $otp['path'] : null;
+        foreach($otp as $k => $v) {
+            $this->$k = $v;
+        }
     }
 
     public function write($records) {
