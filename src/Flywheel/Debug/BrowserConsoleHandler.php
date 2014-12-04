@@ -6,7 +6,7 @@ class BrowserConsoleHandler implements IHandler {
     protected static $_records = array();
 
     public function __construct() {
-        register_shutdown_function(array('\Flywheel\Log\Logger\BrowserConsoleHandler', 'send'));
+        register_shutdown_function(array('\Flywheel\Debug\BrowserConsoleHandler', 'send'));
     }
 
     /**
