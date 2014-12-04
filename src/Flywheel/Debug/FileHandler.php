@@ -58,14 +58,18 @@ class FileHandler implements IHandler {
     /**
      * @param $array
      * @param $prefix
+     * @param int $deep
      * @return string
      */
-    private function _serialize($array, $prefix = null) {
+    private function _serialize($array, $prefix = null, $deep = 1 ) {
         $t = '';
         foreach($array as $k=>$v) {
             if (is_numeric($k)) {
                 $t .= "{$prefix} {$v}\n";
             } else {
+                if (is_array($v)) {
+                    $v = $this->_serialize($v, str_repeat($prefix, $deep+1), $deep++);
+                }
                 $t .= "{$prefix} {$k}: {$v}\n";
             }
         }
