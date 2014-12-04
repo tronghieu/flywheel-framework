@@ -225,7 +225,7 @@ class Profiler extends Object {
         $memory = [];
         $memory['max_memory_allow'] = (float) ini_get('memory_limit');
         $memory['memory_usage'] = memory_get_peak_usage(true) / 1048576;
-        $memory['memory_usage_percent'] = $memory['memory_usage']/(1048576*$memory['max_memory_allow'])*100;
+        $memory['memory_usage_percent'] = $memory['memory_usage']/($memory['max_memory_allow'])*100;
         $data['memory'] = $memory;
 
         $data['total_exec_time'] = round($this->_pevTime, 3);

@@ -29,8 +29,8 @@ class BrowserConsoleHandler implements IHandler {
         self::$_records[] = '-----------BEGIN PROFILE----------';
         self::$_records[] = date('Y-m-d H:i:s') .' [' .$records['SERVER_ADDRESS'] .']';
         self::$_records[] = 'Memory (MB): ' .$records['memory']['memory_usage']
-            .'MB/' .$records['memory']['max_memory_allow']
-            .'MB ('.round($records['memory']['memory_usage_percent'], 2) .'%)';
+            .' MB/' .$records['memory']['max_memory_allow']
+            .' MB ('.round($records['memory']['memory_usage_percent'], 2) .'%)';
 
         self::$_records[] = 'Total execute time: ' .$records['total_exec_time'] .' seconds';
 
@@ -47,7 +47,14 @@ class BrowserConsoleHandler implements IHandler {
 
         self::$_records[] = 'Total queries: ' .$records['sql_queries']['total_queries']
             . ', Execute time: ' .$records['sql_queries']['total_exec_time'] .' seconds';
-        self::$_records['SQL Queries'] = $records['sql_queries']['queries'];
+
+        self::$_records['SQL Queries'] = [];
+        foreach($records['sql_queries']['queries'] as $q) {
+            self::$_records['SQL Queries'][$q['query']] = [
+                'info' => "\tTime: {$q['exec_time']} ({$q['memory']} MB)",
+                'params' => $q['params']
+            ];
+        }
 
         self::$_records[] = 'Total ' .sizeof($records['included_files']) .' included files';
         self::$_records[] = '-----------END PROFILE----------';
@@ -92,9 +99,9 @@ class BrowserConsoleHandler implements IHandler {
             } else {
                 $var_name = self::_makeJsVarName($key);
                 if (is_array($record)) {
-                    self::$_jsVar[$var_name] = $record;
+                    self::$_jsVar[$var_name][$key] = $record;
                 }
-                $script[] = self::_callArray('log', [self::_quote($key)], $var_name);
+                $script[] = self::_callArray('log', [$var_name]);
             }
         }
 
