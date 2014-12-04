@@ -1,9 +1,6 @@
 <?php
 namespace Flywheel\Debug;
 
-
-use Flywheel\Log\Logger;
-
 class BrowserConsoleHandler implements IHandler {
     protected static $_initialized = false;
     protected static $_records = array();
