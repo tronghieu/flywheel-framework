@@ -6,7 +6,10 @@ class BrowserConsoleHandler implements IHandler {
     protected static $_records = array();
 
     public function __construct() {
-        register_shutdown_function(array('\Flywheel\Debug\BrowserConsoleHandler', 'send'));
+        if (PHP_SAPI !== 'cli' && !self::$_initialized) {
+            self::$_initialized = true;
+            register_shutdown_function(array('\Flywheel\Debug\BrowserConsoleHandler', 'send'));
+        }
     }
 
     /**
