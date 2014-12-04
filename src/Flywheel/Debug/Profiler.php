@@ -307,27 +307,11 @@ class Profiler extends Object {
         return $data;
     }
 
-    public function writePlainText($path = null) {
+    public static function write() {
         if (!ConfigHandler::get('debug')) {
             return ;
         }
 
-        if (null == $path) {
-            $path = RUNTIME_PATH .'/log';
-        }
-        @mkdir($path, 777);
-        if(!($id = session_id())) {
-            $id = md5(uniqid() .mt_rand());
-        }
-        $filename = date('Y-m-d').'.' .$id .'.profile';
-
-        $log = "\n\n**************************";
-        $log .= implode("\n", $this->getProfileData());
-
-        @file_put_contents($path.'/'.$filename, $log, FILE_APPEND);
-    }
-
-    public static function write() {
         $profiler = self::getInstance();
         $handlers = $profiler->getHandlers();
         foreach($handlers as $handler) {

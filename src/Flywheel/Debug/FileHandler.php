@@ -1,13 +1,95 @@
 <?php
 namespace Flywheel\Debug;
 
+use Flywheel\Util\Folder;
 
 class FileHandler implements IHandler {
+    protected $_path;
+    protected $_file_prefix = 'profile.';
+    protected $_file_ext = '.log';
+
+    public function __construct($otp = []) {
+        $this->_path = isset($otp['path'])? $otp['path'] : null;
+    }
+
     public function write($records) {
+        $content = "\n**********BEGIN PROFILE***********\n";
+
+        $content .= date('Y-m-d H:i:s') .' [' .$records['SERVER_ADDRESS']."]\n";
+        $content .= "Memory usage: " .$records['memory']['memory_usage'] .'/' .$records['memory']['max_memory_allow']
+            .' (' .round($records['memory']['memory_usage_percent'], 2) ."%)\n";
+        $content .= "Total execute time: {$records['total_exec_time']} seconds\n";
+
+        $content .= "\nSERVER VARIABLES:\n";
+        $content .= "argv: \n" .$this->_serialize($records['argv']);
+        $content .= "argc: \n" .$this->_serialize($records['argc']);
+        $content .= "cookies: \n" .$this->_serialize($records['cookies']);
+        $content .= "session: \n" .$this->_serialize($records['session']);
+        $content .= "requests: \n" .$this->_serialize($records['requests']);
+
+        //Mark
+        $content .= "\nMARKS:\n";
+        foreach ($records['activities'] as $act) {
+            $content .= "{$act}\n";
+        }
+
+        //SQL
+        $sql = $records['sql_queries'];
+        $content .= "\nSQL QUERIES:\n";
+        $content .= "Total queries: {$sql['total_queries']}, Execute time: {$sql['total_exec_time']}\n";
+
+        foreach($sql['queries'] as $query) {
+            $content .= $query['query'] ."\n";
+            $content .= "\tTime: {$query['exec_time']} ({$query['memory']} MB)\n";
+            if ($query['parameters']) {
+                $content .= "\t parameters:\n";
+                $content .= $this->_serialize($query['parameters'], "\t\t");
+            }
+        }
+
+        //included files
+        $content .= sizeof($records['included_files']) ." included files";
+
+        $content .="\n************END PROFILE**********\n";
+
+        $this->_writeFile($this->_path, $content);
+    }
+
+    /**
+     * @param $array
+     * @param $prefix
+     * @return string
+     */
+    private function _serialize($array, $prefix = null) {
+        $t = '';
+        foreach($array as $k=>$v) {
+            if (is_numeric($k)) {
+                $t .= "{$prefix} {$v}\n";
+            } else {
+                $t .= "{$prefix} {$k}: {$v}\n";
+            }
+        }
+
+        return $t;
     }
 
     public function getName()
     {
         return 'FileHandler';
+    }
+
+    protected function _writeFile($path, $content) {
+        if (!$path) {
+            return;
+        }
+
+        Folder::create($path);
+
+        if(!($id = session_id())) {
+            $id = md5(uniqid() .mt_rand());
+        }
+
+        $filename = $this->_file_prefix. date('Y-m-d') .$id .$this->_file_ext;
+        @file_put_contents($path.DIRECTORY_SEPARATOR.$filename, $content, FILE_APPEND);
     }
 }
