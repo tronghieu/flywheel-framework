@@ -330,9 +330,15 @@ class Html extends BaseDoc {
 				if (null != $media) {
 					$media = 'screen';				
 				}
-				$css .= '<link rel="stylesheet" type="text/css" href="'
-						. $this->cssBaseUrl .$file .'?v=' .$cssv .'"'
-						.' media="' .$media .'" />' ."\n";						
+                if (strpos($file, 'http') !== false) {
+                    $css .= '<link rel="stylesheet" type="text/css" href="'
+                        . $file .'?v=' .$cssv .'"'
+                        .' media="' .$media .'" />' ."\n";
+                } else {
+                    $css .= '<link rel="stylesheet" type="text/css" href="'
+                        . $this->cssBaseUrl .$file .'?v=' .$cssv .'"'
+                        .' media="' .$media .'" />' ."\n";
+                }
 			}
 			
 			return $css;
@@ -375,8 +381,13 @@ class Html extends BaseDoc {
 		$js = '';
 		if (isset($this->_javascript[$pos])) {
             foreach($this->_javascript[$pos] as $file=>$option) {
-                $js .= '<script type="text/javascript" src="'
-                    .$this->jsBaseUrl .$file .'?v=' .$jsv .'"></script>';
+                if (strpos($file, 'http') !== false) {
+                    $js .= '<script type="text/javascript" src="'
+                        .$file .'?v=' .$jsv .'"></script>';
+                } else {
+                    $js .= '<script type="text/javascript" src="'
+                        .$this->jsBaseUrl .$file .'?v=' .$jsv .'"></script>';
+                }
             }
 		}
 		
