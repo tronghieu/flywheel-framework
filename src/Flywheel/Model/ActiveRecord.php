@@ -221,8 +221,12 @@ abstract class ActiveRecord extends Object {
     public static function selectQueryCallback(\PDOStatement $stmt) {
         if ($stmt instanceof \PDOStatement) {
             /** @var ActiveRecord $om */
-            $om = $stmt->fetchAll(\PDO::FETCH_CLASS, static::getPhpName(), array(null, false));
-            $om->resetModifiedCols();
+            $oms = $stmt->fetchAll(\PDO::FETCH_CLASS, static::getPhpName(), array(null, false));
+            for ($i = 0, $size = sizeof($oms); $i < $size; ++$i) {
+                $oms[$i]->resetModifiedCols();
+            }
+
+            return $oms;
         }
 
         return null;
