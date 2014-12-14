@@ -220,7 +220,9 @@ abstract class ActiveRecord extends Object {
      */
     public static function selectQueryCallback(\PDOStatement $stmt) {
         if ($stmt instanceof \PDOStatement) {
-            return $stmt->fetchAll(\PDO::FETCH_CLASS, static::getPhpName(), array(null, false));
+            /** @var ActiveRecord $om */
+            $om = $stmt->fetchAll(\PDO::FETCH_CLASS, static::getPhpName(), array(null, false));
+            $om->resetModifiedCols();
         }
 
         return null;
@@ -465,6 +467,13 @@ abstract class ActiveRecord extends Object {
     }
 
     /**
+     * Reset modified cols
+     */
+    public function resetModifiedCols() {
+        $this->_modifiedCols = array();
+    }
+
+    /**
      * hydrate data to object
      *
      * @param object | array $data
@@ -476,8 +485,11 @@ abstract class ActiveRecord extends Object {
 
         foreach ($data as $p=>$value) {
             if (isset(static::$_schema[$p])) {
-                $this->_modifiedCols[$p] = true;
-                $this->_data[$p] = $this->fixData($value, static::$_schema[$p]);
+                $d = $this->fixData($value, static::$_schema[$p]);
+                if ($this->_data[$p] != $d) {
+                    $this->_modifiedCols[$p] = true;
+                    $this->_data[$p] = $this->fixData($value, static::$_schema[$p]);
+                }
             } else {
                 $this->$p = $value;
             }
@@ -627,7 +639,7 @@ abstract class ActiveRecord extends Object {
             $db->update(static::getTableName(), $data, array(static::getPrimaryKeyField() => $this->getPkValue()), $databind);
         }
 
-        $this->_modifiedCols = array();
+        $this->resetModifiedCols();
         $this->setNew(false);
         return true;
     }
@@ -922,7 +934,9 @@ abstract class ActiveRecord extends Object {
 
         $result = array();
         while($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            /** @var ActiveRecord $om */
             $om = new static($row, false);
+            $om->resetModifiedCols(); //reset after get from database
             if ($first) {
                 return $om;
             }
