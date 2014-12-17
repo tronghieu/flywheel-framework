@@ -64,7 +64,6 @@ abstract class ActiveRecord extends Object {
         if (!empty($data)) {
             $this->hydrate($data);
         }
-
         $this->setNew($isNew);
         if (!static::$_init) {
             $this->validationRules();
@@ -113,7 +112,8 @@ abstract class ActiveRecord extends Object {
     }
 
     public static function create() {
-        return new static();
+        $obj =  new static();
+        return $obj;
     }
 
     public static function setTableName($tblName) {
@@ -153,7 +153,7 @@ abstract class ActiveRecord extends Object {
     }
 
     public static function getDbConnectName() {
-        self::create();
+        static::create();
         return static::$_dbConnectName;
     }
 
@@ -176,7 +176,7 @@ abstract class ActiveRecord extends Object {
      * @return \Flywheel\Db\Connection
      */
     public static function getWriteConnection() {
-        return Manager::getConnection(self::getDbConnectName(), self::getWriteMode());
+        return Manager::getConnection(static::getDbConnectName(), static::getWriteMode());
     }
 
     /**
@@ -184,7 +184,7 @@ abstract class ActiveRecord extends Object {
      * @return \Flywheel\Db\Connection
      */
     public static function getReadConnection() {
-        return Manager::getConnection(self::getDbConnectName(), self::getReadMode());
+        return Manager::getConnection(static::getDbConnectName(), static::getReadMode());
     }
 
     /**
@@ -192,7 +192,7 @@ abstract class ActiveRecord extends Object {
      * @return \Flywheel\Db\Query
      */
     public static function read() {
-        return self::getReadConnection()->createQuery()->from(static::getTableName());
+        return static::getReadConnection()->createQuery()->from(static::getTableName());
     }
 
     /**
@@ -200,7 +200,7 @@ abstract class ActiveRecord extends Object {
      * @return \Flywheel\Db\Query
      */
     public static function write() {
-        return self::getWriteConnection()->createQuery()->from(static::getTableName());
+        return static::getWriteConnection()->createQuery()->from(static::getTableName());
     }
 
     /**
@@ -209,7 +209,7 @@ abstract class ActiveRecord extends Object {
      * @return \Flywheel\Db\Query
      */
     public static function select() {
-        $q = self::read();
+        $q = static::read();
         $q->setSelectQueryCallback(array(static::getPhpName(), 'selectQueryCallback'));
         return $q;
     }
