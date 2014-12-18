@@ -494,16 +494,9 @@ abstract class ActiveRecord extends Object {
                     $this->_data[$p] = $value;
                 } else {
                     $d = $this->fixData($value, static::$_schema[$p]);
-                    if ($this->_data[$p] instanceof DateTime && $d instanceof DateTime) {
-                        if ($this->_data[$p]->getTimestamp() != $d->getTimestamp()) {
-                            $this->_modifiedCols[$p] = true;
-                            $this->_data[$p] = $d;
-                        }
-                    } else {
-                        if ($this->_data[$p] != $d) {
-                            $this->_modifiedCols[$p] = true;
-                            $this->_data[$p] = $d;
-                        }
+                    if ($this->_data[$p] !== $d) {
+                        $this->_modifiedCols[$p] = true;
+                        $this->_data[$p] = $d;
                     }
                 }
             } else {
