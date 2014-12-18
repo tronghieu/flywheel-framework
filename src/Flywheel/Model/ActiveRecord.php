@@ -64,6 +64,7 @@ abstract class ActiveRecord extends Object {
         if (!empty($data)) {
             $this->hydrate($data);
         }
+
         $this->setNew($isNew);
         if (!static::$_init) {
             $this->validationRules();
@@ -112,8 +113,7 @@ abstract class ActiveRecord extends Object {
     }
 
     public static function create() {
-        $obj =  new static();
-        return $obj;
+        return new static();
     }
 
     public static function setTableName($tblName) {
@@ -153,7 +153,7 @@ abstract class ActiveRecord extends Object {
     }
 
     public static function getDbConnectName() {
-        static::create();
+        self::create();
         return static::$_dbConnectName;
     }
 
@@ -176,7 +176,7 @@ abstract class ActiveRecord extends Object {
      * @return \Flywheel\Db\Connection
      */
     public static function getWriteConnection() {
-        return Manager::getConnection(static::getDbConnectName(), static::getWriteMode());
+        return Manager::getConnection(self::getDbConnectName(), self::getWriteMode());
     }
 
     /**
@@ -184,7 +184,7 @@ abstract class ActiveRecord extends Object {
      * @return \Flywheel\Db\Connection
      */
     public static function getReadConnection() {
-        return Manager::getConnection(static::getDbConnectName(), static::getReadMode());
+        return Manager::getConnection(self::getDbConnectName(), self::getReadMode());
     }
 
     /**
@@ -192,7 +192,7 @@ abstract class ActiveRecord extends Object {
      * @return \Flywheel\Db\Query
      */
     public static function read() {
-        return static::getReadConnection()->createQuery()->from(static::getTableName());
+        return self::getReadConnection()->createQuery()->from(static::getTableName());
     }
 
     /**
@@ -200,7 +200,7 @@ abstract class ActiveRecord extends Object {
      * @return \Flywheel\Db\Query
      */
     public static function write() {
-        return static::getWriteConnection()->createQuery()->from(static::getTableName());
+        return self::getWriteConnection()->createQuery()->from(static::getTableName());
     }
 
     /**
@@ -209,7 +209,7 @@ abstract class ActiveRecord extends Object {
      * @return \Flywheel\Db\Query
      */
     public static function select() {
-        $q = static::read();
+        $q = self::read();
         $q->setSelectQueryCallback(array(static::getPhpName(), 'selectQueryCallback'));
         return $q;
     }
@@ -489,10 +489,22 @@ abstract class ActiveRecord extends Object {
 
         foreach ($data as $p=>$value) {
             if (isset(static::$_schema[$p])) {
-                $d = $this->fixData($value, static::$_schema[$p]);
-                if ($this->_data[$p] != $d) {
+                if ($value instanceof Expression) {
                     $this->_modifiedCols[$p] = true;
-                    $this->_data[$p] = $this->fixData($value, static::$_schema[$p]);
+                    $this->_data[$p] = $value;
+                } else {
+                    $d = $this->fixData($value, static::$_schema[$p]);
+                    if ($this->_data[$p] instanceof DateTime && $d instanceof DateTime) {
+                        if ($this->_data[$p]->getTimestamp() != $d->getTimestamp()) {
+                            $this->_modifiedCols[$p] = true;
+                            $this->_data[$p] = $d;
+                        }
+                    } else {
+                        if ($this->_data[$p] != $d) {
+                            $this->_modifiedCols[$p] = true;
+                            $this->_data[$p] = $d;
+                        }
+                    }
                 }
             } else {
                 $this->$p = $value;
