@@ -1,20 +1,40 @@
 <?php
 namespace Flywheel\Debug;
 
+use Flywheel\Event\Event;
+use Flywheel\Http\Response;
+use Flywheel\Object;
 use Flywheel\Util\Inflection;
 
-class BrowserConsoleHandler implements IHandler {
+class BrowserConsoleHandler extends Object implements IHandler {
     protected static $_initialized = false;
     protected static $_records = [];
     protected static $_jsVar = [];
+    protected static $_jquery = true;
 
-    public function __construct() {
-        $is_xhr = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+    protected $_options = [];
+
+    protected $_is_xhr = false;
+
+    public function __construct($options = []) {
+        $this->_is_xhr = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
             && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest';
 
-        if (PHP_SAPI !== 'cli' && !self::$_initialized && !$is_xhr) {
+        if (isset($options['jquery_support'])) {
+            self::$_jquery = (bool) $options['jquery_support'];
+        }
+
+        foreach ($options as $opt=>$value) {
+            $this->$opt = $value;
+        }
+
+        if (PHP_SAPI !== 'cli' && !self::$_initialized) {
             self::$_initialized = true;
             register_shutdown_function(array('\Flywheel\Debug\BrowserConsoleHandler', 'send'));
+        }
+
+        if ($this->_is_xhr) {
+            $this->getEventDispatcher()->addListener('onAfterSendHttpHeader', array($this, 'handlerXhrResponse'));
         }
     }
 
@@ -26,10 +46,25 @@ class BrowserConsoleHandler implements IHandler {
         return 'BrowserConsoleHandler';
     }
 
+    /**
+     * Write debug data
+     * @param $records
+     */
     public function write($records)
     {
+        if (!$this->_is_xhr) {
+            $this->_writeNormalRequest($records);
+        }
+    }
+
+    /**
+     * Write data for normal request
+     * @param $records
+     */
+    protected function _writeNormalRequest($records)
+    {
         //serialize
-        self::$_records[] = '-----------BEGIN PROFILE----------';
+        self::$_records[] = '-----------BEGIN PROFILE ' .$_SERVER['REQUEST_URI'] .'----------';
         self::$_records[] = date('Y-m-d H:i:s') .' [' .$records['SERVER_ADDRESS'] .']';
         self::$_records[] = 'Memory (MB): ' .$records['memory']['memory_usage']
             .' MB/' .$records['memory']['max_memory_allow']
@@ -55,12 +90,31 @@ class BrowserConsoleHandler implements IHandler {
         foreach($records['sql_queries']['queries'] as $q) {
             self::$_records['SQL Queries'][$q['query']] = [
                 'info' => "\tTime: {$q['exec_time']} ({$q['memory']} MB)",
-                'params' => isset($q['params'])? $q['params'] : null,
+                'parameters' => (isset($q['parameters']) && !empty($q['parameters']))? $q['parameters'] : null,
             ];
         }
 
         self::$_records[] = 'Total ' .sizeof($records['included_files']) .' included files';
         self::$_records[] = '-----------END PROFILE----------';
+    }
+
+    /**
+     * Handler xhr response data and add debug for it
+     * @param Event $event
+     */
+    public function handlerXhrResponse(Event $event) {
+        /** @var Response $response */
+        $response = $event->sender;
+        $records = Profiler::getInstance()->getProfileData();
+        $this->_writeNormalRequest($records);
+
+        $body = $response->getBody();
+        if (($t = json_decode($body, true))) {
+            $t['debug'] = self::$_records;
+            $body = json_encode($t);
+        }
+
+        $response->setBody($body);
     }
 
     /**
@@ -80,6 +134,16 @@ class BrowserConsoleHandler implements IHandler {
             }
         }
         if (count(self::$_records)) {
+            if (self::$_jquery) {
+                echo '<script>
+                    $(document).ajaxComplete(function (event, xhr) {
+                        if (xhr.responseJSON && xhr.responseJSON.debug) {
+                            console.log(xhr.responseJSON.debug);
+                        }
+                    });
+                </script>';
+            }
+
             echo '<script>' . self::_generateScript() . '</script>';
             self::reset();
         }
@@ -217,4 +281,11 @@ class BrowserConsoleHandler implements IHandler {
         return 'c.' . $method . '(' . implode(', ', $args) . ');';
     }
 
+    public function __set($name, $value) {
+        $this->_options[$name] = $value;
+    }
+
+    public function __get($name) {
+        return (isset($this->_options[$name]))? $this->_options[$name] : null;
+    }
 }

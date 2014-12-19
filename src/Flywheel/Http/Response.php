@@ -139,6 +139,15 @@ abstract class Response extends Object {
     }
 
     /**
+     * Get response body
+     *
+     * @return string
+     */
+    public function getBody() {
+        return $this->_body;
+    }
+
+    /**
      * Send HTTP Headers
      *
      * @return void
