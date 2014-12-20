@@ -91,11 +91,12 @@ abstract class Web extends BaseController
      * @see \Flywheel\Router\WebRouter::createUrl()
      * @param $route
      * @param array $params
+     * @param bool $absolute
      * @param string $ampersand
      * @return mixed
      */
-    public function createUrl($route, $params = array(), $absolute = false, $ampersand = '&') {
-        return Factory::getRouter()->createUrl($route, $params, $absolute, $ampersand);
+    public function createUrl($route, $params = array(), $ampersand = '&', $absolute = false) {
+        return Factory::getRouter()->createUrl($route, $params, $ampersand, $absolute);
     }
 
     /**
