@@ -637,15 +637,17 @@ abstract class ActiveRecord extends Object {
         }
 
         $db = self::getWriteConnection();
-        $databind = $this->_populateStmtValues($data);
-        if ($this->isNew()) { //insert new record
-            $status = $db->insert(static::getTableName(), $data, $databind);
-            if (!$status) {
-                throw new Exception('Insert record did not succeed!');
+        $data_bind = $this->_populateStmtValues($data);
+        if (!empty($data_bind)) {
+            if ($this->isNew()) { //insert new record
+                $status = $db->insert(static::getTableName(), $data, $data_bind);
+                if (!$status) {
+                    throw new Exception('Insert record did not succeed!');
+                }
+                $this->{static::getPrimaryKeyField()} = $db->lastInsertId();
+            } else {
+                $db->update(static::getTableName(), $data, array(static::getPrimaryKeyField() => $this->getPkValue()), $data_bind);
             }
-            $this->{static::getPrimaryKeyField()} = $db->lastInsertId();
-        } else {
-            $db->update(static::getTableName(), $data, array(static::getPrimaryKeyField() => $this->getPkValue()), $databind);
         }
 
         $this->resetModifiedCols();
@@ -653,20 +655,30 @@ abstract class ActiveRecord extends Object {
         return true;
     }
 
+    /**
+     * Build SqlStatement bind values
+     *
+     * @param $data
+     * @return array
+     */
     protected function _populateStmtValues(&$data) {
-        $databind = array();
+        $data_bind = array();
         $c = $data;
         foreach ($c as $n => $v) {
             if (!($v instanceof Expression)) {
+                /*
+                 * @FIXME LuuHieu: I could not remember why need check null here?
                 if ((null === $v || '' === $v) && (!isset(static::$_validate[$n]) || !isset(static::$_validate[$n]['require']))) {
                     unset($data[$n]); // no thing
                 } else {
                     $databind[] = self::getReadConnection()->getAdapter()->getPDOParam(static::$_schema[$n]['db_type']);
-                }
+                }*/
+
+                $data_bind[] = self::getReadConnection()->getAdapter()->getPDOParam(static::$_schema[$n]['db_type']);
             }
         }
 
-        return $databind;
+        return $data_bind;
     }
 
     /**
