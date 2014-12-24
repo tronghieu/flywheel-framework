@@ -176,10 +176,11 @@ class Render {
      * @param $route
      * @param array $params
      * @param string $ampersand
+     * @param bool $absolute
      * @return mixed
      */
-    public function createUrl($route,$params=array(),$ampersand='&') {
-        return Factory::getRouter()->createUrl($route, $params, $ampersand);
+    public function createUrl($route, $params = array(), $ampersand='&', $absolute = true) {
+        return Factory::getRouter()->createUrl($route, $params, $ampersand, $absolute);
     }
 
     public function createFrom($name = null, $action = '', $method = 'POST') {

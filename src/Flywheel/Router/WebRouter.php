@@ -148,6 +148,7 @@ class WebRouter extends BaseRouter {
      * If the name is '#', the corresponding value will be treated as an anchor
      * and will be appended at the end of the URL.
      * @param string $ampersand the token separating name-value pairs in the URL. Defaults to '&'.
+     * @param bool|string $absolute if you want return absolute url
      * @return string the constructed URL
      */
     public function createUrl($route, $params=array(), $ampersand='&', $absolute=true) {
