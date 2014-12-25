@@ -128,7 +128,7 @@ class Render {
      * @return string
      */
     private function _render($file) {
-        $this->templatePath = preg_replace('#/+#','/', $this->templatePath);
+        $this->templatePath = preg_replace('#/+#', DIRECTORY_SEPARATOR, $this->templatePath);
         if (!file_exists($temFile = $this->templatePath .$file .$this->_ext)) {
             throw new Exception('Template file not found:' .$temFile);
         }
