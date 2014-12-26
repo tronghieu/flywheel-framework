@@ -11,7 +11,7 @@ namespace Flywheel\Html;
 
 class Html {
     public $html5 = true;
-    
+
     /**
      * Html id property
      * @var
@@ -66,14 +66,15 @@ class Html {
      * @return string
      */
     protected function _serializeHtmlOption($htmlOptions = null) {
+        if (null === $htmlOptions) {
+            $htmlOptions = $this->_htmlOptions;
+        }
+
         $class = array_keys($this->_htmlClass);
         $class = (isset($htmlOptions['class']))? $htmlOptions['class'] .' ' .implode(' ', $class) : implode(' ', $class);
         $htmlOptions['class'] = $class;
 
         $htmlOptions['id'] = $this->_htmlId;
-        if (null === $htmlOptions) {
-            $htmlOptions = $this->_htmlOptions;
-        }
 
         return self::serializeHtmlOption($htmlOptions);
     }
