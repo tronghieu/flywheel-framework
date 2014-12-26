@@ -889,16 +889,43 @@ abstract class ActiveRecord extends Object {
         return $where;
     }
 
-    public static function findAll() {
+    /**
+     * findAll records in table
+     * careful with this method;
+     *
+     * @param null $assoc
+     * @return array
+     */
+    public static function findAll($assoc = null) {
         static::create();
-        return self::getReadConnection()->createQuery()
+        $stmt =  self::getReadConnection()->createQuery()
             ->select(static::getTableAlias() . '.*')
             ->from(self::quote(static::getTableName()), static::getTableAlias())
-            ->execute()
-            ->fetchAll(\PDO::FETCH_CLASS, static::getPhpName(), array(null, false));
+            ->execute();
+
+        $result = [];
+        while($om = $stmt->fetchObject(self::getPhpName(), [null, false])) {
+            /** @var ActiveRecord $om */
+            $om->resetModifiedCols();
+            self::addInstanceToPool($om);
+            if ($assoc && $om->hasField($assoc)) {
+                $result[$om->getAttribute($assoc)] = $om;
+            } else {
+                $result[] = $om;
+            }
+        }
+
+        return $result;
     }
 
-    public static function findAllByConditions($conditions = array(),$order = 'id asc',$limit = '') {
+    /**
+     * @param array $conditions
+     * @param string $order
+     * @param string $limit
+     * @param null $assoc
+     * @return array
+     */
+    public static function findAllByConditions($conditions = array(), $order = 'id asc', $limit = '', $assoc = null) {
         static::create();
         $query = self::getReadConnection()->createQuery();
         $query
@@ -927,12 +954,33 @@ abstract class ActiveRecord extends Object {
                 $query->setMaxResults($limitArray[1]);
             }
         }
-        $data = $query
-            ->execute()
-            ->fetchAll(\PDO::FETCH_CLASS, static::getPhpName(), array(null, false));
-        return $data;
+        $stmt = $query
+            ->execute();
+
+        $result = [];
+        while($om = $stmt->fetchObject(self::getPhpName(), [null, false])) {
+            /** @var ActiveRecord $om */
+            $om->resetModifiedCols();
+            self::addInstanceToPool($om);
+            if ($assoc && $om->hasField($assoc)) {
+                $result[$om->getAttribute($assoc)] = $om;
+            } else {
+                $result[] = $om;
+            }
+        }
+
+        return $result;
     }
 
+    /**
+     * find By key with params
+     *
+     * @param $by
+     * @param null $param
+     * @param bool $first
+     * @return array|ActiveRecord|null
+     * @throws Exception
+     */
     public static function findBy($by, $param = null, $first = false) {
         static::create();
         $q = self::getReadConnection()->createQuery()
@@ -957,6 +1005,7 @@ abstract class ActiveRecord extends Object {
         while($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             /** @var ActiveRecord $om */
             $om = new static($row, false);
+            self::addInstanceToPool($om);
             $om->resetModifiedCols(); //reset after get from database
             if ($first) {
                 return $om;
@@ -968,6 +1017,11 @@ abstract class ActiveRecord extends Object {
         return (!empty($result))? $result : null;
     }
 
+    /**
+     * @param $by
+     * @param $param
+     * @return ActiveRecord|null
+     */
     public static function retrieveBy($by, $param) {
         static::create();
         $field = Inflection::camelCaseToHungary($by);
