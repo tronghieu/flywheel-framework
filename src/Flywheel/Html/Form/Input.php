@@ -125,7 +125,7 @@ class Input extends Html {
 
         $html = '<input ' .$this->_serializeHtmlOption($this->_htmlOptions) .(($this->_disabled)? ' disabled':'');
 
-        if ($this->_type == 'checkbox' && $this->_htmlOptions['checked']) {
+        if ($this->_type == 'checkbox' && isset($this->_htmlOptions['checked']) && $this->_htmlOptions['checked']) {
             $html .= ' checked';
         }
 
