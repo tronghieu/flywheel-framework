@@ -123,6 +123,14 @@ class Input extends Html {
             $this->_htmlOptions['data-' .$data] = $value;
         }
 
-        echo '<input ' .$this->_serializeHtmlOption($this->_htmlOptions) .(($this->_disabled)? ' disabled':'') .$this->_singleHtmlCloseTag();
+        $html = '<input ' .$this->_serializeHtmlOption($this->_htmlOptions) .(($this->_disabled)? ' disabled':'');
+
+        if ($this->_type == 'checkbox' && $this->_htmlOptions['checked']) {
+            $html .= ' checked';
+        }
+
+        $html .= $this->_singleHtmlCloseTag();
+
+        echo $html;
     }
 }

@@ -10,8 +10,11 @@
 namespace Flywheel\Html;
 
 use Flywheel\Factory;
+use Flywheel\Html\Form\Checkbox;
+use Flywheel\Html\Form\Input;
 use Flywheel\Html\Form\RadioButton;
 use Flywheel\Html\Form\SelectOption;
+use Flywheel\Html\Form\TextArea;
 
 class Form extends Html {
     public $name = '';
@@ -43,11 +46,66 @@ class Form extends Html {
         echo $s;
     }
 
+    /**
+     * Add radio button
+     *
+     * @param $name
+     * @param string $checkValue
+     * @param array $htmlOptions
+     * @return RadioButton
+     */
     public function radioButton($name, $checkValue = '', $htmlOptions = array()) {
         return new RadioButton($name, $checkValue, $htmlOptions);
     }
 
+    /**
+     * Add select option
+     *
+     * @param $name
+     * @param array $selectValues
+     * @param array $htmlOptions
+     * @return SelectOption
+     */
     public function selectOption($name, $selectValues = array(), $htmlOptions = array()) {
         return new SelectOption($name, $selectValues, $htmlOptions);
+    }
+
+    /**
+     * Add input
+     *
+     * @param $name
+     * @param $value
+     * @param array $htmlOptions
+     * @return Input
+     */
+    public function input($name, $value, $htmlOptions = []) {
+        return new Input($name, $value, $htmlOptions);
+    }
+
+    /**
+     * Add textarea
+     *
+     * @param $name
+     * @param $value
+     * @param array $htmlOptions
+     * @return TextArea
+     */
+    public function textArea($name, $value, $htmlOptions = []) {
+        return new TextArea($name, $value, $htmlOptions);
+    }
+
+    /**
+     * Checkbox
+     *
+     * @param $name
+     * @param $value
+     * @param string $checkValue
+     * @param array $htmlOptions
+     * @return Checkbox
+     */
+    public function checkbox($name, $value, $checkValue = "" , $htmlOptions = []){
+        $cb = new Checkbox($name, $value, $htmlOptions);
+        $cb->setExpectValue($checkValue);
+        return $cb;
     }
 }
