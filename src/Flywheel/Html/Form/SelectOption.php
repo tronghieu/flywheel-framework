@@ -42,8 +42,10 @@ class SelectOption extends Html {
 
         if (isset($htmlOptions) && isset($htmlOptions['disabled']) && $htmlOptions['disabled']) {
             $this->options[$name]['disabled'] = true;
-            unset($this->options[$name]['htmlOptions']['disabled']);
+        } else {
+            $this->options[$name]['disabled'] = false;
         }
+        unset($this->options[$name]['htmlOptions']['disabled']);
 
         return $this;
     }
