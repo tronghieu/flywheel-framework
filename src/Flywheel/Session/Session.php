@@ -41,7 +41,8 @@ class Session extends Object
     public static function getInstance()
     {
         if (null == static::$_instance) {
-            static::$_instance = new static();
+            $config = ConfigHandler::get('session');
+            static::$_instance = new static($config);
         }
         return static::$_instance;
     }
@@ -77,6 +78,7 @@ class Session extends Object
             session_name($this->_config['name']);
         }
         ini_set('session.gc_maxlifetime', $this->_config['lifetime']);
+        ini_set('session.cookie_lifetime', $this->_config['lifetime']);
         //define the lifetime of the cookie
         if (isset($this->_config['cookie_ttl'])
             || isset($this->_config['cookie_domain']) || isset($this->_config['cookie_path'])
