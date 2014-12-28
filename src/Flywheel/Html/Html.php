@@ -32,9 +32,11 @@ class Html {
     /**
      * Add a class
      * @param $class
+     * @return $this
      */
     public function addClass($class) {
         $this->_htmlClass[$class] = true;
+        return $this;
     }
 
     /**
