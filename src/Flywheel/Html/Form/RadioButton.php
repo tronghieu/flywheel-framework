@@ -13,6 +13,15 @@ class RadioButton extends Html {
         $this->label = $label;
     }
 
+    /**
+     * Add <input type="radio"> with label
+     *
+     * @param $value
+     * @param $label
+     * @param array $htmlOptions
+     * @param array $inputOptions
+     * @return $this
+     */
     public function add($value, $label, $htmlOptions = array(), $inputOptions = array()) {
         $this->label[] = array(
             'value' => $value,
@@ -24,6 +33,9 @@ class RadioButton extends Html {
         return $this;
     }
 
+    /**
+     * display
+     */
     public function display() {
         $s = '';
 

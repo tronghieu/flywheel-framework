@@ -49,34 +49,42 @@ class Input extends Html {
 
     /**
      * @param mixed $name
+     * @return $this
      */
     public function setName($name)
     {
         $this->_name = $name;
+        return $this;
     }
 
     /**
      * @param mixed $value
+     * @return $this
      */
     public function setValue($value)
     {
         $this->_value = $value;
+        return $this;
     }
 
     /**
      * @param mixed $placeHolder
+     * @return $this
      */
     public function setPlaceHolder($placeHolder)
     {
         $this->_placeHolder = $placeHolder;
+        return $this;
     }
 
     /**
      * @param string $type
+     * @return $this
      */
     public function setType($type)
     {
         $this->_type = $type;
+        return $this;
     }
 
     /**
@@ -84,31 +92,39 @@ class Input extends Html {
      *
      * @param $data
      * @param $value
+     * @return $this
      */
     public function setData($data, $value){
         $this->_data[$data] = $value;
+        return $this;
     }
 
     /**
      * remove data-* attribute
      * @param $data
+     * @return $this
      */
     public function removeData($data){
         unset($this->_data[$data]);
+        return $this;
     }
 
     /**
      * Disable input
+     * @return $this
      */
     public function disabled() {
         $this->_disabled = true;
+        return $this;
     }
 
     /**
      * Active input
+     * @return $this
      */
     public function enable() {
         $this->_disabled = false;
+        return $this;
     }
 
     /**

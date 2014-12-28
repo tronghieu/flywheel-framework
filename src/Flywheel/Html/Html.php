@@ -40,25 +40,31 @@ class Html {
     /**
      * Remove a html class
      * @param $class
+     * @return $this
      */
     public function removeClass($class) {
         unset($this->_htmlClass[$class]);
+        return $this;
     }
 
     /**
      * set html id
      * @param $id
+     * @return $this
      */
     public function setId($id) {
         $this->_htmlId = $id;
+        return $this;
     }
 
     /**
      * Set custom html options
      * @param $options
+     * @return $this
      */
     public function setHtmlOption($options) {
         $this->_htmlOptions = array_merge_recursive($this->_htmlOptions, $options);
+        return $this;
     }
 
     /**

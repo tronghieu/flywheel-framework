@@ -26,7 +26,14 @@ class SelectOption extends Html {
         $this->setHtmlOption($htmlOptions);
     }
 
-
+    /**
+     * Add <option>
+     *
+     * @param $name
+     * @param $value
+     * @param array $htmlOptions
+     * @return $this
+     */
     public function addOption($name, $value, $htmlOptions = array()) {
         $this->options[$name] = array(
             'value' => $value,
@@ -41,6 +48,9 @@ class SelectOption extends Html {
         return $this;
     }
 
+    /**
+     * Display
+     */
     public function display() {
         $s = '<select name="' .$this->name .'"' .($this->isMultiple? ' multiple="multiple"' :'')
             .($this->size > 1? ' size="' .$this->size .'"':'')
