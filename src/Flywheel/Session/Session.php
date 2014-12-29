@@ -55,7 +55,7 @@ class Session extends Object
     {
         // Load config
         if (empty($config)) {
-            ConfigHandler::get('session'); // Read config from session key in config file
+            $config = (array) ConfigHandler::get('session'); // Read config from session key in config file
         }
         $this->_config = array_merge($this->_config, $config);
         if (isset($this->_config['storage']) && $this->_config['storage']) {
