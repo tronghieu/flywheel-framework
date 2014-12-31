@@ -78,11 +78,15 @@ class Html {
             $htmlOptions = $this->_htmlOptions;
         }
 
+        $properties_options = [
+            'id' => $this->_htmlId,
+        ];
+
+        $htmlOptions += $properties_options;
+
         $class = array_keys($this->_htmlClass);
         $class = (isset($htmlOptions['class']))? $htmlOptions['class'] .' ' .implode(' ', $class) : implode(' ', $class);
         $htmlOptions['class'] = $class;
-
-        $htmlOptions['id'] = $this->_htmlId;
 
         return self::serializeHtmlOption($htmlOptions);
     }
