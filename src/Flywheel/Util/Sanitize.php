@@ -58,6 +58,16 @@ class Sanitize {
     }
 
     /**
+     * Strips given text of all links (<a href=....).
+     *
+     * @param string $text Text
+     * @return string The text without links
+     */
+    public static function stripLinks($text) {
+        return preg_replace('|<a\s+[^>]+>|im', '', preg_replace('|<\/a>|im', '', $text));
+    }
+
+    /**
      * Strips scripts and stylesheets from output
      *
      * @param string $str String to sanitize
