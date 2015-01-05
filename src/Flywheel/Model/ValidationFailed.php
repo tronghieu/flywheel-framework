@@ -11,6 +11,9 @@ namespace Flywheel\Model;
 
 
 class ValidationFailed {
+    /** Table name */
+    private $_tblName;
+
     /** Column name in tablename.COLUMN_NAME format */
     private $_colName;
 
@@ -23,12 +26,14 @@ class ValidationFailed {
     /**
      * Construct a new ValidationFailed object.
      *
+     * @param string $tblName   Table name.
      * @param string $colName   Column name.
      * @param string $message   Message to display to user.
      * @param object $validator The Validator that caused this column to fail.
      */
-    public function __construct($colName, $message, $validator = null)
+    public function __construct($tblName, $colName, $message, $validator = null)
     {
+        $this->_tblName = $tblName;
         $this->_colName = $colName;
         $this->_message[] = $message;
         $this->_validator = $validator;
@@ -46,10 +51,11 @@ class ValidationFailed {
     /**
      * Gets the column name.
      *
-     * @return string Qualified column name (tablename.COLUMN_NAME)
+     * @param boolean $full
+     * @return string Qualified column name (tablename.COLUMN_NAME) if $full = true
      */
-    public function getColumn() {
-        return $this->_colName;
+    public function getColumn($full = true) {
+        return ($full)? $this->_tblName .'.' .$this->_colName : $this->_colName;
     }
 
     /**

@@ -317,8 +317,16 @@ abstract class ActiveRecord extends Object {
         return $this->{static::getPrimaryKeyField()};
     }
 
-    public function setValidationFailure($column, $mess, $validator = null) {
-        $this->_validationFailures[] = new ValidationFailed($column, $mess, $validator);
+    /**
+     * Set validation failure each column
+     *
+     * @param $table
+     * @param $column
+     * @param $mess
+     * @param null $validator
+     */
+    public function setValidationFailure($table, $column, $mess, $validator = null) {
+        $this->_validationFailures[] = new ValidationFailed($table, $column, $mess, $validator);
     }
 
     /**
@@ -755,7 +763,7 @@ abstract class ActiveRecord extends Object {
 
                 $validator = static::createValidator($validationRule->getClass());
                 if ($validator && ($this->$name != null || $this->isNotNull($name)) && !$validator->isValid($validationRule->getValue(), $this->$name)) {
-                    $this->setValidationFailure(static::getTableName() .'.' .$name, t($validationRule->getMessage()), $validator);
+                    $this->setValidationFailure(static::getTableName(), $name, $validationRule->getMessage(), $validator);
                 }
             }
         }
