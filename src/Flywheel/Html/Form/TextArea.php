@@ -38,7 +38,6 @@ class TextArea extends Input {
      */
     public function display() {
         $this->_htmlOptions['name'] = $this->_name;
-        $this->_htmlOptions['value'] = $this->_value;
         $this->_htmlOptions['type'] = $this->_type;
         $this->_htmlOptions['placeholder'] = $this->_placeHolder;
         $this->_htmlOptions['row'] = $this->_row;
