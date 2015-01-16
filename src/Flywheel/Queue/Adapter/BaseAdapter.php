@@ -47,6 +47,13 @@ abstract class BaseAdapter {
     public function push($member) {}
 
     /**
+     * Push if member's not exist in queue
+     * @param $member
+     * @return mixed
+     */
+    public function pushIfNotExist($member) {}
+
+    /**
      * pop the last member of queue
      * @return mixed
      */

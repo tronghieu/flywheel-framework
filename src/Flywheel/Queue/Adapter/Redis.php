@@ -58,6 +58,15 @@ class Redis extends BaseAdapter {
     /**
      * {@inheritDoc}
      */
+    public function pushIfNotExist($member) {
+        if (!$this->isExists($member)) {
+            $this->push($member);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function shift() {
         return $this->getConnection()->lPop($this->_name);
     }
@@ -69,6 +78,9 @@ class Redis extends BaseAdapter {
         return $this->getConnection()->rPop($this->_name);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function count() {
         return $this->length();
     }
@@ -98,6 +110,7 @@ class Redis extends BaseAdapter {
      * {@inheritDoc}
      */
     public function isExists($member) {
-        //not support
+        $members = $this->members();
+        return in_array($member, $members);
     }
 }

@@ -125,6 +125,13 @@ class Queue implements IQueue {
     /**
      * {@inheritDoc}
      */
+    public function pushIfNotExist($member) {
+        return $this->getAdapter()->pushIfNotExist($member);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function pop() {
         return $this->getAdapter()->pop();
     }
