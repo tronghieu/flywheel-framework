@@ -63,11 +63,14 @@ class Translator extends \Symfony\Component\Translation\Translator {
             throw new NotFoundResourceException(sprintf('File "%s" not found.', $file));
         }
 
-        $resources = require($file);
-        foreach($resources as $domain => $message) {
-            parent::addResource('array', $message, $locale, $domain);
-        }
+        $info = new \SplFileInfo($file);
+        if($info->getExtension() == 'php') {
+            $resources = require($file);
+            foreach($resources as $domain => $message) {
+                parent::addResource('array', $message, $locale, $domain);
+            }
 
-        self::$_cache[$locale.$file] = true;
+            self::$_cache[$locale.$file] = true;
+        }
     }
 }

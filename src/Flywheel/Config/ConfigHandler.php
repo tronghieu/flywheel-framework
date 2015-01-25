@@ -1,5 +1,6 @@
 <?php
 namespace Flywheel\Config;
+use Flywheel\Base;
 use Flywheel\Exception;
 use \Flywheel\Loader;
 
@@ -20,7 +21,7 @@ class ConfigHandler {
         if(($path=Loader::getPathOfAlias($alias))!==false) {
             if (file_exists($path .$ext)) {
                 $config = require($path .$ext);
-                self::$_data = array_merge(self::$_data, $config);
+                self::$_data = Base::mergeArray(self::$_data, $config);
             } else {
                 if (true == $require) {
                     throw new Exception("Alias \"{$alias}\" which was loaded is invalid. Make sure it points to an existing PHP file and the file is readable.");
@@ -78,7 +79,7 @@ class ConfigHandler {
             $next = array_shift($path);
             $res = array($next => $res);
         }
-        self::$_data = array_merge(self::$_data, $res);
+        self::$_data = Base::mergeArray(self::$_data, $res);
     }
 
     /**
@@ -129,7 +130,7 @@ class ConfigHandler {
         if (!isset(self::$_data[$namespace])) {
             self::$_data[$namespace] = $config;
         } else {
-            self::$_data[$namespace] = array_merge(self::$_data[$namespace], $config);
+            self::$_data[$namespace] = Base::mergeArray(self::$_data[$namespace], $config);
         }
     }
 }
