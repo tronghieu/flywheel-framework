@@ -32,6 +32,8 @@ class MatchValidator extends BaseValidator {
      * @return boolean
      */
     public function isValid($map, $str) {
-        return (preg_match($this->prepareRegexp($map), $str) != 0);
+        if ($str) {
+            return (preg_match($this->prepareRegexp($map), $str) != 0);
+        }
     }
 }
