@@ -35,5 +35,6 @@ class MatchValidator extends BaseValidator {
         if ($str) {
             return (preg_match($this->prepareRegexp($map), $str) != 0);
         }
+        return true;
     }
 }
