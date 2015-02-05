@@ -53,11 +53,35 @@ class Session extends Object
      */
     public function __construct($config = array())
     {
+        // Need to destroy any existing sessions started with session.auto_start
+        if(session_id()) {
+            session_unset();
+            session_destroy();
+        }
+
+        // Disable transparent sid support
+        ini_set('session.use_trans_sid', '0');
+
+        // Only allow the session ID to come from cookies and nothing else.
+        ini_set('session.use_only_cookies', '1');
+
         // Load config
         if (empty($config)) {
             $config = (array) ConfigHandler::get('session'); // Read config from session key in config file
         }
+
         $this->_config = array_merge($this->_config, $config);
+        $this->_setOptions();
+        $this->_setCookieParams();
+
+        if (isset($handlerClass)) {
+            $this->dispatch('onAfterInitSessionConfig', new Event($this, array('handler' => $handlerClass)));
+        } else {
+            $this->dispatch('onAfterInitSessionConfig', new Event($this, array('handler' => 'default')));
+        }
+    }
+
+    protected function _getSessionHandler() {
         if (isset($this->_config['storage']) && $this->_config['storage']) {
             $handlerClass = $this->_config['storage'];
             unset($this->_config['handler']);
@@ -74,11 +98,29 @@ class Session extends Object
 
             self::$_storage = $storage;
         }
-        if (isset($this->_config['name'])) {
-            session_name($this->_config['name']);
+    }
+
+    protected function _setOptions() {
+        if (isset($this->_config['session_name'])) {
+            session_name(md5($this->_config['session_name']));
         }
+
+        if (isset($this->_config['session_id'])) {
+            session_id($this->_config['session_id']);
+        }
+
+        //using cookie secure
+        if (Base::getApp()) {
+            if (Factory::getRequest()->isSecure()) {
+                ini_set('session.cookie_secure', true);
+            }
+        }
+
         ini_set('session.gc_maxlifetime', $this->_config['lifetime']);
         ini_set('session.cookie_lifetime', $this->_config['lifetime']);
+    }
+
+    protected function _setCookieParams() {
         //define the lifetime of the cookie
         if (isset($this->_config['cookie_ttl'])
             || isset($this->_config['cookie_domain']) || isset($this->_config['cookie_path'])
@@ -95,17 +137,6 @@ class Session extends Object
             $cookie = session_get_cookie_params();
             session_set_cookie_params($cookie['lifetime'], $cookie['path'], $cookie['domain']);
         }
-        if (Base::getApp()) {
-            if (Factory::getRequest()->isSecure()) {
-                ini_set('session.cookie_secure', true);
-            }
-        }
-        ini_set('session.use_only_cookies', 1);
-        if (isset($handlerClass)) {
-            $this->dispatch('onAfterInitSessionConfig', new Event($this, array('handler' => $handlerClass)));
-        } else {
-            $this->dispatch('onAfterInitSessionConfig', new Event($this, array('handler' => 'default')));
-        }
     }
 
     /**
@@ -117,8 +148,8 @@ class Session extends Object
             return false;
         }
         session_cache_limiter('none');
+        session_register_shutdown();
         self::$_started = session_start();
-
         self::$_state = 'active';
 
         // Send modified header for IE 6.0 Security Policy

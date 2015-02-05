@@ -30,9 +30,9 @@ class Memcached implements ISessionHandler {
      *
      * @param string $savePath ignored
      * @param string $sessionName
-     * @throws \Flywheel\Storage\Exception
+     * @return bool
+     * @throws Exception
      * @internal param string $sessName ignored
-     * @return boolean
      */
     public function open($savePath, $sessionName) {
         if (!class_exists('Memcached')) {

@@ -9,7 +9,7 @@
 
 namespace Flywheel\Session\Storage;
 use Flywheel\Session\Exception;
-use Flywheel\Session\ISessionHandler;
+use Flywheel\Session\Storage\ISessionHandler;
 
 class Redis implements ISessionHandler{
     private $_config;
@@ -53,22 +53,22 @@ class Redis implements ISessionHandler{
 
     public function write($id, $data) {
         $lifeTime = (int) @$this->_config['lifetime'];
-        $this->_driver->set('SESSION_' .$id, $data);
+        $this->getDriver()->set('SESSION_' .$id, $data);
         if ($lifeTime) {
             $this->_driver->expire('SESSION_' .$id, $lifeTime);
         }
     }
 
     public function read($id) {
-        return $this->_driver->get('SESSION_' .$id);
+        return $this->getDriver()->get('SESSION_' .$id);
     }
 
     public function destroy($id) {
-        $this->_driver->delete('SESSION_' .$id);
+        $this->getDriver()->delete('SESSION_' .$id);
     }
 
     public function close() {
-        $this->_driver->close();
+        $this->getDriver()->close();
     }
 
     public function gc($maxLifeTime) {}
