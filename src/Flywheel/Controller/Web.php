@@ -138,6 +138,13 @@ abstract class Web extends BaseController
      */
     final public function execute($action) {
         $this->getEventDispatcher()->dispatch('onBeginControllerExecute', new Event($this, array('action' => $action)));
+        $csrf_auto_protect = ConfigHandler::get('csrf_protection');
+        if(null == $csrf_auto_protect || $csrf_auto_protect) {
+            if (!$this->request()->validateCsrfToken()) {
+                Base::end('Invalid token');
+            }
+        }
+
         /* @var \Flywheel\Router\WebRouter $router */
         $router = Factory::getRouter();
         $this->_action = $action;

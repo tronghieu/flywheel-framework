@@ -81,6 +81,37 @@ class WebRequest extends Request
     }
 
     /**
+     * Performs the CSRF validation.
+     * The default implementation will compare the CSRF token obtained
+     * from a cookie and from a POST field. If they are different, a CSRF attack is detected.
+     */
+    public function validateCsrfToken() {
+        if (($this->isPostRequest() || $this->isPutRequest() || $this->isDeleteRequest()) && !$this->isXmlHttpRequest()) {
+            $cookie = Factory::getCookie();
+            $token = $this->getCsrfToken(false);
+            $method = $this->getMethod();
+            if (!$token) {
+                return false;
+            }
+
+            $user_token_value = false;
+
+            switch($method) {
+                case 'POST':
+                    $user_token_value = $this->post($token, 'BOOLEAN', false);
+                    break;
+                case 'PUT':
+                    $user_token_value=$this->put($token, 'BOOLEAN', false);
+                    break;
+                case 'DELETE':
+                    $user_token_value=$this->delete($token, 'BOOLEAN', false);
+            }
+
+            return (true === $user_token_value);
+        }
+    }
+
+    /**
      * check csrf token
      *
      * @param $token
