@@ -73,6 +73,7 @@ class Session extends Object
         $this->_config = array_merge($this->_config, $config);
         $this->_setOptions();
         $this->_setCookieParams();
+        $this->_getSessionHandler();
 
         if (isset($handlerClass)) {
             $this->dispatch('onAfterInitSessionConfig', new Event($this, array('handler' => $handlerClass)));
