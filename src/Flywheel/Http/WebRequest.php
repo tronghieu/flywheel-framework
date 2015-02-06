@@ -109,6 +109,8 @@ class WebRequest extends Request
 
             return (true === $user_token_value);
         }
+
+        return true;
     }
 
     /**
