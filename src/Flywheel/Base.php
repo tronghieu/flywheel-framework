@@ -100,7 +100,7 @@ class Base {
             foreach($next as $k => $v)
             {
                 if(is_integer($k))
-                    isset($res[$k]) ? $res[]=$v : $res[$k]=$v;
+                    isset($res[$k]) ? $res[$k]=$v : $res[]=$v;
                 elseif(is_array($v) && isset($res[$k]) && is_array($res[$k]))
                     $res[$k]=self::mergeArray($res[$k],$v);
                 else
