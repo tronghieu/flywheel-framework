@@ -139,7 +139,7 @@ abstract class Web extends BaseController
     final public function execute($action) {
         $this->getEventDispatcher()->dispatch('onBeginControllerExecute', new Event($this, array('action' => $action)));
         $csrf_auto_protect = ConfigHandler::get('csrf_protection');
-        if(null == $csrf_auto_protect || $csrf_auto_protect) {
+        if(null === $csrf_auto_protect || $csrf_auto_protect) {
             if (!$this->request()->validateCsrfToken()) {
                 Base::end('Invalid token');
             }
