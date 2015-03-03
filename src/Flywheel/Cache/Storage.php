@@ -37,7 +37,7 @@ class Storage extends Object {
         }
 
         if (!isset($settings[$config])) {
-            $config = $config['__default__'];
+            $config = $settings['__default__'];
         }
 
         if (!isset(self::$_instances[$config])) {
