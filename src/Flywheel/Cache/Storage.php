@@ -31,20 +31,17 @@ class Storage extends Object {
      * return IStorage
      */
     public static function factory($config = null) {
-        if (is_string($config)) {
-            $config = ConfigHandler::get('caching');
-        }
-
-        if (!$config) {
+        $settings = ConfigHandler::get('caching');
+        if (!$settings) {
             throw new Exception('Config "caching" not found!');
         }
 
-        if (!isset($config[$config])) {
+        if (!isset($settings[$config])) {
             $config = $config['__default__'];
         }
 
         if (!isset(self::$_instances[$config])) {
-            $options = $config[$config];
+            $options = $settings[$config];
             $class = "\\Flywheel\\Cache\\Storage\\" .$options['storage'];
             self::$_instances[$config] = new $class($config, $options);
         }
