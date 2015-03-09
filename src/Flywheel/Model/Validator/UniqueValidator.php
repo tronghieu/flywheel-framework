@@ -32,7 +32,7 @@ class UniqueValidator extends ModelValidator {
             $where[] = $map::getTableName().'.' .$map::getPrimaryKeyField() .' != ?';
             $params[] = $map->getPkValue();
         }
-        $where = implode(' AND ', $where);
+        $where = implode(' OR ', $where);
 
         $fields = array_keys($str);
 
@@ -50,7 +50,7 @@ class UniqueValidator extends ModelValidator {
         if ($data) {
             foreach ($data as $field => $value) {
                 if($map->$field == $value) {
-                    $map->setValidationFailure($map::getTableName() .$field, $str[$field]['message'], $this);
+                    $map->setValidationFailure($map::getTableName() .'.' .$field, $field, $str[$field]['message'], $this);
                 }
             }
         }
