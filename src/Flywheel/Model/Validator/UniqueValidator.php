@@ -10,7 +10,7 @@ class UniqueValidator extends ModelValidator {
      * @see BaseValidator::isValid()
      *
      * @param mixed $map
-     * @param string $str
+     * @param array $str
      *
      * @throws \Flywheel\Db\Exception
      * @return boolean
@@ -23,9 +23,12 @@ class UniqueValidator extends ModelValidator {
         $where = array();
         $params = array();
         foreach ($str as $name => $rule) {
-            $where[] = $map::getTableName().".{$name} = ?";
             $getter = 'get' .Inflection::camelize($name);
-            $params[] = $map->$getter();
+            $check_value = $map->$getter();
+            if (!$check_value) {
+                $where[] = $map::getTableName().".{$name} = ?";
+                $params[] = $check_value;
+            }
         }
 
         if (!$map->isNew()) {
