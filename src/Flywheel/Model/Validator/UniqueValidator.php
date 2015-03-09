@@ -43,21 +43,25 @@ class UniqueValidator extends ModelValidator {
             $field = $map->quote($field);
         }
 
-        $data = $map::read()->select(implode(',', $fields))
-            ->where($where)
-            ->setMaxResults(1)
-            ->setParameters($params)
-            ->execute()
-            ->fetch(\PDO::FETCH_ASSOC);
+        if ($where) {
+            $data = $map::read()->select(implode(',', $fields))
+                ->where($where)
+                ->setMaxResults(1)
+                ->setParameters($params)
+                ->execute()
+                ->fetch(\PDO::FETCH_ASSOC);
 
-        if ($data) {
-            foreach ($data as $field => $value) {
-                if($map->$field == $value) {
-                    $map->setValidationFailure($map::getTableName() .'.' .$field, $field, $str[$field]['message'], $this);
+            if ($data) {
+                foreach ($data as $field => $value) {
+                    if($map->$field == $value) {
+                        $map->setValidationFailure($map::getTableName() .'.' .$field, $field, $str[$field]['message'], $this);
+                    }
                 }
             }
+
+            return !$map->hasValidationFailures();
         }
 
-        return !$map->hasValidationFailures();
+        return true;
     }
 }
