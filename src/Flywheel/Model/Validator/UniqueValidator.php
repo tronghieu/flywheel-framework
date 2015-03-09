@@ -25,7 +25,7 @@ class UniqueValidator extends ModelValidator {
         foreach ($str as $name => $rule) {
             $getter = 'get' .Inflection::camelize($name);
             $check_value = $map->$getter();
-            if (!$check_value) {
+            if ($check_value) {
                 $where[] = $map::getTableName().".{$name} = ?";
                 $params[] = $check_value;
             }
