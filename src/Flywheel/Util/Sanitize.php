@@ -40,8 +40,7 @@ class Sanitize {
      * @return string whitespace sanitized string
      */
     public static function stripWhitespace($str) {
-        $r = preg_replace('/[\n\r\t]+/iu', '', $str);
-        return preg_replace('/\s{2,}/iu', ' ', $r);
+        return str_replace(' ', '', preg_replace('/\s{2,}/u', ' ', preg_replace('/[\n\r\t]+/', '', $str)));
     }
 
     /**
