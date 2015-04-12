@@ -31,11 +31,13 @@ class UniqueValidator extends ModelValidator {
             }
         }
 
-        if (!$map->isNew()) {
-            $where[] = $map::getTableName().'.' .$map::getPrimaryKeyField() .' != ?';
-            $params[] = $map->getPkValue();
-        }
         $where = implode(' OR ', $where);
+
+        if (!$map->isNew()) {
+            $exclude_self = $map::getTableName().'.' .$map::getPrimaryKeyField() .' != ?';
+            $params[] = $map->getPkValue();
+            $where = "($where) AND $exclude_self";
+        }
 
         $fields = array_keys($str);
 
