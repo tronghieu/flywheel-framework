@@ -99,6 +99,10 @@ abstract class Web extends BaseController
         if ($absolute === null)
         {
             $defaultAbsolute = ConfigHandler::get('use_absolute_url');
+            if (!$defaultAbsolute)
+            {
+                $defaultAbsolute = true;
+            }
             $absolute = $defaultAbsolute;
         }
         return Factory::getRouter()->createUrl($route, $params, $ampersand, $absolute);
