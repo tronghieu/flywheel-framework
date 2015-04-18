@@ -102,6 +102,7 @@ abstract class Web extends BaseController
             if ($defaultAbsolute === null)
             {
                 $defaultAbsolute = true;
+
             }
             $absolute = $defaultAbsolute;
         }
