@@ -150,4 +150,13 @@ class WebRequest extends Request
         if (true == $end)
             Base::end();
     }
+
+    /**
+     * get browser request agent
+     *
+     * @return string
+     */
+    public static function getBrowserAgent() {
+        return (isset($_SERVER['HTTP_USER_AGENT']))? $_SERVER['HTTP_USER_AGENT'] : 'UNKNOWN';
+    }
 }
