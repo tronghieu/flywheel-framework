@@ -99,7 +99,7 @@ abstract class Web extends BaseController
         if ($absolute === null)
         {
             $defaultAbsolute = ConfigHandler::get('use_absolute_url');
-            if (!$defaultAbsolute)
+            if ($defaultAbsolute === null)
             {
                 $defaultAbsolute = true;
             }
