@@ -95,8 +95,8 @@ abstract class Web extends BaseController
      * @param string $ampersand
      * @return mixed
      */
-    public function createUrl($route, $params = array(), $ampersand = '&', $absolute = null) {
-        if ($absolute === null)
+    public function createUrl($route, $params = array(), $ampersand = '&', $absolute = true) {
+        /*if ($absolute === null)
         {
             $defaultAbsolute = ConfigHandler::get('use_absolute_url');
             if ($defaultAbsolute === null)
@@ -105,7 +105,7 @@ abstract class Web extends BaseController
 
             }
             $absolute = $defaultAbsolute;
-        }
+        }*/
         return Factory::getRouter()->createUrl($route, $params, $ampersand, $absolute);
     }
 
