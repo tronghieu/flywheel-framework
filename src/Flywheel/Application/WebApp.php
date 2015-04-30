@@ -21,7 +21,7 @@ class WebApp extends BaseApp
     protected function _init() {
         parent::_init();
         ini_set('display_errors',
-            (ConfigHandler::get('debug') || (Base::ENV_DEV == Base::getEnv()))
+            (Base::ENV_DEV == Base::getEnv() || Base::ENV_TEST == Base::getEnv())
                 ? 'on' : 'off');
 
         if (Base::getEnv() == Base::ENV_DEV)

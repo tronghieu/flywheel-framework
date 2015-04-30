@@ -39,7 +39,9 @@ class ApiApp extends BaseApp
     }
 
     protected function _init() {
-        ini_set('display_errors', (ConfigHandler::get('debug') || Base::getEnv() == Base::ENV_DEV)? 'on' : 'off');
+        ini_set('display_errors',
+            (Base::ENV_DEV == Base::getEnv() || Base::ENV_TEST == Base::getEnv())
+                ? 'on' : 'off');
 
         //Error reporting
         if (Base::getEnv() == Base::ENV_DEV) {

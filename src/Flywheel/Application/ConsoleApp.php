@@ -46,7 +46,9 @@ class ConsoleApp extends BaseApp
      */
     protected function _init() {
         define('TASK_DIR', APP_PATH .'/');
-        ini_set('display_errors', ConfigHandler::get('debug')? 'on' : 'off');
+        ini_set('display_errors',
+            (Base::ENV_DEV == Base::getEnv() || Base::ENV_TEST == Base::getEnv())
+                ? 'on' : 'off');
         //Error reporting
         if (Base::getEnv() == Base::ENV_DEV) {
             error_reporting(E_ALL);
