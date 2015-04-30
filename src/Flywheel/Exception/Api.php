@@ -1,10 +1,11 @@
 <?php
 namespace Flywheel\Exception;
 use Flywheel\Base;
+use Flywheel\Exception;
 
-class Api extends \Flywheel\Exception {
+class Api extends Exception {
     /**
-     * @param \Exception $e
+     * @param Exception $e
      */
     public static function printExceptionInfo($e) {
         while (ob_get_level()) {
@@ -19,7 +20,7 @@ class Api extends \Flywheel\Exception {
                 $code = '500';
             }
 
-            if ($e instanceof \CoreApi\Exception) {
+            if ($e instanceof Exception) {
                 $code = '400';
             }
 
@@ -28,7 +29,7 @@ class Api extends \Flywheel\Exception {
             header("HTTP/1.1 $code $headMsg");
         }
 
-        if (($e instanceof \CoreApi\Exception) || ($e instanceof \Flywheel\Exception\Api)) {
+        if (($e instanceof \Exception) || ($e instanceof \Flywheel\Exception\Api)) {
             $response = self::_responseError($e);
             $format = \Flywheel\Factory::getRouter()->getFormat();
             switch ($format) {
