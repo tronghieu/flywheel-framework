@@ -96,6 +96,14 @@ class FileHandler implements IHandler {
         }
 
         $filename = $this->_file_prefix. date('Y-m-d') .'-' .$id .$this->_file_ext;
-        @file_put_contents($path.DIRECTORY_SEPARATOR.$filename, $content, FILE_APPEND);
+        $file = $path .DIRECTORY_SEPARATOR .$filename;
+        if (!file_exists($file)) {
+            touch($file); // Create blank file
+            chmod($file, 0777);
+        }
+
+        $stream = fopen($file, 'a');
+        fwrite($stream, $content);
+        fclose($stream);
     }
 }
