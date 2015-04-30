@@ -4,7 +4,7 @@ namespace Flywheel\Debug;
 use Flywheel\Util\Folder;
 
 class FileHandler implements IHandler {
-    protected $_path;
+    public $path;
     protected $_file_prefix = 'profile.';
     protected $_file_ext = '.log';
 
@@ -54,7 +54,7 @@ class FileHandler implements IHandler {
 
         $content .="\n************END PROFILE**********\n";
 
-        $this->_writeFile($this->_path, $content);
+        $this->_writeFile($this->path, $content);
     }
 
     /**
