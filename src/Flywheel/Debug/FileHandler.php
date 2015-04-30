@@ -85,10 +85,6 @@ class FileHandler implements IHandler {
     }
 
     protected function _writeFile($path, $content) {
-        if (!$path) {
-            return;
-        }
-
         Folder::create($path);
 
         if(!($id = session_id())) {
