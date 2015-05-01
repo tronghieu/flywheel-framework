@@ -126,11 +126,12 @@ class Session extends Object
         if (isset($this->_config['cookie_ttl'])
             || isset($this->_config['cookie_domain']) || isset($this->_config['cookie_path'])
         ) {
+            //LuuHieu: since May 2015 remove default share cookie sub domain
             // cross subdomain validity is default behavior
             $ttl = (isset($this->_config['cookie_ttl'])) ?
                 (int)$this->_config['cookie_ttl'] : 0;
             $domain = (isset($this->_config['cookie_domain'])) ?
-                $this->_config['cookie_domain'] : '.' . Factory::getRouter()->getDomain();
+                $this->_config['cookie_domain'] : Factory::getRouter()->getDomain();
             $path = (isset($this->_config['cookie_path'])) ?
                 '/' . trim($this->_config['cookie_path'], '/') . '/' : '/';
             session_set_cookie_params($ttl, $path, $domain);
