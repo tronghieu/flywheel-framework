@@ -187,14 +187,12 @@ class Math {
 
 
     protected function _store($result) {
-        $data = array(
+        $data = [
             'captcha' => $result,
-            'live_time' => time() + $this->timeout);
-        /*$_SESSION[md5(self::$id)] = array(
-            'captcha' => $result,
-            'live_time' => time() + $this->timeout);*/
+            'live_time' => time() + $this->timeout];
 
-        setcookie(md5(self::$id), json_encode($data), time()+$this->timeout);
+        $_SESSION[md5(self::$id)] = $data;
+        //setcookie(md5(self::$id), json_encode($data), time()+$this->timeout);
     }
 
     protected function _calculateResult() {
@@ -598,8 +596,8 @@ class Math {
      * @return bool
      */
     public static function getStoredCaptcha($id) {
-//        return isset($_SESSION[md5($id)])? $_SESSION[md5($id)]: false;
-        return isset($_COOKIE[md5($id)])? json_decode($_COOKIE[md5($id)], true) : false;
+        return isset($_SESSION[md5($id)])? $_SESSION[md5($id)]: false;
+//        return isset($_COOKIE[md5($id)])? json_decode($_COOKIE[md5($id)], true) : false;
     }
 
     /**
