@@ -638,7 +638,7 @@ class Math {
         }
 
         //clear session
-        unset($_SESSION[$id]);
+        unset($_SESSION[md5($id)]);
 
         return $input == $data['captcha'];
     }
