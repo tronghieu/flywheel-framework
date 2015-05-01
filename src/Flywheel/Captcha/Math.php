@@ -155,7 +155,7 @@ class Math {
     protected $_fontRatio;
 
     public function __construct($options = array()) {
-        if (isset($options['id'])) {
+        if (isset($options['id']) && $options['id'] != '') {
             $this->_private_id = $options['id'];
             unset($options['id']);
         } else {
@@ -636,6 +636,9 @@ class Math {
         if (time() > $data['live_time']) {
             return false;
         }
+
+        //clear session
+        unset($_SESSION[$id]);
 
         return $input == $data['captcha'];
     }
