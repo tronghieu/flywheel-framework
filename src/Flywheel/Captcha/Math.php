@@ -14,6 +14,8 @@ use Flywheel\Session\Session;
 class Math {
     public static $id = 'Mathematics captcha';
 
+    protected $_private_id;
+
     /**
      * The TTF font file to use to draw the captcha code.
      *
@@ -153,6 +155,13 @@ class Math {
     protected $_fontRatio;
 
     public function __construct($options = array()) {
+        if (isset($options['id'])) {
+            $this->_private_id = $options['id'];
+            unset($options['id']);
+        } else {
+            $this->_private_id = self::$id;
+        }
+
         $this->imagePath = dirname(__FILE__);
 
         if (is_array($options) && sizeof($options) > 0) {
@@ -185,13 +194,21 @@ class Math {
         Session::getInstance()->start();
     }
 
+    /**
+     * set id for this captcha
+     * in case have many form display and using same captcha code, we need identify its
+     * @param $id
+     */
+    public function setId($id) {
+        $this->_private_id = $id;
+    }
 
     protected function _store($result) {
         $data = [
             'captcha' => $result,
             'live_time' => time() + $this->timeout];
 
-        $_SESSION[md5(self::$id)] = $data;
+        $_SESSION[md5($this->_private_id)] = $data;
         //setcookie(md5(self::$id), json_encode($data), time()+$this->timeout);
     }
 
