@@ -324,7 +324,7 @@ class Session extends Object
             return null;
         }
 
-        return session_id() . '_' . $_SERVER['REMOTE_ADDR'];
+        return session_id();
     }
 
     /**
