@@ -103,7 +103,7 @@ class Session extends Object
 
     protected function _setOptions() {
         if (isset($this->_config['session_name'])) {
-            session_name(md5($this->_config['session_name']));
+            session_name($this->_config['session_name']);
         }
 
         if (isset($this->_config['session_id'])) {
