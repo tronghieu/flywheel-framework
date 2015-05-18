@@ -41,6 +41,12 @@ class Input extends Html {
 
     protected $_disabled = false;
 
+    /**
+     * readonly attr
+     * @var bool
+     */
+    protected $_readonly = false;
+
     public function __construct($name, $value, $htmlOptions = []) {
         $this->_name = $name;
         $this->_value = $value;
@@ -110,6 +116,28 @@ class Input extends Html {
     }
 
     /**
+     * Set readonly
+     *
+     * @param $b
+     * @return $this
+     */
+    public function setReadonly($b) {
+        $this->_readonly = (bool) $b;
+        return $this;
+    }
+
+    /**
+     * Set disable
+     *
+     * @param $b
+     * @return $this
+     */
+    public function setDisable($b) {
+        $this->_disabled = (bool) $b;
+        return $this;
+    }
+
+    /**
      * Disable input
      * @return $this
      */
@@ -139,7 +167,9 @@ class Input extends Html {
             $this->_htmlOptions['data-' .$data] = $value;
         }
 
-        $html = '<input ' .$this->_serializeHtmlOption($this->_htmlOptions) .(($this->_disabled)? ' disabled':'');
+        $html = '<input ' .$this->_serializeHtmlOption($this->_htmlOptions)
+            .(($this->_disabled)? ' disabled':''
+            .(($this->_readonly)? ' readonly' : ''));
 
         if ($this->_type == 'checkbox' && isset($this->_htmlOptions['checked']) && $this->_htmlOptions['checked']) {
             $html .= ' checked';
