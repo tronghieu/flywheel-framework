@@ -303,6 +303,7 @@ abstract class ActiveRecord extends Object {
             ->fetch(\PDO::FETCH_ASSOC);
         if ($data) {
             $this->hydrate($data);
+            static::addInstanceToPool($this);
             return true;
         }
         throw new Exception('Reload fail!');
