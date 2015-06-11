@@ -387,7 +387,7 @@ class Html extends BaseDoc {
                 } else {
 					$js_base_url = (isset($option['base_url']) && $option['base_url'] != null)? $option['base_url'] : $this->jsBaseUrl;
                     $js .= '<script type="text/javascript" src="'
-                        .$this->jsBaseUrl .$file .'?v=' .$jsv .'"></script>';
+                        .$js_base_url .$file .'?v=' .$jsv .'"></script>';
                 }
             }
 		}
