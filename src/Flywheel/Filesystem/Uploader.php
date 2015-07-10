@@ -9,18 +9,20 @@ use Flywheel\Util\Folder;
 class Uploader {
     protected $_filterType;
     protected $_requiredCheckMimeType = true;
-    protected $_allowedMineType = array();
-    protected $_error = array();
+    protected $_allowedMineType = [];
+    protected $_error = [];
     protected $_maxSize = 2; //2MB
     protected $_dir;
-    protected $_data = array();
+    protected $_data = [];
     protected $_encryptFileName = false;
     protected $_overwrite = false;
     protected $_ansiName = true;
     protected $_removeSpaceName = true;
     protected $_field;
+    protected $_uploadData = [];
     protected $_newName;
     protected $_fileMod = 0755;
+    protected $_multiple = false;
 
     /**
      * Constructor
@@ -177,11 +179,15 @@ class Uploader {
 
     /**
      * get Data of file after upload
+     * if upload multiple return each result in index of array
      *
      * @return array
      */
     public function getData() {
-        return $this->_data;
+        if ($this->_multiple || sizeof($this->_data) > 0) {
+            return $this->_data;
+        }
+        return $this->_data[0];
     }
 
     /**
@@ -197,33 +203,52 @@ class Uploader {
             $field = $this->_field;
         }
 
+        //re array
+        if (isset($_FILES[$field])) {
+            if (is_array($_FILES[$field]['name'])) {
+                $this->_multiple = true;
+                $this->_uploadData = self::groupingFilesData($_FILES[$field]);
+            } else {
+                $this->_uploadData = [$_FILES[$field]];
+            }
+        }
+
         if (false === $this->validate()) {
             return false;
         }
 
         $this->_dir = rtrim($this->_dir, DIRECTORY_SEPARATOR) .DIRECTORY_SEPARATOR;
-        $this->_data['file_temp'] 		= $_FILES[$field]['tmp_name'];
-        $this->_data['file_size'] 		= $_FILES[$field]['size'];
-        $this->_data['file_origin_name']= $_FILES[$field]['name'];
-        $this->_data['file_extension']	= $this->getExtension($this->_data['file_origin_name']);
 
-        $this->_data['file_name'] 		= $this->_makeFileName();
+        $result = [];
+        foreach($this->_uploadData as $data) {
+            $temp = [];
+            $temp['file_temp'] = $data['tmp_name'];
+            $temp['file_size'] = $data['size'];
+            $temp['file_origin_name'] = $data['name'];
+            $temp['file_extension']	= $this->getExtension($temp['file_origin_name']);
+            $temp['file_name'] = $this->_makeFileName();
+            $temp['file_path'] = $this->_dir .$temp['file_name'];
 
-        /*
-         * Move the file to the final destination
-         * To deal with different server configurations
-         * we'll attempt to use copy() first.  If that fails
-         * we'll use move_uploaded_file().  One of the two should
-         * reliably work in most environments
-         */
-        if (!@copy($this->_data['file_temp'], $this->_dir .$this->_data['file_name'])) {
-            if (!@move_uploaded_file($this->_data['file_temp'], $this->_dir .$this->_data['file_name'])) {
-                $this->_error[] = 'Upload fail';
-                return false;
+            /*
+             * Move the file to the final destination
+             * To deal with different server configurations
+             * we'll attempt to use copy() first.  If that fails
+             * we'll use move_uploaded_file().  One of the two should
+             * reliably work in most environments
+             */
+            if (!@copy($temp['file_temp'], $temp['file_path'])) {
+                if (!@move_uploaded_file($temp['file_temp'], $temp['file_path'])) {
+                    $this->_error[] = 'Upload fail';
+                    return false;
+                }
+
             }
-
+            @chmod($temp['file_path'], $this->_fileMod);
+            $result[] = $temp;
         }
-        @chmod($this->_dir .$this->_data['file_name'], $this->_fileMod);
+
+        $this->_data = $result;
+
         return true;
     }
 
@@ -254,16 +279,35 @@ class Uploader {
             $valid = false;
         }
 
-        if ($_FILES[$field]['error'] != 0) {
-            switch ($_FILES[$field]['error']) {
+        foreach($this->_uploadData as $data) {
+            if($this->_valid($data) && $valid) {
+                $valid = true;
+            } else {
+                $valid = false;
+            }
+        }
+
+        return $valid;
+    }
+
+    /**
+     * Valid file upload data
+     *
+     * @param $file_data
+     * @return bool
+     */
+    protected function _valid($file_data) {
+        $valid = true;
+        if ($file_data['error'] != 0) {
+            switch ($file_data['error']) {
                 case 1:
-                    $this->_error[] = 'The file is too large (server)';
+                    $this->_error[] = 'The file ' .$file_data['name'] .' is too large (server)';
                     break;
                 case 2:
-                    $this->_error[] = 'The file is too large (form)';
+                    $this->_error[] = 'The file ' .$file_data['name'] .' is too large (form)';
                     break;
                 case 3:
-                    $this->_error[] = 'The file was only partially uploaded';
+                    $this->_error[] = 'The file ' .$file_data['name'] .' was only partially uploaded';
                     break;
                 case 4:
                     $this->_error[] = 'No file was uploaded';
@@ -278,16 +322,16 @@ class Uploader {
             return false;
         }
 
-        if (true === $this->_requiredCheckMimeType) {
-            if (false === $this->checkMineType($field)) {
-                $valid = false;
-            }
+        //check file size
+        if ($file_data['size']/(1024*1024) > $this->_maxSize) {
+            $this->_error[] = 'File ' .$file_data['name'] .' size (' .$file_data['size']/(1024*1024) .') is too big (more than allowed size:' .$this->_maxSize .' Mb)';
+            $valid = false;
         }
 
-        //check file size
-        if ($_FILES[$field]['size']/(1024*1024) > $this->_maxSize) {
-            $this->_error[] = 'File size (' .$_FILES[$field]['size']/(1024*1024) .') is too big (more than allowed size:' .$this->_maxSize .' Mb)';
-            $valid = false;
+        if (true === $this->_requiredCheckMimeType) {
+            if (false === $this->checkMineType($file_data)) {
+                $valid = false;
+            }
         }
 
         return $valid;
@@ -296,10 +340,10 @@ class Uploader {
     /**
      * check mine type of file upload
      *
-     * @param $field
-     * @return boolean
+     * @param array $file_data
+     * @return bool
      */
-    public function checkMineType($field) {
+    public function checkMineType(array $file_data) {
         if (null != $this->_filterType) { //defined filter by Type
             $ext = explode(',', $this->_filterType);
             $mime = array();
@@ -311,10 +355,10 @@ class Uploader {
         } else {
             $mime = $this->_allowedMimeType;
         }
-        $ext = $this->getExtension($_FILES[$field]['name'], false);
+        $ext = $this->getExtension($file_data['name'], false);
         $expectMimeType = $this->getMimeTypeByExtension($ext, $mime);
 
-        $fileMimeType = $this->_getUploadedFileMimeType($field);
+        $fileMimeType = $this->_getUploadedFileMimeType($file_data);
 
         if (is_array($expectMimeType)) {
             if (!in_array($fileMimeType, $expectMimeType)) {
@@ -435,23 +479,43 @@ class Uploader {
     /**
      * get uploaded file's mimetype
      *
-     * @param $field
+     * @param array $file_data
      * @return mixed|null|string
      */
-    private function _getUploadedFileMimeType($field) {
+    private function _getUploadedFileMimeType($file_data) {
         if(function_exists('mime_content_type')) {
-            $mime_type = mime_content_type($_FILES[$field]['tmp_name']);
+            $mime_type = mime_content_type($file_data['tmp_name']);
             return $mime_type;
         }
 
         if(function_exists('finfo_open')) {
             $finfo = finfo_open(FILEINFO_MIME);
-            $mime_type = finfo_file($finfo, $_FILES[$field]['tmp_name']);
+            $mime_type = finfo_file($finfo, $file_data['tmp_name']);
             finfo_close($finfo);
             return $mime_type;
         }
 
         return null;
+    }
+
+    /**
+     * Grouping data form $_FILES
+     *
+     * @param $post_files
+     * @return array
+     */
+    public static function groupingFilesData($post_files) {
+        $result = array();
+        $file_count = count($post_files['name']);
+        $file_keys = array_keys($post_files);
+
+        for ($i = 0, $size = sizeof($post_files['name']); $i < $size; $i++) {
+            foreach ($file_keys as $key) {
+                $result[$i][$key] = $post_files[$key][$i];
+            }
+        }
+
+        return $result;
     }
 
     /**
