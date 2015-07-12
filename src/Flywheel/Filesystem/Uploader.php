@@ -166,6 +166,15 @@ class Uploader {
     }
 
     /**
+     * Is multiple upload files
+     *
+     * @return bool
+     */
+    public function isMultiple() {
+        return (bool) $this->_multiple;
+    }
+
+    /**
      * get original upload file name
      */
     public function getUploadFileName() {
