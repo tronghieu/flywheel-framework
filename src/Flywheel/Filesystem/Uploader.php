@@ -235,7 +235,7 @@ class Uploader {
             $temp['file_size'] = $data['size'];
             $temp['file_origin_name'] = $data['name'];
             $temp['file_extension']	= $this->getExtension($temp['file_origin_name']);
-            $temp['file_name'] = $this->_makeFileName();
+            $temp['file_name'] = $this->_makeFileName($temp['file_extension']);
             $temp['file_path'] = $this->_dir .$temp['file_name'];
 
             /*
@@ -420,17 +420,17 @@ class Uploader {
      *
      * @return string filename included extension
      */
-    protected function _makeFileName() {
+    protected function _makeFileName($ext) {
         if (true == $this->_encryptFileName) {
-            return (uniqid() .$this->_data['file_extension']);
+            return (uniqid() .$ext);
         }
 
         if (null != $this->_newName) {
             $name = Folder::cleanFileName($this->_newName);
-            $name = str_replace($this->_data['file_extension'], '', $name);
+            $name = str_replace($ext, '', $name);
         } else {
             $name = Folder::cleanFileName($this->_data['file_origin_name']);
-            $name = str_replace($this->_data['file_extension'], '', $name);
+            $name = str_replace($ext, '', $name);
         }
 
         if (false !== $this->_ansiName) {
@@ -442,16 +442,16 @@ class Uploader {
         }
 
         if (true !== $this->_overwrite
-            && (file_exists($this->_dir .$name .$this->_data['file_extension']))) {
+            && (file_exists($this->_dir .$name .$ext))) {
             $i = 1;
             do {
                 $_t = $name .'(' .$i .')';
                 ++$i;
-            } while (file_exists($this->_dir .$_t .$this->_data['file_extension']));
+            } while (file_exists($this->_dir .$_t .$ext));
             $name = $_t;
         }
 
-        return $name .$this->_data['file_extension'];
+        return $name .$ext;
     }
 
     /**
