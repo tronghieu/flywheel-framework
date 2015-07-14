@@ -193,10 +193,10 @@ class Uploader {
      * @return array
      */
     public function getData() {
-        if ($this->_multiple || sizeof($this->_data) > 0) {
+        if ($this->_multiple) {
             return $this->_data;
         }
-        return $this->_data[0];
+        return isset($this->_data[0])? $this->_data[0] : [];
     }
 
     /**
