@@ -38,7 +38,7 @@ class Util
      * @return int
      */
     public static function isValidUsername($name){
-        return preg_match("/^[A-Za-z0-9_-]{3,16}$/",$name);
+        return preg_match("/^[A-Za-z0-9_]{3,16}$/",$name);
     }
 
     /**
