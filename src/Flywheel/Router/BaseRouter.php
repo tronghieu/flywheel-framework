@@ -25,7 +25,7 @@ abstract class BaseRouter extends Object {
      * init load config and parse URL
      */
     public function init($config = null) {
-        $this->$_config = $config;
+        $this->_config = $config;
 
         $this->_url = $this->getPathInfo();
         $this->_domain = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on')? 'https://':'http://') .@$_SERVER['HTTP_HOST'];
