@@ -40,8 +40,8 @@ class WebRouter extends BaseRouter {
         unset($routes['__remap__']);
 
         if($routes and !empty($routes)){
-            foreach ($routes as $pattern => $config){
-                $this->addCollection(new Collection($config, $pattern));
+            foreach ($routes as $pattern => $entry){
+                $this->addCollection(new Collection($entry, $pattern));
             }
         }
 
