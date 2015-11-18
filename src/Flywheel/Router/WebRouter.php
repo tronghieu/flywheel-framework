@@ -231,7 +231,14 @@ class WebRouter extends BaseRouter {
      */
     public function parseUrl($url) {
         $this->dispatch('onBeginWebRouterParsingUrl', new Event($this));
-        $config = ConfigHandler::get('routing');
+
+        // we could use $config in cache when we init router instead of reloading from ConfigHandler
+        if ($this->_config) {
+            $config = $this->_config;
+        }
+        else {
+            $config = ConfigHandler::get('routing');
+        }
         $rawUrl = $url;
 
         $url = $this->removeUrlSuffix($url, isset($config['__urlSuffix__'])? $config['__urlSuffix__']: null);

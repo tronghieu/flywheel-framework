@@ -6,7 +6,7 @@ use Flywheel\Object;
 abstract class BaseRouter extends Object {
     public static $methods = array('GET', 'POST', 'PUT', 'DELETE', 'HEAD');
 
-    public $config;
+    protected $_config;
     protected $_params = array();
     protected $_routes = array();
     protected $_domain;
@@ -25,6 +25,8 @@ abstract class BaseRouter extends Object {
      * init load config and parse URL
      */
     public function init($config = null) {
+        $this->$_config = $config;
+
         $this->_url = $this->getPathInfo();
         $this->_domain = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on')? 'https://':'http://') .@$_SERVER['HTTP_HOST'];
         $this->_baseUrl = $this->_domain .str_replace('index.php', '', $_SERVER['SCRIPT_NAME']);
