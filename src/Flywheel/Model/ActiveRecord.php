@@ -364,6 +364,18 @@ abstract class ActiveRecord extends Object {
     }
 
     protected function _afterSave() {
+        //if any field is expression then we should reload model after save
+        $need_reload = false;
+        foreach ($this->_data as $k=>$v) {
+            if ($v instanceof \Flywheel\Db\Expression) {
+                $need_reload = true;
+            }
+        }
+
+        if ($need_reload) {
+            $this->reload();
+        }
+
         return $this->getPrivateEventDispatcher()->dispatch('onAfterSave', new Event($this));
     }
 
