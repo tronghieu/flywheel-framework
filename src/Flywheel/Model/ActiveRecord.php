@@ -342,19 +342,37 @@ abstract class ActiveRecord extends Object {
      * @return null|string
      */
     public function getValidationFailuresMessage($sep = "<br>") {
-        $r = '';
+        return implode($sep, $this->getArrayValidationFailuresMessage());
+    }
+
+    /**
+     * Get validation failures's message in array
+     * @return null|string
+     */
+    public function getArrayValidationFailuresMessage() {
+        $r = [];
         if (!empty($this->_validationFailures)) {
             for ($i = 0, $size = sizeof($this->_validationFailures); $i < $size; ++$i) {
-                $r .= $this->_validationFailures[$i]->getMessage() .$sep;
+                $r[] = $this->_validationFailures[$i]->getMessage();
             }
         }
         return $r;
     }
 
+    /**
+     * Before save action
+     *
+     * @return Event
+     */
     public function beforeSave() {
         return $this->_beforeSave();
     }
 
+    /**
+     * Before save action protected access
+     *
+     * @return Event
+     */
     protected function _beforeSave() {
         return $this->getPrivateEventDispatcher()->dispatch('onBeforeSave', new Event($this));
     }
@@ -408,18 +426,37 @@ abstract class ActiveRecord extends Object {
         $this->_new = (boolean) $isNew;
     }
 
+    /**
+     * Get list of modified columns
+     * @return array
+     */
     public function getModifiedCols() {
         return array_keys($this->_modifiedCols);
     }
 
+    /**
+     * check columns is modified
+     * @param $col
+     * @return bool
+     */
     public function isColumnModified($col) {
         return isset($this->_modifiedCols[$col]);
     }
 
+    /**
+     * check object model has column modified
+     * @return bool
+     */
     public function hasColumnsModified() {
         return (bool) sizeof($this->_modifiedCols);
     }
 
+    /**
+     * Check column allow null or not
+     *
+     * @param $col
+     * @return mixed
+     */
     public function isNotNull($col) {
         return static::$_schema[$col]['not_null'];
     }
