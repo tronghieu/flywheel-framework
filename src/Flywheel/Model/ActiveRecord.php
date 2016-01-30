@@ -56,6 +56,11 @@ abstract class ActiveRecord extends Object {
     protected $_validationFailures = array();
     protected $_valid = false;
 
+    /**
+     * @var bool
+     */
+    protected $_reload_after_save = false;
+
     public function __construct($data = null, $isNew = true) {
         $this->setTableDefinition();
         $this->_initDataValue();
@@ -382,18 +387,6 @@ abstract class ActiveRecord extends Object {
     }
 
     protected function _afterSave() {
-        //if any field is expression then we should reload model after save
-        $need_reload = false;
-        foreach ($this->_data as $k=>$v) {
-            if ($v instanceof \Flywheel\Db\Expression) {
-                $need_reload = true;
-            }
-        }
-
-        if ($need_reload) {
-            $this->reload();
-        }
-
         return $this->getPrivateEventDispatcher()->dispatch('onAfterSave', new Event($this));
     }
 
@@ -683,6 +676,8 @@ abstract class ActiveRecord extends Object {
             return false;
         }
 
+        $reload = false;
+
         $data = $this->getAttributes($this->getModifiedCols());
         foreach($data as $c => &$v) {
             if (is_array($v)) {
@@ -691,6 +686,11 @@ abstract class ActiveRecord extends Object {
                 $v = $v->toString();
             } else {
                 $v = $this->fixData($v, static::$_schema[$c]);
+            }
+
+            //if any field is expression then we should reload model after save
+            if ($v instanceof \Flywheel\Db\Expression) {
+                $reload = true;
             }
         }
 
@@ -706,6 +706,10 @@ abstract class ActiveRecord extends Object {
             } else {
                 $db->update(static::getTableName(), $data, array(static::getPrimaryKeyField() => $this->getPkValue()), $data_bind);
             }
+        }
+
+        if ($reload) {
+            $this->reload();
         }
 
         $this->resetModifiedCols();
