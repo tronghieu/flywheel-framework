@@ -788,6 +788,12 @@ abstract class ActiveRecord extends Object {
     abstract public function save($validate = true);
     abstract public function delete();
 
+    /**
+     * Validate object model data follow validation rules
+     *
+     * @return bool
+     * @throws Exception
+     */
     public function validate() {
         $this->clearErrors();
         $this->_beforeValidate();
