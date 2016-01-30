@@ -689,7 +689,7 @@ abstract class ActiveRecord extends Object {
             }
 
             //if any field is expression then we should reload model after save
-            if ($v instanceof \Flywheel\Db\Expression) {
+            if ($v instanceof Expression) {
                 $reload = true;
             }
         }
