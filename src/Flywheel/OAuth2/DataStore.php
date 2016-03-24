@@ -79,4 +79,22 @@ abstract class DataStore {
      * @return IAccessToken
      */
     public abstract function getAccessToken($token);
+
+    /**
+     * (Optional) insert nonce (and mark it as used)
+     * @param $nonce
+     * @return bool
+     */
+    public function insertNonce($nonce) {
+        return true;
+    }
+
+    /**
+     * (Optional) look up if nonce existed
+     * @param $nonce
+     * @return bool
+     */
+    public function lookupNonce($nonce) {
+        return false;
+    }
 } 

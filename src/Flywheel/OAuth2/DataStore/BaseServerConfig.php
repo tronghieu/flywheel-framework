@@ -35,4 +35,8 @@ abstract class BaseServerConfig {
     const RESPONSE_TYPE_PARAM = 'grant_type';
     const FAILURE_REDIRECT_URI_PARAM = 'failure_redirect_uri';
     const TOKEN_BEARER_KEY = 'token_bearer_key';
+
+    const HTTP_ALLOWED = 'http_allowed';
+    const CHECK_NONCE = 'check_nonce';
+
 } 
