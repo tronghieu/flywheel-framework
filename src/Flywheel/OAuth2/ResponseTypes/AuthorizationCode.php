@@ -8,19 +8,45 @@
 
 namespace Flywheel\OAuth2\ResponseTypes;
 
+use Flywheel\OAuth2\DataStore\BaseServerConfig;
+use Flywheel\OAuth2\Server;
+
 class AuthorizationCode implements IResponseType {
-    public function getAuthorizeResponse($params, $user_id = null)
+    /**
+     * @param Server $server
+     * @param $params
+     * @param null $user_id
+     * @return array
+     */
+    public function getAuthorizeResponse($server, $params, $user_id = null)
     {
         $result = array('query' => array());
         $params += array('scope' => null, 'state' => null);
-        $result['query']['code'] = $this->createAuthorizationCode($params['client_id'], $user_id, $params['redirect_uri'], $params['scope']);
+        $result['query']['code'] = $this->createAuthorizationCode(
+            $server, $user_id,
+            $params[$server->getConfig(BaseServerConfig::CLIENT_ID_PARAM,'client_id')],
+            $params[$server->getConfig(BaseServerConfig::REDIRECT_URI_PARAM,'redirect_uri')],
+            $params[$server->getConfig(BaseServerConfig::SCOPES_PARAM, 'scope')]);
         /*if (isset($params['state'])) {
             $result['query']['state'] = $params['state'];
         }*/
         return array($params['redirect_uri'], $result);
     }
 
-    public function createAuthorizationCode() {
-        return 'todo'; //TODO: create AuthorizationCode
+    /**
+     * @param Server $server
+     * @param $user_id
+     * @param $client_id
+     * @param $redirect_uri
+     * @param $scope
+     * @return string
+     */
+    public function createAuthorizationCode($server, $user_id, $client_id, $redirect_uri, $scope) {
+        return $server->getDataStore()->createAuthorizeCode(
+            $user_id,
+            $client_id,
+            $scope,
+            $redirect_uri
+        );
     }
 }

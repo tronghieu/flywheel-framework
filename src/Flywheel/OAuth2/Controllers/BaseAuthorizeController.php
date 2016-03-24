@@ -8,18 +8,32 @@
 namespace Flywheel\OAuth2\Controllers;
 
 use Flywheel\OAuth2\DataStore\BaseServerConfig;
+use Flywheel\OAuth2\Server;
+use Flywheel\OAuth2\Storage\IClient;
 
 abstract class BaseAuthorizeController extends OAuth2Controller {
-    public function handleAuthorizeRequest() {
-        if ($this->isUserAuthenticated()) {
-            $this->redirectLogin();
+    /** @var Server */
+    private $_server;
+
+    /**
+     * Handle authorize request and redirect to corresponding page
+     * We could handle THE request because user accepted must be posted to the same url
+     * and we need to know if user accepted or not
+     * @param $is_authorized
+     * @throws \InvalidArgumentException
+     * @throws \Exception
+     */
+    public function handleAuthorizeRequest($is_authorized) {
+        if (!is_bool($is_authorized)) {
+            throw new \InvalidArgumentException('Argument "is_authorized" must be a boolean.  This method must know if the user has granted access to the client.');
         }
 
         $server = $this->getOAuthServer();
+        $this->_server = $server;
 
         $client_id = $this->get($server->getConfig(BaseServerConfig::CLIENT_ID_PARAM, 'client_id'));
-        $scopes = $this->get($server->getConfig(BaseServerConfig::SCOPES_PARAM, 'scopes'));
-        $redirect_uri = $this->get($server->getConfig(BaseServerConfig::REDIRECT_URI_PARAM, 'scopes'));
+        $scopes = $this->get($server->getConfig(BaseServerConfig::SCOPES_PARAM, 'scope'));
+        $redirect_uri = $this->get($server->getConfig(BaseServerConfig::REDIRECT_URI_PARAM, 'redirect_uri'));
         $response_type = $this->get($server->getConfig(BaseServerConfig::RESPONSE_TYPE_PARAM, 'response_type'));
 
         $response_types = $server->getResponseTypes();
@@ -39,22 +53,30 @@ abstract class BaseAuthorizeController extends OAuth2Controller {
             return;
         }
 
+        $client = $server->getClient($client_id);
+
         if (!empty($redirect_uri)) {
             if (!$server->isValidRedirectUri($client_id, $redirect_uri)) {
                 $this->response()->setStatusCode(400, 'Invalid redirect uri');
                 return;
             }
         }
-        //TODO: If no redirect_uri is passed in the request, use client's registered one
 
-        //TODO: the user declined access to the client's application
-
-        if (!$params = $this->buildAuthorizeParameters($this->request(), $this->response(), $this->getUserId())) {
+        if (!$is_authorized) {
+            $this->setNotAuthorizedResponse($client);
             return;
         }
 
-        $authResult = $response_types[$response_type]->getAuthorizeResponse($params, $this->getUserId());
+        if (!$params = $this->buildAuthorizeParameters($this->request(), $this->response(), $this->getUserId())) {
+            throw new \Exception('Authorize Parameters could not be built');
+        }
+
+        $authResult = $response_types[$response_type]->getAuthorizeResponse($server, $params, $this->getUserId());
         list($redirect_uri, $uri_params) = $authResult;
+
+        if (empty($redirect_uri)) {
+            $redirect_uri = $client->getAuthorizeRedirectUri();
+        }
 
         $uri = $this->buildUri($redirect_uri, $uri_params);
 
@@ -62,50 +84,40 @@ abstract class BaseAuthorizeController extends OAuth2Controller {
         return;
     }
 
-    /*
-     * We have made this protected so this class can be extended to add/modify
-     * these parameters
+    /**
+     * Build authorize parameter
+     * @param $request
+     * @param $response
+     * @param $user_id
+     * @return array
      */
     protected function buildAuthorizeParameters($request, $response, $user_id)
     {
-        // @TODO: we should be explicit with this in the future
         $params = array(
-            /*'scope'         => $this->scope,
-            'state'         => $this->state,
-            'client_id'     => $this->client_id,
-            'redirect_uri'  => $this->redirect_uri,
-            'response_type' => $this->response_type,*/
+            $this->_server->getConfig(BaseServerConfig::SCOPES_PARAM,'scope')
+            => $this->get($this->_server->getConfig(BaseServerConfig::SCOPES_PARAM, 'scope')),
+            //'state'         => '', (we will use this in later time
+            $this->_server->getConfig(BaseServerConfig::CLIENT_ID_PARAM,'client_id')
+            => $this->get($this->_server->getConfig(BaseServerConfig::CLIENT_ID_PARAM, 'client_id')),
+            $this->_server->getConfig(BaseServerConfig::REDIRECT_URI_PARAM,'redirect_uri')
+            => $this->get($this->_server->getConfig(BaseServerConfig::REDIRECT_URI_PARAM, 'redirect_uri')),
+            $this->_server->getConfig(BaseServerConfig::RESPONSE_TYPE_PARAM,'response_type')
+            => $this->get($this->_server->getConfig(BaseServerConfig::RESPONSE_TYPE_PARAM, 'response_type')),
         );
         return $params;
     }
 
     /**
-     * Build final url from redirect_uri and params
-     * @param $uri
-     * @param $params
-     * @return string
+     * Set response to not authorized and redirect
+     * @param IClient $client
      */
-    private function buildUri($uri, $params)
-    {
-        $parse_url = parse_url($uri);
-        // Add our params to the parsed uri
-        foreach ($params as $k => $v) {
-            if (isset($parse_url[$k])) {
-                $parse_url[$k] .= "&" . http_build_query($v, '', '&');
-            } else {
-                $parse_url[$k] = http_build_query($v, '', '&');
-            }
+    protected function setNotAuthorizedResponse(IClient $client) {
+        $uri = $this->get($this->_server->getConfig(BaseServerConfig::FAILURE_REDIRECT_URI_PARAM, 'failure_redirect_uri'));
+
+        if (empty($uri)) {
+            $uri = $client->getNotAuthorizedRedirectUri();
         }
-        // Put humpty dumpty back together
-        return
-            ((isset($parse_url["scheme"])) ? $parse_url["scheme"] . "://" : "")
-            . ((isset($parse_url["user"])) ? $parse_url["user"]
-                . ((isset($parse_url["pass"])) ? ":" . $parse_url["pass"] : "") . "@" : "")
-            . ((isset($parse_url["host"])) ? $parse_url["host"] : "")
-            . ((isset($parse_url["port"])) ? ":" . $parse_url["port"] : "")
-            . ((isset($parse_url["path"])) ? $parse_url["path"] : "")
-            . ((isset($parse_url["query"]) && !empty($parse_url['query'])) ? "?" . $parse_url["query"] : "")
-            . ((isset($parse_url["fragment"])) ? "#" . $parse_url["fragment"] : "")
-            ;
+
+        $this->redirect($uri);
     }
 }

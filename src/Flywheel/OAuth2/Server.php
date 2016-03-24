@@ -10,17 +10,19 @@ namespace Flywheel\OAuth2;
 use Flywheel\OAuth2\DataStore\BaseServerConfig;
 use Flywheel\OAuth2\GrantTypes\IGrantType;
 use Flywheel\OAuth2\ResponseTypes\IResponseType;
+use Flywheel\OAuth2\Storage\IClient;
 
 /**
  * Class Server; create this object to maintain everything of OAuth2 frameworks
  * @package Flywheel\OAuth2
  */
 class Server {
-    private $configHandler;
-    private $dataStore;
-    private $grantTypes;
-    private $configValues = [];
-    private $responseTypes;
+    private $_configHandler;
+    private $_dataStore;
+    private $_grantTypes;
+    private $_configValues = [];
+    private $_responseTypes;
+    private $_clients =[];
 
     /**
      * Hold every config ever needed for an OAuth2 server
@@ -28,8 +30,8 @@ class Server {
      * @param DataStore $dataStore
      */
     public function __construct(BaseServerConfig $config, DataStore $dataStore) {
-        $this->configHandler = $config;
-        $this->$dataStore = $dataStore;
+        $this->_configHandler = $config;
+        $this->$_dataStore = $dataStore;
     }
 
     /**
@@ -38,15 +40,15 @@ class Server {
      * @return mixed
      */
     public function getConfig($key, $default) {
-        if (!isset($this->configValues[$key])) {
-            $value = $this->configHandler->get($key);
+        if (!isset($this->_configValues[$key])) {
+            $value = $this->_configHandler->get($key);
             if ($value === null) {
-                $this->configValues[$key] = $default;
+                $this->_configValues[$key] = $default;
             }
-            $this->configValues[$key] = $value;
+            $this->_configValues[$key] = $value;
         }
 
-        return $this->configValues[$key];
+        return $this->_configValues[$key];
     }
 
     /**
@@ -55,7 +57,7 @@ class Server {
      * @return bool
      */
     public function isValidClient($client_id) {
-        return $this->dataStore->getClientRepository()->isValidClient($client_id);
+        return $this->_dataStore->isValidClient($client_id);
     }
 
     /**
@@ -66,9 +68,9 @@ class Server {
      */
     public function isValidScope($scope, $client_id = 0) {
         if (!$client_id) {
-            return $this->dataStore->getScopeRepository()->isValidScope($scope);
+            return $this->_dataStore->isValidScope($scope);
         }
-        $client = $this->dataStore->getClientRepository()->getClientById($client_id);
+        $client = $this->getClient($client_id);
         return $client->hasScope($scope);
     }
 
@@ -78,7 +80,7 @@ class Server {
      * @return bool
      */
     public function isValidRedirectUri($client_id, $uri) {
-        $client = $this->dataStore->getClientRepository()->getClientById($client_id);
+        $client = $this->getClient($client_id);
         return $client->isValidUri($uri);
     }
 
@@ -87,19 +89,39 @@ class Server {
      * @return IGrantType[]
      */
     public function getGrantTypes() {
-        if (!is_array($this->grantTypes)) {
-            $this->grantTypes = $this->configHandler->getGrantTypes();
+        if (!is_array($this->_grantTypes)) {
+            $this->_grantTypes = $this->_configHandler->getGrantTypes();
         }
-        return $this->grantTypes;
+        return $this->_grantTypes;
     }
 
     /**
      * @return IResponseType[]
      */
     public function getResponseTypes() {
-        if (!is_array($this->responseTypes)) {
-            $this->responseTypes = $this->configHandler->getGrantTypes();
+        if (!is_array($this->_responseTypes)) {
+            $this->_responseTypes = $this->_configHandler->getGrantTypes();
         }
-        return $this->responseTypes;
+        return $this->_responseTypes;
+    }
+
+    /**
+     * @return DataStore
+     */
+    public function getDataStore() {
+        return $this->_dataStore;
+    }
+
+    /**
+     * @param $client_id
+     * @return IClient
+     */
+    public function getClient($client_id) {
+        if (!isset($this->_clients[$client_id])) {
+            $client = $this->_dataStore->getClientById($client_id);
+            $this->_clients[$client_id] = $client;
+        }
+
+        return $this->_clients[$client_id];
     }
 } 

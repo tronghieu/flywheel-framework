@@ -13,6 +13,7 @@ use Flywheel\Http\WebResponse;
 use Flywheel\OAuth2\Request;
 use Flywheel\OAuth2\Responses\IResponse;
 use Flywheel\OAuth2\Storage\IAccessToken;
+use Flywheel\OAuth2\Storage\IClient;
 
 /**
  * Interface IGrantType interface for all grant types
@@ -53,11 +54,10 @@ interface IGrantType {
 
     /**
      * Create access token for client in scope of user
-     * @param IAccessToken $accessToken
      * @param $client_id
      * @param $user_id
      * @param $scope
-     * @return mixed
+     * @return IAccessToken
      */
-    public function createAccessToken(IAccessToken $accessToken, $client_id, $user_id, $scope);
+    public function createAccessToken($client_id, $user_id, $scope);
 } 

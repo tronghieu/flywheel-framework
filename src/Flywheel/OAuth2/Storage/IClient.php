@@ -21,4 +21,35 @@ interface IClient {
      * @return bool
      */
     function isValidUri($uri);
+
+    /**
+     * default url to redirect to if user authorize client access
+     * @return string
+     */
+    function getAuthorizeRedirectUri();
+
+    /**
+     * default url to redirect to if user do not authorize client access
+     * @return string
+     */
+    function getNotAuthorizedRedirectUri();
+
+    /**
+     * Check if this client is allowed to use this grant type or not
+     * @param $grant_type_code
+     * @return bool
+     */
+    function hasGrantType($grant_type_code);
+
+    /**
+     * @param $grant_type_code
+     * @param $scope
+     * @return bool
+     */
+    function hasScopeInGrantType($grant_type_code, $scope);
+
+    /**
+     * @return mixed
+     */
+    function getDefaultScope();
 } 

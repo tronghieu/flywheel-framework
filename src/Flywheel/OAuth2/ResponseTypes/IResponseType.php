@@ -10,5 +10,5 @@ namespace Flywheel\OAuth2\ResponseTypes;
 
 
 interface IResponseType {
-    public function getAuthorizeResponse($params, $user_id = null);
+    public function getAuthorizeResponse($server, $params, $user_id = null);
 } 

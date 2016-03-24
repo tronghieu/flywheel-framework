@@ -8,7 +8,20 @@
 
 namespace Flywheel\OAuth2\Storage;
 
-
 interface IAccessToken {
+    /**
+     * @return bool
+     */
+    function isExpired();
 
+    /**
+     * @return bool
+     */
+    function isValidToken();
+
+    /**
+     * @param $scope
+     * @return bool
+     */
+    function hasScope($scope);
 } 

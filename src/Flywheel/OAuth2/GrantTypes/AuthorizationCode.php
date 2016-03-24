@@ -8,15 +8,29 @@
 
 namespace Flywheel\OAuth2\GrantTypes;
 
-use Flywheel\OAuth2\Request;
-use Flywheel\OAuth2\Responses\IResponse;
+use Flywheel\Http\WebRequest;
+use Flywheel\Http\WebResponse;
+use Flywheel\OAuth2\DataStore\BaseServerConfig;
+use Flywheel\OAuth2\DataStore;
+use Flywheel\OAuth2\Server;
 use Flywheel\OAuth2\Storage\IAccessToken;
+use Flywheel\OAuth2\Storage\IAuthorizeCode;
 
 /**
  * AuthorizationCode grant type - the default grant types and first one to implement
  * @package Flywheel\OAuth2\GrantTypes
  */
 class AuthorizationCode implements IGrantType {
+    private $_dataStore;
+    private $_config;
+
+    /** @var IAuthorizeCode */
+    private $_authCode;
+
+    public function __construct(DataStore $dataStore, BaseServerConfig $config) {
+        $this->_dataStore = $dataStore;
+        $this->_config = $config;
+    }
 
     /**
      * Name of this grant types to pass in parameter
@@ -28,23 +42,12 @@ class AuthorizationCode implements IGrantType {
     }
 
     /**
-     * Validate if request for grant type is valid or not
-     * @param Request $request
-     * @param IResponse $response
-     * @return boolean
-     */
-    public function validateRequest(Request $request, IResponse $response)
-    {
-        // TODO: Implement validateRequest() method.
-    }
-
-    /**
      * Return client ID (which client request this grant type?)
      * @return mixed
      */
     public function getClientId()
     {
-        // TODO: Implement getClientId() method.
+        return $this->_authCode ? $this->_authCode->getClientId() : null;
     }
 
     /**
@@ -53,7 +56,7 @@ class AuthorizationCode implements IGrantType {
      */
     public function getUserId()
     {
-        // TODO: Implement getUserId() method.
+        return $this->_authCode ? $this->_authCode->getUserId() : null;
     }
 
     /**
@@ -62,19 +65,74 @@ class AuthorizationCode implements IGrantType {
      */
     public function getScope()
     {
-        // TODO: Implement getScope() method.
+        return $this->_authCode ? $this->_authCode->getScope() : null;
     }
 
     /**
      * Create access token for client in scope of user
-     * @param IAccessToken $accessToken
      * @param $client_id
      * @param $user_id
      * @param $scope
-     * @return mixed
+     * @return IAccessToken
      */
-    public function createAccessToken(IAccessToken $accessToken, $client_id, $user_id, $scope)
+    public function createAccessToken($client_id, $user_id, $scope)
     {
-        // TODO: Implement createAccessToken() method.
+        $token = $this->_dataStore->createAccessToken($client_id, $user_id, $scope);
+        $this->_dataStore->expireAuthorizationCode($this->_authCode);
+
+        return $token;
+    }
+
+    /**
+     * Validate if request for grant type is valid or not
+     * @param \Flywheel\Http\WebRequest $request
+     * @param \Flywheel\Http\WebResponse $response
+     * @throws \Exception
+     * @return boolean
+     */
+    public function validateRequest(WebRequest $request, WebResponse $response)
+    {
+        if (!$request->post('code')) {
+            $response->setStatusCode(400, 'invalid request');
+            return false;
+        }
+        $code = $request->request('code');
+        if (!$authCode = $this->_dataStore->getAuthorizationCode($code)) {
+            $response->setStatusCode(400, 'invalid request');
+            //$response->setError(400, 'invalid_grant', 'Authorization code doesn\'t exist or is invalid for the client');
+            return false;
+        }
+
+        $redirect_uri = $authCode->getRedirectUri();
+        /*
+         * 4.1.3 - ensure that the "redirect_uri" parameter is present if the "redirect_uri" parameter was included in the initial authorization request
+         * @uri - http://tools.ietf.org/html/rfc6749#section-4.1.3
+         */
+        if (!empty($redirect_uri)) {
+            $requested_uri = $request->get($this->_config->get(BaseServerConfig::REDIRECT_URI_PARAM, 'redirect_uri'));
+            $requested_uri = urldecode($requested_uri);
+
+            if ($requested_uri != $redirect_uri) {
+                $response->setStatusCode(400, 'redirect_uri_mismatch');
+                return false;
+            }
+        }
+
+        $expired = $authCode->getExpiredDate();
+
+        if (!($expired instanceof \DateTime)) {
+            throw new \Exception('Storage must return authcode with a value for "expires"');
+        }
+
+        if ($expired->getTimestamp() < time()) {
+            $response->setStatusCode(400, 'expired_authorize_code');
+            return false;
+        }
+
+        /*if (!isset($authCode['code'])) {
+            $authCode['code'] = $code; // used to expire the code after the access token is granted
+        }*/
+        $this->_authCode = $authCode;
+        return true;
     }
 }
