@@ -26,7 +26,7 @@ class AuthorizationCode implements IResponseType {
             $server, $user_id,
             $params[$server->getConfig(BaseServerConfig::CLIENT_ID_PARAM,'client_id')],
             $params[$server->getConfig(BaseServerConfig::REDIRECT_URI_PARAM,'redirect_uri')],
-            $params[$server->getConfig(BaseServerConfig::SCOPES_PARAM, 'scope')]);
+            $params[$server->getConfig(BaseServerConfig::SCOPE_PARAM, 'scope')]);
         /*if (isset($params['state'])) {
             $result['query']['state'] = $params['state'];
         }*/

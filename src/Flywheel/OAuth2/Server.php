@@ -31,7 +31,7 @@ class Server {
      */
     public function __construct(BaseServerConfig $config, DataStore $dataStore) {
         $this->_configHandler = $config;
-        $this->$_dataStore = $dataStore;
+        $this->_dataStore = $dataStore;
     }
 
     /**
@@ -100,7 +100,7 @@ class Server {
      */
     public function getResponseTypes() {
         if (!is_array($this->_responseTypes)) {
-            $this->_responseTypes = $this->_configHandler->getGrantTypes();
+            $this->_responseTypes = $this->_configHandler->getResponseTypes();
         }
         return $this->_responseTypes;
     }
