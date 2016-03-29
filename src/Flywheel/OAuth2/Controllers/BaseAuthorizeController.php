@@ -97,8 +97,8 @@ abstract class BaseAuthorizeController extends OAuth2Controller {
     protected function buildAuthorizeParameters($request, $response, $user_id)
     {
         $params = array(
-            $this->_server->getConfig(BaseServerConfig::SCOPES_PARAM,'scope')
-            => $this->get($this->_server->getConfig(BaseServerConfig::SCOPES_PARAM, 'scope')),
+            $this->_server->getConfig(BaseServerConfig::SCOPE_PARAM,'scope')
+            => $this->get($this->_server->getConfig(BaseServerConfig::SCOPE_PARAM, 'scope')),
             //'state'         => '', (we will use this in later time
             $this->_server->getConfig(BaseServerConfig::CLIENT_ID_PARAM,'client_id')
             => $this->get($this->_server->getConfig(BaseServerConfig::CLIENT_ID_PARAM, 'client_id')),

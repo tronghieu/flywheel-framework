@@ -43,12 +43,10 @@ abstract class OAuth2Controller extends Web {
     {
         $parse_url = parse_url($uri);
         // Add our params to the parsed uri
-        foreach ($params as $k => $v) {
-            if (isset($parse_url[$k])) {
-                $parse_url[$k] .= "&" . http_build_query($v, '', '&');
-            } else {
-                $parse_url[$k] = http_build_query($v, '', '&');
-            }
+        if (empty($parse_url["query"])) {
+            $parse_url["query"] = http_build_query($params, '', '&');
+        } else {
+            $parse_url["query"] .= '&' . http_build_query($params, '', '&');
         }
         // Put humpty dumpty back together
         return
