@@ -33,6 +33,14 @@ class AuthorizationCode implements IGrantType {
         $this->_config = $config;
     }
 
+    public function getDataStore() {
+        return $this->_dataStore;
+    }
+
+    public function getConfig() {
+        return $this->_config;
+    }
+
     /**
      * Name of this grant types to pass in parameter
      * @return mixed

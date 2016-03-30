@@ -34,6 +34,30 @@ class Server {
         $this->_dataStore = $dataStore;
     }
 
+    public function setConfigHandler($config_handler) {
+        $this->_configHandler = $config_handler;
+    }
+
+    public function setDataStore($data_store) {
+        $this->_dataStore = $data_store;
+    }
+
+    public function setGrantTypes($grant_types) {
+        $this->_grantTypes = $grant_types;
+    }
+
+    public function setConfigValues($config_values) {
+        $this->_configValues = $config_values;
+    }
+
+    public function setResponseTypes($response_types) {
+        $this->_responseTypes = $response_types;
+    }
+
+    public function setClients($clients) {
+        $this->_clients = $clients;
+    }
+
     /**
      * @param $key
      * @param $default
