@@ -2,7 +2,7 @@
 
 namespace Flywheel\Profiler\Writer;
 
-use Flywheel\Profiler\IProfiler;
+use Flywheel\Profiler\BaseProfiler;
 
 interface IWriter
 {
@@ -10,10 +10,10 @@ interface IWriter
      * Set Writer's Profile Owner
      * Using Owner for Writer access profile's data
      *
-     * @param IProfiler $profiler
+     * @param BaseProfiler $profiler
      * @return void
      */
-    public function setOwner(IProfiler $profiler);
+    public function setOwner(BaseProfiler $profiler);
 
     /**
      * Write profile data
