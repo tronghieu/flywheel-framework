@@ -59,9 +59,9 @@ interface IProfiler
     public function tracking($label);
 
     /**
-     * Dispatch profile data
+     * Write profile data
      *
      * @return void
      */
-    public function dispatch();
+    public function writeProfileData();
 }
