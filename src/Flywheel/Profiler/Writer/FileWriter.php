@@ -27,6 +27,11 @@ class FileWriter extends BaseWriter
     protected $_valid = false;
 
     /**
+     * @var array
+     */
+    protected $_pathVariables;
+
+    /**
      * FileWriter constructor.
      *
      * @param string $file_path
@@ -36,6 +41,8 @@ class FileWriter extends BaseWriter
      */
     public function __construct($file_path = null, $file_name = null)
     {
+        $this->_initPathVariables();
+
         if ($file_path) {
             $this->setFilePath($file_path);
         }
@@ -54,6 +61,8 @@ class FileWriter extends BaseWriter
      */
     public function setFilePath($path)
     {
+        $path = $this->_parsePathVariables($path);
+
         if (is_writeable($path)) {
             $this->_filePath = $path;
             $this->_valid = true;
@@ -69,9 +78,10 @@ class FileWriter extends BaseWriter
      */
     public function setFileName($file_name)
     {
+        $file_name = $this->_parsePathVariables($file_name);
+
         $this->_fileName = $file_name;
     }
-
 
     /**
      * Write profile data
@@ -97,5 +107,48 @@ class FileWriter extends BaseWriter
         $fh = fopen($file_name, 'a');
         fwrite($fh, json_encode($data) ."\n"); // write to file (filehandle, "data")
         fclose($fh);
+    }
+
+    /**
+     * @param $name
+     * @param $value
+     *
+     * @author kiennx
+     */
+    public function addPathVariable($name, $value) {
+        $this->_pathVariables[$name] = $value;
+    }
+
+    /**
+     * Make file name and folder rotatable by parsing variables in its path
+     * @param $input
+     * @return string
+     *
+     * @author kiennx
+     */
+    private function _parsePathVariables($input) {
+        foreach ($this->_pathVariables as $key => $value) {
+            $input = str_replace($key, $value, $input);
+        }
+
+        return $input;
+    }
+
+    /**
+     * init default variables
+     *
+     * @author kiennx
+     */
+    private function _initPathVariables() {
+        //make the $file_name rotatable by parsing variables
+        $date = new \DateTime();
+        $this->_pathVariables = [
+            '%s' => $date->format('s'),
+            '%i' => $date->format('i'),
+            '%H' => $date->format('H'),
+            '%d' => $date->format('d'),
+            '%m' => $date->format('m'),
+            '%Y' => $date->format('Y'),
+        ];
     }
 }
