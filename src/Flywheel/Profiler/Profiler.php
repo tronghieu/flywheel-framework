@@ -95,7 +95,7 @@ class Profiler extends BaseProfiler
      * @return void
      * @author LuuHieu
      */
-    public function dispatch()
+    public function writeProfileData()
     {
         foreach($this->_writers as $writer) {
             $writer->write();
