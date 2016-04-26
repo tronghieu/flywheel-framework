@@ -11,6 +11,7 @@ namespace Flywheel\Profiler;
 
 use Flywheel\Event\Event;
 use Flywheel\Object;
+use Flywheel\Profiler\TrackingResource\BaseResource;
 use Flywheel\Profiler\TrackingResource\ITrackingResource;
 use Flywheel\Profiler\Writer\BaseWriter;
 use Flywheel\Profiler\Writer\IWriter;
@@ -124,8 +125,10 @@ abstract class BaseProfiler extends Object implements IProfiler
      */
     public function registerTrackingResource(ITrackingResource $trackingResource)
     {
-        $this->_trackingResources[$trackingResource->getName()] = $trackingResource;
-        $trackingResource->setOwner($this);
+        if($trackingResource instanceof BaseResource) {
+            $this->_trackingResources[$trackingResource->getName()] = $trackingResource;
+            $trackingResource->setOwner($this);
+        }
     }
 
     /**
