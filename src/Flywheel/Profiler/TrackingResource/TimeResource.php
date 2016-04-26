@@ -46,11 +46,11 @@ class TimeResource extends BaseResource
     public function mark()
     {
         $current = microtime(true) - $this->_start;
-        $mark = array(
+        $mark = [
             'microtime' => microtime(true),
             'time' => microtime(true) - $this->_start,
             'next_time' => $current - $this->_prevTime
-        );
+        ];
         $this->_prevTime = $current;
         return $mark;
     }

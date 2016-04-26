@@ -36,12 +36,12 @@ class MemoryResource extends BaseResource
     public function mark()
     {
         $currentMem = memory_get_usage() / 1048576;
-        $mark = array(
-            'memory' => $currentMem,
-            'next_memory' => $currentMem - $this->_prevMemory,
+        $mark = [
+            'memory_MB' => $currentMem,
+            'next_memory_MB' => $currentMem - $this->_prevMemory,
             'memory_get_usage'      => memory_get_usage(),
             'memory_get_peak_usage' => memory_get_peak_usage(),
-        );
+        ];
         $this->_prevMemory = $currentMem;
         return $mark;
     }
