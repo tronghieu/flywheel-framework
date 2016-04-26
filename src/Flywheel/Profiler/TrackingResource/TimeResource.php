@@ -62,7 +62,7 @@ class TimeResource extends BaseResource
      */
     public function getName()
     {
-        return __CLASS__;
+        return 'TimeResource';
     }
 
 }

@@ -63,7 +63,7 @@ class MemoryResource extends BaseResource
      */
     public function getName()
     {
-        return __CLASS__;
+        return 'MemoryResource';
     }
 
 }
