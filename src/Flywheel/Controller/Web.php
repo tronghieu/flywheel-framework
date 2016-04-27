@@ -137,6 +137,14 @@ abstract class Web extends BaseController
         return Factory::getView();
     }
 
+    /**
+     * Public the action name
+     * @return mixed
+     */
+    public function getActionName() {
+        return $this->_action;
+    }
+
     public function beforeExecute() {}
 
     /**
