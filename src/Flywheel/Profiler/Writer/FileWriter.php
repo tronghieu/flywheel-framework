@@ -96,7 +96,7 @@ class FileWriter extends BaseWriter
             return; //do nothing
         }
 
-        $file_name = rtrim($this->_filePath, '/') .$this->_fileName;
+        $file_name = rtrim($this->_filePath, DIRECTORY_SEPARATOR). DIRECTORY_SEPARATOR .$this->_fileName;
 
         $data = [
             'system_info' => $this->getOwner()->getSystemActivityInfo(),
