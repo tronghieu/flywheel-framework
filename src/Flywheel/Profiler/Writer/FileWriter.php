@@ -99,6 +99,7 @@ class FileWriter extends BaseWriter
         $file_name = rtrim($this->_filePath, DIRECTORY_SEPARATOR). DIRECTORY_SEPARATOR .$this->_fileName;
 
         $data = [
+            'time' => (new \DateTime())->format('Y-m-d H:i:s'),
             'system_info' => $this->getOwner()->getSystemActivityInfo(),
             'result' => $this->getOwner()->getResults()
         ];
