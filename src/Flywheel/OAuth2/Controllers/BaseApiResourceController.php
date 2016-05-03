@@ -11,6 +11,7 @@ namespace Flywheel\OAuth2\Controllers;
 
 use Flywheel\Controller\Api;
 use Flywheel\OAuth2\DataStore\BaseServerConfig;
+use Flywheel\OAuth2\OAuth2Exception;
 use Flywheel\OAuth2\Server;
 use Flywheel\OAuth2\Storage\IAccessToken;
 
@@ -33,25 +34,26 @@ abstract class BaseApiResourceController extends Api {
     /**
      * Get Access Token; only token authorize code bearer is supported; we'll need implement more type in the futures
      * @return IAccessToken|null
+     * @throws OAuth2Exception
      */
     public function getAccessTokenData()
     {
         if (!isset($this->_accessToken)) {
-            $access_token = $this->request()->getHttpHeader($this->getServer()->getConfig(BaseServerConfig::TOKEN_BEARER_KEY, 'flywheel_token_bearer'));
+            $access_token = $this->get("access_token");
+            if(empty($access_token)) {
+                $access_token = $this->request()->getHttpHeader($this->getServer()->getConfig(BaseServerConfig::TOKEN_BEARER_KEY, 'flywheel_token_bearer'));
+            }
 
             $accessToken = $this->getServer()->getDataStore()->getAccessToken($access_token);
 
             if (!$accessToken) {
-                $this->response()->setStatusCode(401, 'invalid token');
-                return false;
+                throw new OAuth2Exception(OAuth2Exception::INVALID_ACCESS_TOKEN);
             }
             else if (!$accessToken->isValidToken()) {
-                $this->response()->setStatusCode(401, 'invalid token');
-                return false;
+                throw new OAuth2Exception(OAuth2Exception::INVALID_ACCESS_TOKEN);
             }
             else if ($accessToken->isExpired()) {
-                $this->response()->setStatusCode(401, 'access token is expired');
-                return false;
+                throw new OAuth2Exception(OAuth2Exception::ACCESS_TOKEN_EXPIRED);
             }
 
             $this->_accessToken = $accessToken;
@@ -67,16 +69,16 @@ abstract class BaseApiResourceController extends Api {
      * - resource owner
      * @param null $scope
      * @param $failure_message
-     * @return bool
+     * @return bool|IAccessToken
+     * @throws OAuth2Exception
      */
     public function verifyResourceRequest($scope = null, &$failure_message) {
 
         $non_secured_protocol_allowed = $this->getServer()->getConfig(BaseServerConfig::HTTP_ALLOWED, false);
 
-        if ($non_secured_protocol_allowed && !$this->request()->isSecure()) {
+        if (!$non_secured_protocol_allowed && !$this->request()->isSecure()) {
             $failure_message = 'Request is not secured';
-            $this->response()->setStatusCode(401, 'invalid request');
-            return false;
+            throw new OAuth2Exception(OAuth2Exception::SECURED_REQUIRED);
         }
 
         $nonce_enabled = $this->getServer()->getConfig(BaseServerConfig::CHECK_NONCE, false);
@@ -85,26 +87,22 @@ abstract class BaseApiResourceController extends Api {
             $existed = $this->getServer()->getDataStore()->lookupNonce($nonce);
 
             if ($existed) {
-                $this->response()->setStatusCode(401, 'invalid nonce');
-                return false;
+                throw new OAuth2Exception(OAuth2Exception::NONCE_REQUIRED);
             }
         }
 
         $accessToken = $this->getAccessTokenData();
 
         if (!$accessToken) {
-            $failure_message = 'Invalid access token';
-            $this->response()->setStatusCode(401, 'invalid token');
-            return false;
+            throw new OAuth2Exception(OAuth2Exception::INVALID_ACCESS_TOKEN);
         }
 
         if ($scope) {
             if (!$accessToken->hasScope($scope)) {
-                $this->response()->setStatusCode(401, 'invalid scope');
-                return false;
+                throw new OAuth2Exception(OAuth2Exception::INVALID_SCOPE);
             }
         }
 
-        return true;
+        return $accessToken;
     }
 } 

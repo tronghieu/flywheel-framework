@@ -20,17 +20,17 @@ class AuthorizationCode implements IResponseType {
      */
     public function getAuthorizeResponse($server, $params, $user_id = null)
     {
-        $result = array('query' => array());
-        $params += array('scope' => null, 'state' => null);
-        $result['query']['code'] = $this->createAuthorizationCode(
+        //$result = array('query' => array());
+        //$params += array('scope' => null, 'state' => null);
+        $params['code'] = $this->createAuthorizationCode(
             $server, $user_id,
             $params[$server->getConfig(BaseServerConfig::CLIENT_ID_PARAM,'client_id')],
             $params[$server->getConfig(BaseServerConfig::REDIRECT_URI_PARAM,'redirect_uri')],
-            $params[$server->getConfig(BaseServerConfig::SCOPES_PARAM, 'scope')]);
+            $params[$server->getConfig(BaseServerConfig::SCOPE_PARAM, 'scope')]);
         /*if (isset($params['state'])) {
             $result['query']['state'] = $params['state'];
         }*/
-        return array($params['redirect_uri'], $result);
+        return array($params['redirect_uri'], $params);
     }
 
     /**

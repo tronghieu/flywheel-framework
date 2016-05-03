@@ -30,9 +30,10 @@ abstract class BaseServerConfig {
 
     const CLIENT_ID_PARAM = 'client_id';
     const SCOPES_PARAM = 'scope_id';
+    const SCOPE_PARAM = 'scope';
     const REDIRECT_URI_PARAM = 'redirect_uri';
     const GRANT_TYPE_PARAM = 'grant_type';
-    const RESPONSE_TYPE_PARAM = 'grant_type';
+    const RESPONSE_TYPE_PARAM = 'response_type';
     const FAILURE_REDIRECT_URI_PARAM = 'failure_redirect_uri';
     const TOKEN_BEARER_KEY = 'token_bearer_key';
 
