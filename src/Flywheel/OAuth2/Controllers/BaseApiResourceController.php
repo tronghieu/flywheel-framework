@@ -105,4 +105,14 @@ abstract class BaseApiResourceController extends Api {
 
         return $accessToken;
     }
+
+    /**
+     * Return json data in raw post or put data using assoc array
+     * @return mixed
+     */
+    public function getJson() {
+        $args = json_decode(file_get_contents('php://input'), true);
+
+        return $args;
+    }
 } 
