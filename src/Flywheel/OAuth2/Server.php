@@ -8,6 +8,7 @@
 
 namespace Flywheel\OAuth2;
 use Flywheel\OAuth2\DataStore\BaseServerConfig;
+use Flywheel\OAuth2\DataStore\IUserCredentials;
 use Flywheel\OAuth2\GrantTypes\IGrantType;
 use Flywheel\OAuth2\ResponseTypes\IResponseType;
 use Flywheel\OAuth2\Storage\IClient;
@@ -123,5 +124,14 @@ class Server {
         }
 
         return $this->_clients[$client_id];
+    }
+
+    /**
+     * @param $username
+     * @param $password
+     * @return IUserCredentials
+     */
+    public function getUser($username, $password) {
+        return $this->_dataStore->getUser($username, $password);
     }
 } 

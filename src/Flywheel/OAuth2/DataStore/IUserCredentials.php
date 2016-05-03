@@ -10,5 +10,9 @@ namespace Flywheel\OAuth2\DataStore;
 
 
 interface IUserCredentials {
-
+    /**
+     * return user id
+     * @return mixed
+     */
+    function getUserId();
 } 

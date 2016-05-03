@@ -31,7 +31,7 @@ abstract class BaseApiResourceController extends Api {
 
     private $_accessToken;
     /**
-     * Get Access Token; only token authorize code bearer is supported yet; we'll need implement more type in the futures
+     * Get Access Token; only token authorize code bearer is supported; we'll need implement more type in the futures
      * @return IAccessToken|null
      */
     public function getAccessTokenData()
