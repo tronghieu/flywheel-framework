@@ -10,9 +10,8 @@ namespace Flywheel\OAuth2\Controllers;
 
 
 use Flywheel\OAuth2\DataStore\BaseServerConfig;
+use Flywheel\OAuth2\OAuth2Exception;
 use Flywheel\OAuth2\Storage\IAccessToken;
-use MongoQB\Exception;
-use SeuDo\OAuth2\OAuth2Exception;
 
 abstract class BaseTokenController extends OAuth2Controller {
 
