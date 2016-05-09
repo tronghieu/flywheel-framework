@@ -7,13 +7,13 @@ use Flywheel\Controller\BaseController;
 use Flywheel\Exception;
 use Flywheel\Loader;
 use Flywheel\Object;
-use Symfony\Component\Translation\Translator;
 
 abstract class BaseApp extends Object
 {
     const TYPE_WEB = 1;
     const TYPE_CONSOLE = 2;
     const TYPE_API = 3;
+    const TYPE_OAUTH_API = 4;
     protected $_translator;
 
     /**

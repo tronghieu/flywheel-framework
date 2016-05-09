@@ -53,6 +53,16 @@ class Base {
         return self::_createApplication('\Flywheel\Application\ConsoleApp', $config, $env, $debug, BaseApp::TYPE_CONSOLE);
     }
 
+    /**
+     * @param $config
+     * @param $env
+     * @param bool $debug
+     * @return \Flywheel\Application\OAuthApp
+     */
+    public static function createOAuthApp($config, $env, $debug = false) {
+        return self::_createApplication('\Flywheel\Application\OAuthApp', $config, $env, $debug, BaseApp::TYPE_OAUTH_API);
+    }
+
     private static function _createApplication($class, $config, $env, $debug, $type) {
         self::$_env = $env;
         ConfigHandler::set('debug', $debug);
