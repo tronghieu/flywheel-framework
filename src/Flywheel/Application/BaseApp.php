@@ -222,7 +222,7 @@ abstract class BaseApp extends Object
 
     /**
      * get type of this application
-     * @see BaseApp::TYPE_WEB, BaseApp::TYPE_CONSOLE, BaseApp::TYPE_API
+     * @see BaseApp::TYPE_WEB, BaseApp::TYPE_CONSOLE, BaseApp::TYPE_API, BaseApp::TYPE_OAUTH
      * @return int
      */
     public function getType() {
