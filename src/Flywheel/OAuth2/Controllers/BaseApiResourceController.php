@@ -112,7 +112,7 @@ abstract class BaseApiResourceController extends Api {
      * @param array $defaultFields
      * @return array
      */
-    protected function restrictFields(array $data, array $defaultFields = []) {
+    public function restrictFields(array $data, array $defaultFields = []) {
         $fields = $this->get('fields');
 
         if (empty($fields)) {
@@ -139,7 +139,7 @@ abstract class BaseApiResourceController extends Api {
      * Use restrict fields for an entire array of objects
      * @param array $dataArray
      */
-    protected function restrictFieldsForArray(array $dataArray) {
+    public function restrictFieldsForArray(array $dataArray) {
         foreach ($dataArray as $key => $value) {
             $dataArray[$key] = $this->restrictFields($value);
         }
@@ -150,7 +150,7 @@ abstract class BaseApiResourceController extends Api {
      * @param $data
      * @return string
      */
-    protected function jsonResult($data) {
+    public function jsonResult($data) {
         $pretty = $this->get('pretty');
 
         if ($pretty) {
