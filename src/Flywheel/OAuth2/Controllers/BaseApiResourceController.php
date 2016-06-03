@@ -107,6 +107,78 @@ abstract class BaseApiResourceController extends Api {
     }
 
     /**
+     * Use fields params to restrict fields in return data
+     * @param array $data
+     * @param array $defaultFields
+     * @return array
+     */
+    protected function restrictFields(array $data, array $defaultFields = []) {
+        $fields = $this->get('fields');
+
+        if (empty($fields)) {
+            $fields = $defaultFields;
+        }
+
+        if (empty($fields)) {
+            return $data;
+        }
+
+        foreach ($data as $field_name => $value) {
+            if (is_array($value)) {
+
+            }
+            else if (!in_array($field_name, $fields)) {
+                unset($data[$field_name]);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Use restrict fields for an entire array of objects
+     * @param array $dataArray
+     */
+    protected function restrictFieldsForArray(array $dataArray) {
+        foreach ($dataArray as $key => $value) {
+            $dataArray[$key] = $this->restrictFields($value);
+        }
+    }
+
+    /**
+     * Support json_encode object with pretty options in the get params
+     * @param $data
+     * @return string
+     */
+    protected function jsonResult($data) {
+        $pretty = $this->get('pretty');
+
+        if ($pretty) {
+            return json_encode($data, JSON_PRETTY_PRINT);
+        }
+        return json_encode($data);
+    }
+
+    /**
+     * Restrict data fields in a assoc array with prefix support for deep data
+     * @param $data
+     * @param $fields
+     * @param string $prefix
+     * @return mixed
+     */
+    private function restrictDataFields($data, $fields, $prefix = '') {
+        foreach ($data as $field_name => $value) {
+            if (is_array($value)) {
+                $data[$field_name] = $this->restrictDataFields($value, $fields, $field_name.'.');
+            }
+            else if (!in_array($prefix.$field_name, $fields)) {
+                unset($data[$field_name]);
+            }
+        }
+        return $data;
+    }
+
+    /**
      * Return json data in raw post or put data using assoc array
      * @return mixed
      */
@@ -115,4 +187,4 @@ abstract class BaseApiResourceController extends Api {
 
         return $args;
     }
-} 
+}
