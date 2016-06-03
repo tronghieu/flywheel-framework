@@ -80,6 +80,12 @@ class NestedSet extends ModelBehavior {
         $owner->getPrivateEventDispatcher()->addListener('onAfterDelete', array($this, 'afterDelete'));
     }
 
+    /**
+     * Handling event before deleting owner
+     *
+     * @param Event $event
+     * @throws Exception
+     */
     public function beforeDelete(Event $event) {
         /** @var \Flywheel\Model\ActiveRecord $owner */
         $owner = $event->sender;
@@ -93,6 +99,11 @@ class NestedSet extends ModelBehavior {
         }
     }
 
+    /**
+     * Handling event after deleting owner
+     *
+     * @param Event $event
+     */
     public function afterDelete(Event $event) {
         /** @var \Flywheel\Model\ActiveRecord $owner */
         $owner = $event->sender;
@@ -219,10 +230,21 @@ class NestedSet extends ModelBehavior {
         return $owner->{$this->scope_attr};
     }
 
+    /**
+     * Return level value
+     *
+     * @return mixed
+     */
     public function getLevelValue() {
         return $this->getOwner()->{$this->level_attr};
     }
 
+    /**
+     * Level setter
+     *
+     * @param $level
+     * @return \Flywheel\Model\ActiveRecord|mixed
+     */
     public function setLevelValue($level) {
         $level = (int) $level;
 
@@ -253,14 +275,28 @@ class NestedSet extends ModelBehavior {
         return $this->getLeftValue() > 0 && $this->getRightValue() > $this->getLeftValue();
     }
 
+    /**
+     * check node is root of tree or not
+     * @return bool
+     */
     public function isRoot() {
         return $this->isInTree() && $this->getLeftValue() == 1;
     }
 
+    /**
+     * check node is leaf of tree
+     * @return bool
+     */
     public function isLeaf() {
         return $this->isInTree() &&  ($this->getRightValue() - $this->getLeftValue()) == 1;
     }
 
+    /**
+     * check node is descendant of other node
+     *
+     * @param $parent
+     * @return bool
+     */
     public function isDescendantOf($parent) {
         if ($this->getScopeValue() !== $parent->getScopeValue()) {
             return false; //since the `this` and $parent are in different scopes, there's no way that `this` is be a descendant of $parent.
@@ -269,14 +305,31 @@ class NestedSet extends ModelBehavior {
         return $this->isInTree() && $this->getLeftValue() > $parent->getLeftValue() && $this->getRightValue() < $parent->getRightValue();
     }
 
+    /**
+     * check node is ancestor of other node
+     *
+     * @param $child
+     * @return mixed
+     */
     public function isAncestorOf($child) {
         return $child->isDescendantOf($this);
     }
 
+    /**
+     * check node is parent or not
+     *
+     * @return bool
+     */
     public function hasParent() {
         return $this->getLevelValue() > 0;
     }
 
+    /**
+     * check node has previous sibling in it's level
+     *
+     * @param null $query
+     * @return bool
+     */
     public function hasPrevSibling($query = null) {
         if (!$this->isNodeValid()) {
             return false;
@@ -300,6 +353,12 @@ class NestedSet extends ModelBehavior {
         return $result['result'] > 0;
     }
 
+    /**
+     * check node has next sibling in it's level
+     *
+     * @param null $query
+     * @return bool
+     */
     public function hasNextSibling($query = null) {
         if (!$this->isNodeValid()) {
             return false;
@@ -323,10 +382,21 @@ class NestedSet extends ModelBehavior {
         return $result['result'] > 0;
     }
 
+    /**
+     * check node has children or not
+     *
+     * @return bool
+     */
     public function hasChildren() {
         return ($this->getRightValue() - $this->getLeftValue()) > 1;
     }
 
+    /**
+     * return node's children number
+     *
+     * @param null $query
+     * @return int
+     */
     public function countChildren($query = null) {
         /** @var \Flywheel\Model\ActiveRecord $owner */
         $owner = $this->getOwner();
@@ -351,6 +421,12 @@ class NestedSet extends ModelBehavior {
         return $result['result'];
     }
 
+    /**
+     * return node's descendants number including children
+     *
+     * @param null $query
+     * @return int
+     */
     public function countDescendants($query = null) {
         /** @var \Flywheel\Model\ActiveRecord $owner */
         $owner = $this->getOwner();
@@ -376,6 +452,11 @@ class NestedSet extends ModelBehavior {
 
     // tree traversal methods
 
+    /**
+     * get node's parent
+     *
+     * @return mixed
+     */
     public function getParent() {
         if (null == $this->_parent && $this->hasParent()) {
             /** @var \Flywheel\Model\ActiveRecord $owner */
@@ -396,6 +477,12 @@ class NestedSet extends ModelBehavior {
         return $this->_parent;
     }
 
+    /**
+     * get previous sibling
+     *
+     * @param null $query
+     * @return bool|mixed
+     */
     public function getPrevSibling($query = null) {
         if (!$this->isNodeValid()) {
             return false;
@@ -415,6 +502,10 @@ class NestedSet extends ModelBehavior {
         return $query->execute()->fetchObject(get_class($owner), array(null, false));
     }
 
+    /**
+     * @param null $query
+     * @return bool|mixed
+     */
     public function getNextSibling($query = null) {
         if (!$this->isNodeValid()) {
             return false;
@@ -434,6 +525,10 @@ class NestedSet extends ModelBehavior {
         return $query->execute()->fetchObject(get_class($owner), array(null, false));
     }
 
+    /**
+     * @param null $query
+     * @return array|int
+     */
     public function getChildren($query = null) {
         /** @var \Flywheel\Model\ActiveRecord $owner */
         $owner = $this->getOwner();
@@ -457,6 +552,10 @@ class NestedSet extends ModelBehavior {
         return $query->execute()->fetchAll(\PDO::FETCH_CLASS, get_class($owner), array(null, false));
     }
 
+    /**
+     * @param null $query
+     * @return int|mixed|null
+     */
     public function getFirstChild($query = null) {
         if ($this->isLeaf()) {
             return null;
@@ -485,6 +584,10 @@ class NestedSet extends ModelBehavior {
         return $query->execute()->fetchObject(get_class($owner), array(null, false));
     }
 
+    /**
+     * @param null $query
+     * @return int|mixed|null
+     */
     public function getLastChild($query = null) {
         if ($this->isLeaf()) {
             return null;
@@ -513,6 +616,11 @@ class NestedSet extends ModelBehavior {
         return $query->execute()->fetchObject(get_class($owner), array(null, false));
     }
 
+    /**
+     * @param bool|false $includeCurrent
+     * @param null $query
+     * @return array
+     */
     public function getSiblings($includeCurrent = false, $query = null) {
         if ($this->isRoot()) {
             return array();
@@ -542,6 +650,10 @@ class NestedSet extends ModelBehavior {
         return $query->execute()->fetchAll(\PDO::FETCH_CLASS, get_class($owner), array(null, false));
     }
 
+    /**
+     * @param null $query
+     * @return array
+     */
     public function getDescendants($query = null) {
         if ($this->isLeaf()) {
             return array();
@@ -565,6 +677,12 @@ class NestedSet extends ModelBehavior {
             ->fetchAll(\PDO::FETCH_CLASS, get_class($owner), array(null, false));
     }
 
+    /**
+     * Get node's branch (including it)
+     *
+     * @param null $query
+     * @return array
+     */
     public function getBranch($query = null) {
         /** @var \Flywheel\Model\ActiveRecord $owner */
         $owner = $this->getOwner();
@@ -584,6 +702,10 @@ class NestedSet extends ModelBehavior {
             ->fetchAll(\PDO::FETCH_CLASS, get_class($owner), array(null, false));
     }
 
+    /**
+     * @param null $query
+     * @return array
+     */
     public function getAncestors($query = null) {
         if ($this->isRoot()) {
             return array();
@@ -608,8 +730,14 @@ class NestedSet extends ModelBehavior {
         return $query->execute()->fetchAll(\PDO::FETCH_CLASS, get_class($owner), array(null, false));
     }
 
-
     // node insertion methods (require calling save() afterwards)
+    /**
+     * require calling save() afterwards
+     *
+     * @param $node
+     * @return \Flywheel\Model\ActiveRecord
+     * @throws Exception
+     */
     public function addChild($node) {
         /** @var \Flywheel\Model\ActiveRecord $owner */
         $owner = $this->getOwner();
@@ -623,6 +751,13 @@ class NestedSet extends ModelBehavior {
         return $owner;
     }
 
+    /**
+     * insert as first child, not need calling save() afterwards
+     *
+     * @param $node
+     * @return \Flywheel\Model\ActiveRecord
+     * @throws Exception
+     */
     public function insertAsFirstChildOf($node) {
         if ($this->isInTree()) {
             throw new Exception('Oject must not already be in the tree to be inserted. Use the moveToFirstChildOf() instead.');
@@ -656,6 +791,13 @@ class NestedSet extends ModelBehavior {
 
     }
 
+    /**
+     * insert as last child, not need calling
+     *
+     * @param $node
+     * @return \Flywheel\Model\ActiveRecord
+     * @throws Exception
+     */
     public function insertAsLastChildOf($node) {
         if ($this->isInTree()) {
             throw new Exception('Oject must not already be in the tree to be inserted. Use the moveToFirstChildOf() instead.');
@@ -687,6 +829,13 @@ class NestedSet extends ModelBehavior {
         return $this->_owner;
     }
 
+    /**
+     * insert previous sibling, not need calling save()
+     *
+     * @param $node
+     * @return \Flywheel\Model\ActiveRecord|mixed
+     * @throws Exception
+     */
     public function insertAsPrevSiblingOf($node) {
         if ($this->isInTree()) {
             throw new Exception('Oject must not already be in the tree to be inserted. Use the moveToFirstChildOf() instead.');
@@ -718,6 +867,13 @@ class NestedSet extends ModelBehavior {
         return $this->getOwner();
     }
 
+    /**
+     * insert as next sibling, not need save() calling
+     *
+     * @param $node
+     * @return \Flywheel\Model\ActiveRecord|mixed
+     * @throws Exception
+     */
     public function insertAsNextSiblingOf($node) {
         if ($this->isInTree()) {
             throw new Exception('Oject must not already be in the tree to be inserted. Use the moveToFirstChildOf() instead.');
@@ -750,6 +906,15 @@ class NestedSet extends ModelBehavior {
     }
 
     // node move methods (immediate, no need to save() afterwards)
+    /**
+     * move to first child, not need calling save()
+     *
+     * @param $node
+     * @return \Flywheel\Model\ActiveRecord
+     * @throws Exception
+     * @throws \Exception
+     * @throws \Flywheel\Db\Exception
+     */
     public function moveToFirstChildOf($node) {
 
         if (!$this->isInTree()) {
@@ -774,6 +939,15 @@ class NestedSet extends ModelBehavior {
         return $owner;
     }
 
+    /**
+     * move to last child, not need calling save()
+     *
+     * @param $node
+     * @return \Flywheel\Model\ActiveRecord
+     * @throws Exception
+     * @throws \Exception
+     * @throws \Flywheel\Db\Exception
+     */
     public function moveToLastChildOf($node) {
         if (!$this->isInTree()) {
             throw new Exception('Object must be already in the tree to be moved. Use the insertAsFirstChildOf() instead.');
@@ -797,6 +971,15 @@ class NestedSet extends ModelBehavior {
         return $owner;
     }
 
+    /**
+     * move to previous sibling, not need calling save()
+     *
+     * @param $node
+     * @return \Flywheel\Model\ActiveRecord
+     * @throws Exception
+     * @throws \Exception
+     * @throws \Flywheel\Db\Exception
+     */
     public function moveToPrevSiblingOf($node) {
         if (!$this->isInTree()) {
             throw new Exception('Object must be already in the tree to be moved. Use the insertAsPrevSiblingOf() instead.');
@@ -814,7 +997,7 @@ class NestedSet extends ModelBehavior {
             return $owner;
         }
 
-        $this->beforeSave();
+        $owner->beforeSave();
         $this->_moveSubtreeTo($node->getLeftValue(), $node->getLevelValue() - $this->getLevelValue(), $node->getScopeValue());
         $owner->afterSave();
         $owner->reload();
@@ -823,6 +1006,15 @@ class NestedSet extends ModelBehavior {
         return $owner;
     }
 
+    /**
+     * move to next sibling, not need save() calling
+     *
+     * @param $node
+     * @return \Flywheel\Model\ActiveRecord
+     * @throws Exception
+     * @throws \Exception
+     * @throws \Flywheel\Db\Exception
+     */
     public function moveToNextSiblingOf($node) {
         if (!$this->isInTree()) {
             throw new Exception('Object must be already in the tree to be moved. Use the insertAsPrevSiblingOf() instead.');
@@ -840,6 +1032,7 @@ class NestedSet extends ModelBehavior {
             return $owner;
         }
 
+        $owner->beforeSave();
         $this->_moveSubtreeTo($node->getRightValue() + 1, $node->getLevelValue() - $this->getLevelValue(), $node->getScopeValue());
         $owner->reload();
         $node->reload();
@@ -848,6 +1041,14 @@ class NestedSet extends ModelBehavior {
     }
 
     // deletion methods
+    /**
+     * delete descendants
+     *
+     * @return \PDOStatement|void
+     * @throws Exception
+     * @throws \Exception
+     * @throws \Flywheel\Db\Exception
+     */
     public function deleteDescendants() {
         if ($this->isLeaf()) {
             // save one query
@@ -963,6 +1164,14 @@ class NestedSet extends ModelBehavior {
         }
     }
 
+    /**
+     * shift right to left
+     *
+     * @param $delta
+     * @param $first
+     * @param null $last
+     * @param null $scope
+     */
     public function shiftRLValues($delta, $first, $last = null, $scope = null) {
         /** @var \Flywheel\Model\ActiveRecord $owner */
         $owner = $this->getOwner();
@@ -996,6 +1205,14 @@ class NestedSet extends ModelBehavior {
         $updateQuery->execute();
     }
 
+    /**
+     * shift level
+     *
+     * @param $delta
+     * @param $first
+     * @param $last
+     * @param null $scope
+     */
     public function shiftLevel($delta, $first, $last, $scope = null) {
         /** @var \Flywheel\Model\ActiveRecord $owner */
         $owner = $this->getOwner();
@@ -1012,6 +1229,11 @@ class NestedSet extends ModelBehavior {
         $updateQuery->execute();
     }
 
+    /**
+     * set negative scope
+     *
+     * @param $scope
+     */
     public function setNegativeScope($scope) {
         /** @var \Flywheel\Model\ActiveRecord $owner */
         $owner = $this->getOwner();
@@ -1024,6 +1246,12 @@ class NestedSet extends ModelBehavior {
             ->execute();
     }
 
+    /**
+     * find root in scope
+     *
+     * @param null $scope
+     * @return mixed
+     */
     public function findRoot($scope = null) {
         /** @var \Flywheel\Model\ActiveRecord $owner */
         $owner = $this->getOwner();
@@ -1036,6 +1264,11 @@ class NestedSet extends ModelBehavior {
         return $query->execute()->fetchObject(get_class($owner), array(null, false));
     }
 
+    /**
+     * find root all scope
+     *
+     * @return array
+     */
     public function findRoots() {
         /** @var \Flywheel\Model\ActiveRecord $owner */
         $owner = $this->getOwner();
@@ -1046,6 +1279,11 @@ class NestedSet extends ModelBehavior {
             ->fetchAll(\PDO::FETCH_CLASS, get_class($owner), array());
     }
 
+    /**
+     * is node valid
+     *
+     * @return bool
+     */
     public function isNodeValid() {
         return $this->getRightValue() > $this->getLeftValue();
     }
