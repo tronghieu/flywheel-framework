@@ -52,4 +52,9 @@ interface IClient {
      * @return mixed
      */
     function getDefaultScope();
+
+    /**
+     * @return bool
+     */
+    function isNonceEnabled();
 } 

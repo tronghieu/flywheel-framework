@@ -76,7 +76,19 @@ abstract class BaseActiveRecordResourceRepository implements IResourceRepository
         ]);
     }
 
+    /**
+     * Convert object to assoc array to return to client
+     * @param $object
+     * @return mixed
+     */
     abstract function toArray($object);
 
+    /**
+     * Add WHERE criteria to $query to form search condition, included but not limited to
+     * owner criteria
+     * @param $query
+     * @param $controller
+     * @return mixed
+     */
     abstract function createCriteriaFromParams($query, $controller);
 } 

@@ -73,7 +73,6 @@ abstract class BaseApiResourceController extends Api {
      * @throws OAuth2Exception
      */
     public function verifyResourceRequest($scope = null, &$failure_message) {
-
         $non_secured_protocol_allowed = $this->getServer()->getConfig(BaseServerConfig::HTTP_ALLOWED, false);
 
         if (!$non_secured_protocol_allowed && !$this->request()->isSecure()) {
@@ -81,20 +80,15 @@ abstract class BaseApiResourceController extends Api {
             throw new OAuth2Exception(OAuth2Exception::SECURED_REQUIRED);
         }
 
-        $nonce_enabled = $this->getServer()->getConfig(BaseServerConfig::CHECK_NONCE, false);
-        if ($nonce_enabled) {
-            $nonce = $this->request()->get('nonce');
-            $existed = $this->getServer()->getDataStore()->lookupNonce($nonce);
-
-            if ($existed) {
-                throw new OAuth2Exception(OAuth2Exception::NONCE_REQUIRED);
-            }
-        }
-
         $accessToken = $this->getAccessTokenData();
 
         if (!$accessToken) {
             throw new OAuth2Exception(OAuth2Exception::INVALID_ACCESS_TOKEN);
+        }
+
+        $nonce_enabled = $this->getServer()->getConfig(BaseServerConfig::CHECK_NONCE, false);
+        if ($nonce_enabled) {
+            $this->checkNonce($accessToken);
         }
 
         if ($scope) {
@@ -186,5 +180,25 @@ abstract class BaseApiResourceController extends Api {
         $args = json_decode(file_get_contents('php://input'), true);
 
         return $args;
+    }
+
+    /**
+     * @param $accessToken
+     * @throws \Flywheel\OAuth2\OAuth2Exception
+     */
+    private function checkNonce($accessToken)
+    {
+        $client = $accessToken->getClient();
+
+        if ($client->isNonceEnabled()) {
+            $nonce = $this->request()->get('nonce');
+            $existed = $this->getServer()->getDataStore()->lookupNonce($nonce);
+
+            if ($existed) {
+                throw new OAuth2Exception(OAuth2Exception::NONCE_REQUIRED);
+            }
+
+            $this->getServer()->getDataStore()->insertNonce($nonce);
+        }
     }
 }
