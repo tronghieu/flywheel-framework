@@ -98,7 +98,7 @@ abstract class BaseApiResourceController extends Api {
 
         $nonce_enabled = $this->getServer()->getConfig(BaseServerConfig::CHECK_NONCE, false);
         if ($nonce_enabled) {
-            $this->checkNonce($accessToken);
+            $this->_checkNonce($accessToken);
         }
 
         if ($scope) {
@@ -122,19 +122,15 @@ abstract class BaseApiResourceController extends Api {
         if (empty($fields)) {
             $fields = $defaultFields;
         }
+        else {
+            $fields = explode(',',$fields);
+        }
 
         if (empty($fields)) {
             return $data;
         }
 
-        foreach ($data as $field_name => $value) {
-            if (is_array($value)) {
-
-            }
-            else if (!in_array($field_name, $fields)) {
-                unset($data[$field_name]);
-            }
-        }
+        $data = $this->_restrictDataFields($data, $fields);
 
         return $data;
     }
@@ -170,10 +166,10 @@ abstract class BaseApiResourceController extends Api {
      * @param string $prefix
      * @return mixed
      */
-    private function restrictDataFields($data, $fields, $prefix = '') {
+    private function _restrictDataFields($data, $fields, $prefix = '') {
         foreach ($data as $field_name => $value) {
             if (is_array($value)) {
-                $data[$field_name] = $this->restrictDataFields($value, $fields, $field_name.'.');
+                $data[$field_name] = $this->_restrictDataFields($value, $fields, $field_name.'.');
             }
             else if (!in_array($prefix.$field_name, $fields)) {
                 unset($data[$field_name]);
@@ -193,10 +189,10 @@ abstract class BaseApiResourceController extends Api {
     }
 
     /**
-     * @param $accessToken
+     * @param IAccessToken $accessToken
      * @throws \Flywheel\OAuth2\OAuth2Exception
      */
-    private function checkNonce($accessToken)
+    private function _checkNonce($accessToken)
     {
         $client = $accessToken->getClient();
 
