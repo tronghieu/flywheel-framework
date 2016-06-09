@@ -41,7 +41,17 @@ abstract class BaseApiResourceController extends Api {
         if (!isset($this->_accessToken)) {
             $access_token = $this->get("access_token");
             if(empty($access_token)) {
-                $access_token = $this->request()->getHttpHeader($this->getServer()->getConfig(BaseServerConfig::TOKEN_BEARER_KEY, 'flywheel_token_bearer'));
+                if (defined('PHP_VERSION_ID'))
+                {
+                    $version = PHP_VERSION_ID;
+                    if ($version >= 50400) {
+                        $headers = getallheaders();
+                        $access_token = $headers[$this->getServer()->getConfig(BaseServerConfig::TOKEN_BEARER_KEY, 'Flywheel-Token-Bearer')];
+                    }
+                }
+                else {
+                    $access_token = $this->request()->getHttpHeader($this->getServer()->getConfig(BaseServerConfig::TOKEN_BEARER_KEY, 'Flywheel-Token-Bearer'), '');
+                }
             }
 
             $accessToken = $this->getServer()->getDataStore()->getAccessToken($access_token);

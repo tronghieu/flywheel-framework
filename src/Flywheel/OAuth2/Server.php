@@ -70,7 +70,9 @@ class Server {
             if ($value === null) {
                 $this->_configValues[$key] = $default;
             }
-            $this->_configValues[$key] = $value;
+            else {
+                $this->_configValues[$key] = $value;
+            }
         }
 
         return $this->_configValues[$key];
