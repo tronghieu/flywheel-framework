@@ -115,7 +115,11 @@ class AuthorizationCode implements IGrantType {
          * @uri - http://tools.ietf.org/html/rfc6749#section-4.1.3
          */
         if (!empty($redirect_uri)) {
-            $requested_uri = $request->get($this->_config->get(BaseServerConfig::REDIRECT_URI_PARAM, 'redirect_uri'));
+            $requested_uri = $request->post($this->_config->get(BaseServerConfig::REDIRECT_URI_PARAM, 'redirect_uri'));
+            if (empty($redirect_uri)) {
+                $request->get($this->_config->get(BaseServerConfig::REDIRECT_URI_PARAM, 'redirect_uri'));
+            }
+
             $requested_uri = urldecode($requested_uri);
 
             if ($requested_uri != $redirect_uri) {
