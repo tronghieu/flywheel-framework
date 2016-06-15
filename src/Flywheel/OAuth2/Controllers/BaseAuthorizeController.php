@@ -32,10 +32,18 @@ abstract class BaseAuthorizeController extends OAuth2Controller {
         $server = $this->getOAuthServer();
         $this->_server = $server;
 
-        $client_id = $this->get($server->getConfig(BaseServerConfig::CLIENT_ID_PARAM, 'client_id'));
-        $scopes = $this->get($server->getConfig(BaseServerConfig::SCOPE_PARAM, 'scope'));
-        $redirect_uri = $this->get($server->getConfig(BaseServerConfig::REDIRECT_URI_PARAM, 'redirect_uri'));
-        $response_type = $this->get($server->getConfig(BaseServerConfig::RESPONSE_TYPE_PARAM, 'response_type'));
+        if ($this->request()->isPostRequest()) {
+            $client_id = $this->post($server->getConfig(BaseServerConfig::CLIENT_ID_PARAM, 'client_id'));
+            $scopes = $this->post($server->getConfig(BaseServerConfig::SCOPE_PARAM, 'scope'));
+            $redirect_uri = $this->post($server->getConfig(BaseServerConfig::REDIRECT_URI_PARAM, 'redirect_uri'));
+            $response_type = $this->post($server->getConfig(BaseServerConfig::RESPONSE_TYPE_PARAM, 'response_type'));
+        }
+        else {
+            $client_id = $this->get($server->getConfig(BaseServerConfig::CLIENT_ID_PARAM, 'client_id'));
+            $scopes = $this->get($server->getConfig(BaseServerConfig::SCOPE_PARAM, 'scope'));
+            $redirect_uri = $this->get($server->getConfig(BaseServerConfig::REDIRECT_URI_PARAM, 'redirect_uri'));
+            $response_type = $this->get($server->getConfig(BaseServerConfig::RESPONSE_TYPE_PARAM, 'response_type'));
+        }
 
         $response_types = $server->getResponseTypes();
         if (!isset($response_types[$response_type])) {
