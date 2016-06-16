@@ -218,6 +218,12 @@ abstract class Response extends Object {
     }
 
     public function sendContent() {
+        if (ConfigHandler::get('response_compress')
+            && !ini_get('zlib.output_compression')
+            && ini_get('output_handler')!='ob_gzhandler') {
+            $this->compress();
+        }
+
         echo $this->_body;
     }
 
@@ -226,12 +232,6 @@ abstract class Response extends Object {
      *
      */
     public function send() {
-        if (ConfigHandler::get('response_compress')
-            && !ini_get('zlib.output_compression')
-            && ini_get('output_handler')!='ob_gzhandler') {
-            $this->compress();
-        }
-
         $this->sendHttpHeaders();
         $this->dispatch('onAfterSendHttpHeader', new Event($this));
         $this->sendContent();
