@@ -19,9 +19,11 @@ class RESTfulResponse extends Response {
         }
     }
 
-    public function sendContent() {
-        echo ('xml' == $this->format)? $this->formatXml($this->_body) :
-                $this->formatJson($this->_body);
+    public function send() {
+        //format json/xml before send to client
+        $this->_body = ('xml' == $this->format)? $this->formatXml($this->_body) :
+            $this->formatJson($this->_body);
+        parent::send();
     }
 
     /**
