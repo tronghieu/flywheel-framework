@@ -374,6 +374,7 @@ EOD;
             .'    }' .PHP_EOL .PHP_EOL
             .'    /**' .PHP_EOL
             .'     * save object model' .PHP_EOL
+            .'     * @param boolean $validate validating before save flag'
             .'     * @return boolean' .PHP_EOL
             .'     * @throws \Exception' .PHP_EOL
             .'     */'.PHP_EOL
@@ -429,13 +430,13 @@ EOD;
         $name = Inflection::camelize($column);
         if ($infos['type'] == 'date' || $infos['type'] == 'datetime'
             || $infos['type'] == 'time' || $infos['type'] == 'timestamp') {
-            $s .= ' * @method void set' .$name .'(\Flywheel\Db\Type\DateTime $' .$column .') set' .$name .'(string $' .$column .') set ' .$column .' value'.PHP_EOL
+            $s .= ' * @method void set' .$name .'(\DateTime $' .$column .') set' .$name .'(string $' .$column .') set ' .$column .' value'.PHP_EOL
                 .' * @method \Flywheel\Db\Type\DateTime get' .$name.'() get '. $column .' value' .PHP_EOL
                 .' * @method static \\'.$class .'[] findBy'.$name.'(\Flywheel\Db\Type\DateTime $' .$column .') findBy'.$name.'(string $' .$column .') find objects in database by ' .$column .PHP_EOL
                 .' * @method static \\'.$class .' findOneBy'.$name.'(\Flywheel\Db\Type\DateTime $' .$column .') findOneBy'.$name.'(string $' .$column .') find object in database by ' .$column .PHP_EOL
                 .' * @method static \\'.$class .' retrieveBy'.$name.'(\Flywheel\Db\Type\DateTime $' .$column .') retrieveBy'.$name.'(string $' .$column .') retrieve object from poll by ' .$column .', get it from db if not exist in poll' .PHP_EOL .PHP_EOL;
         } else {
-            $s .= ' * @method void set' .$name .'(' .$infos['type'] .' $' .$column .') set ' .$column .' value'.PHP_EOL
+            $s .= ' * @method void set' .$name .'(mixed $' .$column .') set ' .$column .' value'.PHP_EOL
                 .' * @method ' .$infos['type'].' get' .$name.'() get '. $column .' value' .PHP_EOL
                 .' * @method static \\'.$class .'[] findBy'.$name.'(' .$infos['type'] .' $' .$column .') find objects in database by ' .$column .PHP_EOL
                 .' * @method static \\'.$class .' findOneBy'.$name.'(' .$infos['type'] .' $' .$column .') find object in database by ' .$column .PHP_EOL
