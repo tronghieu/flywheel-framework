@@ -50,7 +50,10 @@ abstract class BaseTokenController extends OAuth2Controller {
             throw new OAuth2Exception(OAuth2Exception::UNSUPPORTED_GRANT_TYPE_CLIENT);
         }
 
-        $requested_scope = $this->post($this->getServer()->getConfig(BaseServerConfig::SCOPE_PARAM, 'scope'));
+        $requested_scope = $grantType->getScope();
+        if (empty($requested_scope)) {
+            $requested_scope = $this->post($this->getServer()->getConfig(BaseServerConfig::SCOPE_PARAM, 'scope'));
+        }
 
         if (!empty($requested_scope)) {
             if (!$client->hasScopeInGrantType($grant_type_code, $requested_scope)) {
