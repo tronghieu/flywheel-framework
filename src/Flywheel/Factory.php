@@ -84,6 +84,7 @@ class Factory
                 $class = self::$_classesList['WebRequest'];
                 break;
             case BaseApp::TYPE_API:
+            case BaseApp::TYPE_OAUTH_API:
                 $class = self::$_classesList['RESTfulRequest'];
                 break;
         }
@@ -106,6 +107,7 @@ class Factory
 
         switch(Base::getApp()->getType()) {
             case BaseApp::TYPE_API:
+            case BaseApp::TYPE_OAUTH_API:
                 $class = self::$_classesList['RESTfulResponse'];
                 break;
             default:

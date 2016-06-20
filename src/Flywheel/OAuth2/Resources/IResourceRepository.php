@@ -7,6 +7,7 @@
  */
 
 namespace Flywheel\OAuth2\Resources;
+use Flywheel\OAuth2\Controllers\BaseApiResourceController;
 
 /**
  * Interface IResourceRepository implement a resource object repository
@@ -14,8 +15,8 @@ namespace Flywheel\OAuth2\Resources;
  */
 interface IResourceRepository {
     /**
-     * Quick generate "owned by" condition for resource repository class to use
+     * @param BaseApiResourceController $controller
      * @return mixed
      */
-    function getIsOwnedByCondition();
+    function getOwnedResources($controller);
 } 

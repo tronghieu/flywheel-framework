@@ -24,4 +24,9 @@ interface IAccessToken {
      * @return bool
      */
     function hasScope($scope);
+
+    /**
+     * @return IClient
+     */
+    function getClient();
 } 

@@ -10,6 +10,7 @@ namespace Flywheel\OAuth2\Controllers;
 use Flywheel\OAuth2\DataStore\BaseServerConfig;
 use Flywheel\OAuth2\Server;
 use Flywheel\OAuth2\Storage\IClient;
+use Flywheel\OAuth2\OAuth2Exception;
 
 abstract class BaseAuthorizeController extends OAuth2Controller {
     /** @var Server */
@@ -32,25 +33,39 @@ abstract class BaseAuthorizeController extends OAuth2Controller {
         $this->_server = $server;
 
         $client_id = $this->get($server->getConfig(BaseServerConfig::CLIENT_ID_PARAM, 'client_id'));
-        $scopes = $this->get($server->getConfig(BaseServerConfig::SCOPES_PARAM, 'scope'));
+        if (empty($client_id)) {
+            $client_id = $this->post($server->getConfig(BaseServerConfig::CLIENT_ID_PARAM, 'client_id'));
+        }
+        $scopes = $this->get($server->getConfig(BaseServerConfig::SCOPE_PARAM, 'scope'));
+        if (empty($scopes)) {
+            $scopes = $this->post($server->getConfig(BaseServerConfig::SCOPE_PARAM, 'scope'));
+        }
         $redirect_uri = $this->get($server->getConfig(BaseServerConfig::REDIRECT_URI_PARAM, 'redirect_uri'));
+        if (empty($redirect_uri)) {
+            $scopes = $this->post($server->getConfig(BaseServerConfig::SCOPE_PARAM, 'scope'));
+        }
         $response_type = $this->get($server->getConfig(BaseServerConfig::RESPONSE_TYPE_PARAM, 'response_type'));
+        if (empty($response_type)) {
+            $response_type = $this->post($server->getConfig(BaseServerConfig::RESPONSE_TYPE_PARAM, 'response_type'));
+        }
+
 
         $response_types = $server->getResponseTypes();
         if (!isset($response_types[$response_type])) {
             $this->response()->setStatusCode(400, 'Invalid response type');
+            throw new OAuth2Exception(OAuth2Exception::INVALID_RESPONSE_TYPE);
         }
 
         //TODO: $signature and many other validate
 
         if (!$server->isValidClient($client_id)) {
             $this->response()->setStatusCode(400, 'Invalid client ID');
-            return;
+            throw new OAuth2Exception(OAuth2Exception::INVALID_CLIENT_ID);
         }
 
         if (!$server->isValidScope($scopes, $client_id)) {
             $this->response()->setStatusCode(400, 'Invalid scope');
-            return;
+            throw new OAuth2Exception(OAuth2Exception::INVALID_SCOPE);
         }
 
         $client = $server->getClient($client_id);
@@ -58,7 +73,7 @@ abstract class BaseAuthorizeController extends OAuth2Controller {
         if (!empty($redirect_uri)) {
             if (!$server->isValidRedirectUri($client_id, $redirect_uri)) {
                 $this->response()->setStatusCode(400, 'Invalid redirect uri');
-                return;
+                throw new OAuth2Exception(OAuth2Exception::INVALID_REDIRECT_URI);
             }
         }
 
@@ -72,6 +87,7 @@ abstract class BaseAuthorizeController extends OAuth2Controller {
         }
 
         $authResult = $response_types[$response_type]->getAuthorizeResponse($server, $params, $this->getUserId());
+
         list($redirect_uri, $uri_params) = $authResult;
 
         if (empty($redirect_uri)) {
@@ -81,7 +97,7 @@ abstract class BaseAuthorizeController extends OAuth2Controller {
         $uri = $this->buildUri($redirect_uri, $uri_params);
 
         $this->redirect($uri);
-        return;
+        exit();
     }
 
     /**
@@ -94,8 +110,8 @@ abstract class BaseAuthorizeController extends OAuth2Controller {
     protected function buildAuthorizeParameters($request, $response, $user_id)
     {
         $params = array(
-            $this->_server->getConfig(BaseServerConfig::SCOPES_PARAM,'scope')
-            => $this->get($this->_server->getConfig(BaseServerConfig::SCOPES_PARAM, 'scope')),
+            $this->_server->getConfig(BaseServerConfig::SCOPE_PARAM,'scope')
+            => $this->get($this->_server->getConfig(BaseServerConfig::SCOPE_PARAM, 'scope')),
             //'state'         => '', (we will use this in later time
             $this->_server->getConfig(BaseServerConfig::CLIENT_ID_PARAM,'client_id')
             => $this->get($this->_server->getConfig(BaseServerConfig::CLIENT_ID_PARAM, 'client_id')),

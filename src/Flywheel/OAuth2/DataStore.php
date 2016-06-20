@@ -13,6 +13,7 @@ use Flywheel\OAuth2\DataStore\IAccessTokenRepository;
 use Flywheel\OAuth2\DataStore\IAuthorizeCodeRepository;
 use Flywheel\OAuth2\DataStore\IClientRepository;
 use Flywheel\OAuth2\DataStore\IScopeRepository;
+use Flywheel\OAuth2\DataStore\IUserCredentials;
 use Flywheel\OAuth2\Storage\IAccessToken;
 use Flywheel\OAuth2\Storage\IAuthorizeCode;
 use Flywheel\OAuth2\Storage\IClient;
@@ -79,6 +80,13 @@ abstract class DataStore {
      * @return IAccessToken
      */
     public abstract function getAccessToken($token);
+
+    /**
+     * @param $username
+     * @param $password
+     * @return IUserCredentials
+     */
+    public abstract function getUser($username, $password);
 
     /**
      * (Optional) insert nonce (and mark it as used)

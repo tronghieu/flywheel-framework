@@ -12,6 +12,7 @@ use Flywheel\Http\WebRequest;
 use Flywheel\Http\WebResponse;
 use Flywheel\OAuth2\DataStore\BaseServerConfig;
 use Flywheel\OAuth2\DataStore;
+use Flywheel\OAuth2\OAuth2Exception;
 use Flywheel\OAuth2\Server;
 use Flywheel\OAuth2\Storage\IAccessToken;
 use Flywheel\OAuth2\Storage\IAuthorizeCode;
@@ -30,6 +31,14 @@ class AuthorizationCode implements IGrantType {
     public function __construct(DataStore $dataStore, BaseServerConfig $config) {
         $this->_dataStore = $dataStore;
         $this->_config = $config;
+    }
+
+    public function getDataStore() {
+        return $this->_dataStore;
+    }
+
+    public function getConfig() {
+        return $this->_config;
     }
 
     /**
@@ -93,14 +102,11 @@ class AuthorizationCode implements IGrantType {
     public function validateRequest(WebRequest $request, WebResponse $response)
     {
         if (!$request->post('code')) {
-            $response->setStatusCode(400, 'invalid request');
-            return false;
+            throw new OAuth2Exception(OAuth2Exception::INVALID_REQUEST);
         }
         $code = $request->request('code');
         if (!$authCode = $this->_dataStore->getAuthorizationCode($code)) {
-            $response->setStatusCode(400, 'invalid request');
-            //$response->setError(400, 'invalid_grant', 'Authorization code doesn\'t exist or is invalid for the client');
-            return false;
+            throw new OAuth2Exception(OAuth2Exception::INVALID_REQUEST);
         }
 
         $redirect_uri = $authCode->getRedirectUri();
@@ -109,24 +115,26 @@ class AuthorizationCode implements IGrantType {
          * @uri - http://tools.ietf.org/html/rfc6749#section-4.1.3
          */
         if (!empty($redirect_uri)) {
-            $requested_uri = $request->get($this->_config->get(BaseServerConfig::REDIRECT_URI_PARAM, 'redirect_uri'));
+            $requested_uri = $request->post($this->_config->get(BaseServerConfig::REDIRECT_URI_PARAM, 'redirect_uri'));
+            if (empty($redirect_uri)) {
+                $request->get($this->_config->get(BaseServerConfig::REDIRECT_URI_PARAM, 'redirect_uri'));
+            }
+
             $requested_uri = urldecode($requested_uri);
 
             if ($requested_uri != $redirect_uri) {
-                $response->setStatusCode(400, 'redirect_uri_mismatch');
-                return false;
+                throw new OAuth2Exception(OAuth2Exception::REDIRECT_URI_MISMATCH);
             }
         }
 
         $expired = $authCode->getExpiredDate();
 
         if (!($expired instanceof \DateTime)) {
-            throw new \Exception('Storage must return authcode with a value for "expires"');
+            throw new OAuth2Exception(OAuth2Exception::MISSING_EXPIRED_TIME);
         }
 
         if ($expired->getTimestamp() < time()) {
-            $response->setStatusCode(400, 'expired_authorize_code');
-            return false;
+            throw new OAuth2Exception(OAuth2Exception::EXPIRED_AUTHORIZE_CODE);
         }
 
         /*if (!isset($authCode['code'])) {

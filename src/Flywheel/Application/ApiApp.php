@@ -8,7 +8,7 @@ use Flywheel\Config\ConfigHandler as ConfigHandler;
 use Flywheel\Exception\Api as ApiException;
 class ApiApp extends BaseApp
 {
-    private $_requestMethod;
+    protected $_requestMethod;
     private $_format = 'json';
     public static $FORMAT_SUPPORT = array('json', 'xml', 'text');
     public static $RESTfulREQUEST = array('GET', 'POST', 'PUT', 'DELETE');

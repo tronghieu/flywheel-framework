@@ -10,6 +10,7 @@ namespace Flywheel\OAuth2\Controllers;
 
 
 use Flywheel\OAuth2\DataStore\BaseServerConfig;
+use Flywheel\OAuth2\OAuth2Exception;
 use Flywheel\OAuth2\Storage\IAccessToken;
 
 abstract class BaseTokenController extends OAuth2Controller {
@@ -17,26 +18,23 @@ abstract class BaseTokenController extends OAuth2Controller {
     /**
      * Handle token request
      * @return IAccessToken|null
+     * @throws OAuth2Exception
      */
     public function handleTokenRequest() {
         if (!$this->request()->isPostRequest()) {
-            $this->response()->setStatusCode(405, 'Invalid request');
-            $this->response()->setHeader('Allow', 'POST');
-            return null;
+            throw new OAuth2Exception(OAuth2Exception::INVALID_REQUEST);
         }
 
         $grant_type_code = $this->post($this->getServer()->getConfig(BaseServerConfig::GRANT_TYPE_PARAM, 'grant_type'));
 
         if (empty($grant_type_code)) {
-            $this->response()->setStatusCode(400, 'Invalid request');
-            return null;
+            throw new OAuth2Exception(OAuth2Exception::INVALID_REQUEST);
         }
 
         $grant_types = $this->getServer()->getGrantTypes();
 
         if (!isset($grant_types[$grant_type_code])) {
-            $this->response()->setStatusCode(501 , 'unsupported_grant_type');
-            return null;
+            throw new OAuth2Exception(OAuth2Exception::UNSUPPORTED_GRANT_TYPE);
         }
 
         $grantType = $grant_types[$grant_type_code];
@@ -49,15 +47,17 @@ abstract class BaseTokenController extends OAuth2Controller {
         $client = $this->getServer()->getClient($client_id);
 
         if (!$client->hasGrantType($grant_type_code)) {
-            $this->response()->setStatusCode(400, 'Invalid request, grant type is not supported for this client');
+            throw new OAuth2Exception(OAuth2Exception::UNSUPPORTED_GRANT_TYPE_CLIENT);
         }
 
-        $requested_scope = $this->post($this->getServer()->getConfig(BaseServerConfig::SCOPES_PARAM, 'scope'));
+        $requested_scope = $grantType->getScope();
+        if (empty($requested_scope)) {
+            $requested_scope = $this->post($this->getServer()->getConfig(BaseServerConfig::SCOPE_PARAM, 'scope'));
+        }
 
         if (!empty($requested_scope)) {
             if (!$client->hasScopeInGrantType($grant_type_code, $requested_scope)) {
-                $this->response()->setStatusCode(400, 'Invalid scope');
-                //TODO: specify which scope is invalid and why
+                throw new OAuth2Exception(OAuth2Exception::INVALID_SCOPE);
             }
         } else {
             $requested_scope = $client->getDefaultScope();
