@@ -677,6 +677,7 @@ abstract class ActiveRecord extends Object {
         }
 
         $reload = false;
+        $expression_bind = false;
 
         $data = $this->getAttributes($this->getModifiedCols());
         foreach($data as $c => &$v) {
@@ -691,12 +692,13 @@ abstract class ActiveRecord extends Object {
             //if any field is expression then we should reload model after save
             if ($v instanceof Expression) {
                 $reload = true;
+                $expression_bind = true;
             }
         }
 
         $db = self::getWriteConnection();
         $data_bind = $this->_populateStmtValues($data);
-        if (!empty($data_bind)) {
+        if (!empty($data_bind) || $expression_bind) {
             if ($this->isNew()) { //insert new record
                 $status = $db->insert(static::getTableName(), $data, $data_bind);
                 if (!$status) {
