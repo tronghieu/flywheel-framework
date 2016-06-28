@@ -88,7 +88,7 @@ abstract class ActiveRecord extends Object {
     protected function _initDataValue() {
         foreach (static::$_schema as $c => $config) {
             if (!isset($this->_data[$c])) {
-                $this->_data[$c] = (isset($config['default']))? $config['default'] : null;
+                $this->_data[$c] = (isset($config['default']))? static::fixData($config['default'], static::$_schema[$c]) : null;
             } else {
                 $this->_data[$c] = static::fixData($this->_data[$c], static::$_schema[$c]);
             }
